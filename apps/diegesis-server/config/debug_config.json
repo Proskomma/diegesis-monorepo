@@ -2,7 +2,7 @@
   "hostName": "0.0.0.0",
   "port": 1234,
   "debug": true,
-  "logAccess": false,
+  "logAccess": true,
   "logFormat": "dev",
   "useCors": true,
   "orgs": [],

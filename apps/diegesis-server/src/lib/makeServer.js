@@ -34,6 +34,28 @@ async function makeServer(config) {
             next();
         });
     }
+    // Maybe log access using Morgan
+    if (config.logAccess) {
+        if (config.accessLogPath) {
+            const accessLogStream = fse.createWriteStream(config.accessLogPath, {flags: 'a'});
+            app.use(
+                morgan(
+                    config.logFormat,
+                    {stream: accessLogStream}
+                )
+            );
+        } else {
+            app.use(
+                morgan(config.logFormat)
+            );
+        }
+    }
+    // Log incidents using Winston
+    config.incidentLogger = winston.createLogger({
+        level: 'info',
+        format: winston.format.json(),
+        transports: [new winston.transports.Console()],
+    });
     // Maybe static, each with optional 'to root' redirects
     if (config.staticPaths) {
         for (const staticPathSpec of config.staticPaths) {
@@ -162,30 +184,6 @@ async function makeServer(config) {
             res.send(processSession(req.body.session, app.superusers, app.authSalts));
         });
     }
-
-    // Maybe log access using Morgan
-    if (config.logAccess) {
-        if (config.accessLogPath) {
-            const accessLogStream = fse.createWriteStream(config.accessLogPath, {flags: 'a'});
-            app.use(
-                morgan(
-                    config.logFormat,
-                    {stream: accessLogStream}
-                )
-            );
-        } else {
-            app.use(
-                morgan(config.logFormat)
-            );
-        }
-    }
-
-    // Log incidents using Winston
-    config.incidentLogger = winston.createLogger({
-        level: 'info',
-        format: winston.format.json(),
-        transports: [new winston.transports.Console()],
-    });
 
     // Delete lock files and maybe generated files and directories
     for (const org of fse.readdirSync(config.dataPath)) {
