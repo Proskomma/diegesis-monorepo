@@ -1,5 +1,4 @@
 const fse = require('fs-extra');
-const appRootPath = require("app-root-path");
 const path = require("path");
 const appRoot = path.resolve(".");
 
@@ -20,19 +19,25 @@ const defaultConfig = {
     logFormat: "combined",
     useCors: false,
     debug: false,
-    cronFrequency: 'never',
+    processFrequency: 'never',
     orgs: [], // Empty array means 'all',
     verbose: false,
     includeMutations: false,
     redirectToRoot: [],
     deleteGenerated: false,
     nWorkers: 1,
+    sessionTimeoutInMins: 15,
+    staticPaths: [],
+    superusers: {},
 }
 
 const cronOptions = {
     '1 min': '* * * * *',
     '5 min': '*/5 * * * *',
-    '15 min': '*/5 * * * *',
+    '10 min': '*/10 * * * *',
+    '15 min': '*/15 * * * *',
+    '20 min': '*/20 * * * *',
+    '30 min': '*/30 * * * *',
     '1 hr': '* * * *',
     '4 hr': '*/4 * * *',
     '8 hr': '*/8 * * *',
@@ -44,6 +49,11 @@ const cronOptions = {
 const logFormatOptions = ["combined", "common", "dev", "short", "tiny"];
 
 function makeConfig(providedConfig) {
+    for (const key of Object.keys(providedConfig)) {
+        if (!(key in defaultConfig)) {
+            croak(`Unknown top-level config file option '${key}'`);
+        }
+    }
     const config = defaultConfig;
     if (providedConfig.hostName) {
         if (
@@ -74,32 +84,64 @@ function makeConfig(providedConfig) {
         config.dataPath = fqPath;
     }
     if (providedConfig.staticPath) {
-        if (
-            typeof providedConfig.staticPath !== 'string') {
-            croak(`ERROR: staticPath, if present, should be a string, not '${providedConfig.staticPath}'`);
+        croak('ERROR: the staticPath config option has been replaced by staticPaths');
+    }
+    if (providedConfig.staticPaths) {
+        if (!Array.isArray(providedConfig.staticPaths)) {
+            croak(`ERROR: staticPaths, if present, should be an array, not '${providedConfig.staticPaths}'`);
         }
-        const fqPath = path.resolve(providedConfig.staticPath);
-        if (!fse.existsSync(fqPath) || !fse.lstatSync(fqPath).isDirectory()) {
-            croak(`ERROR: staticPath '${fqPath}' does not exist or is not a directory`);
+        let specs = [];
+        for (const staticPathSpec of providedConfig.staticPaths) {
+            const spec = {};
+            if (typeof staticPathSpec !== 'object' || Array.isArray(staticPathSpec)) {
+                croak(`ERROR: static path spec should be an object, not '${JSON.stringify(staticPathSpec)}'`);
+            }
+            if (!staticPathSpec.path) {
+                croak(`ERROR: static path spec must contain a path: '${JSON.stringify(staticPathSpec)}'`);
+            }
+            if (!staticPathSpec.url) {
+                croak(`ERROR: static path spec must contain a url: '${JSON.stringify(staticPathSpec)}'`);
+            }
+            const fqPath = path.resolve(staticPathSpec.path);
+            if (!fse.existsSync(fqPath) || !fse.lstatSync(fqPath).isDirectory()) {
+                croak(`ERROR: static path '${fqPath}' does not exist or is not a directory`);
+            }
+            spec.path = fqPath;
+            if (!staticPathSpec.url.startsWith('/')) {
+                croak(`ERROR: static url '${staticPathSpec.url}' does not begin with a /`);
+            }
+            spec.url = staticPathSpec.url;
+            if (staticPathSpec.redirectTarget) {
+                const fqPath = path.resolve(staticPathSpec.redirectTarget);
+                if (!fse.existsSync(fqPath)) {
+                    croak(`ERROR: redirectTarget '${fqPath}' does not exist`);
+                }
+                spec.redirectTarget = fqPath;
+            }
+            spec.redirects = [];
+            if (staticPathSpec.redirects) {
+                if (!staticPathSpec.redirectTarget) {
+                    croak(`ERROR: cannot use 'redirects' without 'redirectTarget' in staticPaths`);
+                }
+                if (!Array.isArray(staticPathSpec.redirects)) {
+                    croak(`ERROR: static path redirects, if present, should be an array, not '${staticPathSpec.redirects}'`);
+                }
+                for (const redirect of staticPathSpec.redirects) {
+                    if (typeof redirect !== 'string') {
+                        croak(`ERROR: redirect elements should be strings, not '${redirect}'`);
+                    }
+                    if (!redirect.startsWith('/')) {
+                        croak(`ERROR: redirect elements should start with '/' (from '${redirect}')`);
+                    }
+                }
+                spec.redirects = staticPathSpec.redirects;
+            }
+            specs.push(spec);
         }
-        config.staticPath = fqPath;
+        config.staticPaths = specs;
     }
     if (providedConfig.redirectToRoot) {
-        if (!providedConfig.staticPath) {
-            croak(`ERROR: redirectToRoot present but staticPath absent`);
-        }
-        if (!Array.isArray(providedConfig.redirectToRoot)) {
-            croak(`ERROR: redirectToRoot, if present, should be an array, not '${providedConfig.redirectToRoot}'`);
-        }
-        for (const redirect of providedConfig.redirectToRoot) {
-            if (typeof redirect !== 'string') {
-                croak(`ERROR: redirectToRoot elements should be strings, not '${redirect}'`);
-            }
-            if (!redirect.startsWith('/')) {
-                croak(`ERROR: redirectToRoot elements should start with '/' (from '${redirect}')`);
-            }
-        }
-        config.redirectToRoot = providedConfig.redirectToRoot;
+        croak("ERROR: redirectToRoot has been replaced by 'redirects' inside static path specs");
     }
     if (providedConfig.localUsfmPath) {
         if (
@@ -154,17 +196,38 @@ function makeConfig(providedConfig) {
         }
         config.includeMutations = providedConfig.includeMutations;
     }
+    if ('superusers' in providedConfig) {
+        if (typeof providedConfig.superusers !== 'object' || Array.isArray(providedConfig.superusers)) {
+            croak(`ERROR: superusers, if present, should be an object, not '${JSON.stringify(providedConfig.superusers)}'`);
+        }
+        for (const password of Object.values(providedConfig.superusers)) {
+            if (typeof password !== 'string') {
+                croak(`ERROR: superuser password hash should be a string, not '${JSON.stringify(providedConfig.superusers)}'`)
+            }
+        }
+        config.superusers = providedConfig.superusers;
+    } else {
+        config.superusers = {};
+    }
+    if ('sessionTimeoutInMins' in providedConfig) {
+        if (
+            typeof providedConfig.sessionTimeoutInMins !== 'number' ||
+            !cronOptions[`${providedConfig.sessionTimeoutInMins} min`]) {
+            croak(`ERROR: sessionTimeoutInMins should be 1, 5, 10, 15, 20 or 30, not '${providedConfig.sessionTimeoutInMins}'`);
+        }
+        config.sessionTimeoutInMins = providedConfig.sessionTimeoutInMins;
+    }
     if ('useCors' in providedConfig) {
         if (typeof providedConfig.useCors !== 'boolean') {
             croak(`ERROR: useCors should be boolean, not ${typeof providedConfig.useCors}`);
         }
         config.useCors = providedConfig.useCors;
     }
-    if ('cronFrequency' in providedConfig) {
-        if (providedConfig.cronFrequency !== 'never' && !(providedConfig.cronFrequency in cronOptions)) {
-            croak(`ERROR: unknown cronFrequency option '${providedConfig.cronFrequency}' - should be one of never, ${Object.keys(cronOptions).join(', ')}`);
+    if ('processFrequency' in providedConfig) {
+        if (providedConfig.processFrequency !== 'never' && !(providedConfig.processFrequency in cronOptions)) {
+            croak(`ERROR: unknown processFrequency option '${providedConfig.processFrequency}' - should be one of never, ${Object.keys(cronOptions).join(', ')}`);
         }
-        config.cronFrequency = providedConfig.cronFrequency;
+        config.processFrequency = providedConfig.processFrequency;
     }
     if (providedConfig.nWorkers) {
         if (
@@ -197,10 +260,17 @@ function makeConfig(providedConfig) {
     return config;
 }
 
+const staticDescription = specs => {
+    return 'Static Paths:\n' +
+        specs.map(
+            sp =>
+                `      serve '${sp.path}'\n        at '${sp.url}${sp.redirects.length > 1 ? "\n        redirecting " + sp.redirects.join(', ') + '\n          to ' + sp.redirectTarget + "'": ""}`
+        ).join('\n')
+}
+
 const configSummary = config => `  Listening on ${config.hostName}:${config.port}
     Data directory is ${config.dataPath}
-    ${config.staticPath ? `Static directory is ${config.staticPath}` : "No static directory"}
-    ${config.redirectToRoot.length > 0 ? `Root Redirects on ${config.redirectToRoot.join(', ')}` : "No Root Redirects"}
+    ${config.staticPaths ? `${staticDescription(config.staticPaths)}` : "No static paths"}
     ${config.localUsfmPath ? `Local USFM copied from ${config.localUsfmPath}` : 'No local USFM copied'}
     ${config.localUsxPath ? `Local USX copied from ${config.localUsxPath}` : 'No local USX copied'}
     Debug ${config.debug ? "en" : "dis"}abled
@@ -208,9 +278,11 @@ const configSummary = config => `  Listening on ${config.hostName}:${config.port
     Access logging ${!config.logAccess ? "disabled" : `to ${config.accessLogPath || 'console'} in Morgan '${config.logFormat}' format`}
     CORS ${config.useCors ? "en" : "dis"}abled
     Mutations ${config.includeMutations ? "included" : "not included"}
-    Cron ${config.cronFrequency === 'never' ? "disabled" : `every ${config.cronFrequency}
-    ${config.nWorkers} worker threads
+    Process new data ${config.processFrequency === 'never' ? "disabled" : `every ${config.processFrequency}
+    ${config.nWorkers} worker thread${config.nWorkers === 1 ? "" : "s"}
     ${config.deleteGenerated ? "Delete all generated content" : "Delete lock files only"}
+    ${Object.keys(config.superusers).length} superuser${Object.keys(config.superusers).length === 1 ? "" : "s"}
+    ${Object.keys(config.superusers).length === 0 ? "" : `Session cookies expire after ${config.sessionTimeoutInMins} min`}
 `}`
 
 module.exports = {makeConfig, cronOptions, configSummary};

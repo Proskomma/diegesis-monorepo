@@ -1,5 +1,9 @@
 const {Proskomma} = require('proskomma-core');
+const {PerfRenderFromProskomma, transforms, mergeActions} = require('proskomma-json-tools');
+const {ptBooks} = require('proskomma-utils');
 const path = require("path");
+const fse = require('fs-extra');
+const {parentPort} = require("node:worker_threads");
 const {
     transPath,
     usfmDir,
@@ -7,12 +11,14 @@ const {
     vrsPath,
     succinctErrorPath,
     perfDir,
+    simplePerfDir,
     sofriaDir,
     succinctPath,
     lockPath,
 } = require("./dataPaths.js");
-const fse = require('fs-extra');
-const {parentPort} = require("node:worker_threads");
+const documentStatsActions = require("./documentStatsActions");
+const localJustTheBibleActions = require("./localJustTheBibleActions");
+
 const appRoot = path.resolve(".");
 
 function doDownloads({dataPath, orgDir, owner, transId, revision, contentType}) {
@@ -40,6 +46,7 @@ function doDownloads({dataPath, orgDir, owner, transId, revision, contentType}) 
         const downloads = makeDownloads(
             dataPath,
             org,
+            orgDir,
             metadata,
             contentType,
             fse.readdirSync(contentDir).map(f => fse.readFileSync(path.join(contentDir, f)).toString()),
@@ -49,20 +56,6 @@ function doDownloads({dataPath, orgDir, owner, transId, revision, contentType}) 
             fse.writeJsonSync(succinctErrorPath(dataPath, orgDir, owner, transId, revision), downloads.succinctError);
             fse.remove(lockPath(dataPath, orgDir, owner, transId, revision));
             return;
-        }
-        const perfD = perfDir(dataPath, orgDir, owner, transId, revision);
-        if (!fse.pathExistsSync(perfD)) {
-            fse.mkdir(perfD);
-        }
-        for (const [bookCode, perf] of downloads.perf) {
-            fse.writeFileSync(path.join(perfD, `${bookCode}.json`), JSON.stringify(JSON.parse(perf), null, 2));
-        }
-        const sofriaD = sofriaDir(dataPath, orgDir, owner, transId, revision);
-        if (!fse.pathExistsSync(sofriaD)) {
-            fse.mkdir(sofriaD);
-        }
-        for (const [bookCode, sofria] of downloads.sofria) {
-            fse.writeFileSync(path.join(sofriaD, `${bookCode}.json`), JSON.stringify(JSON.parse(sofria), null, 2));
         }
         fse.writeJsonSync(succinctPath(dataPath, orgDir, owner, transId, revision), downloads.succinct);
     } catch (err) {
@@ -82,7 +75,7 @@ function doDownloads({dataPath, orgDir, owner, transId, revision, contentType}) 
     parentPort.postMessage({orgDir, owner, transId, revision, status: "done"});
 }
 
-function makeDownloads(dataPath, org, metadata, docType, docs, vrsContent) {
+function makeDownloads(dataPath, org, orgDir, metadata, docType, docs, vrsContent) {
     const pk = new Proskomma([
         {
             name: "source",
@@ -108,22 +101,58 @@ function makeDownloads(dataPath, org, metadata, docType, docs, vrsContent) {
     const ret = {
         succinct: null,
         perf: [],
+        simplePerf: [],
         sofria: [],
+        stats: {
+            nOT: 0,
+            nNT: 0,
+            nDC: 0,
+            nChapters: 0,
+            nVerses: 0,
+            nIntroductions: 0,
+            nHeadings: 0,
+            nFootnotes: 0,
+            nXrefs: 0,
+            nStrong: 0,
+            nLemma: 0,
+            nGloss: 0,
+            nContent: 0,
+            nMorph: 0,
+            nOccurrences: 0,
+            documents: {}
+        }
     };
     let docSetId;
     try {
         pk.importDocuments(
             {
                 source: org,
-                owner: metadata.owner.replace(/\s/g, "__"),
-                project: metadata.abbreviation.replace(/\s/g, "__"),
-                revision: metadata.revision.replace(/\s/g, "__"),
+                owner: metadata.owner,
+                project: metadata.id,
+                revision: metadata.revision,
             },
             docType,
             docs,
         );
-        docSetId = pk.gqlQuerySync('{docSets { id } }').data.docSets[0].id;
+        const docSet = pk.gqlQuerySync('{docSets { id documents { bookCode: header(id: "bookCode") sequences {type} } } }').data.docSets[0];
+        docSetId = docSet.id;
+        const docSetBookCodes = docSet.documents.map(d => d.bookCode);
+        for (const bookCode of docSetBookCodes) {
+            for (const section of ['ot', 'nt', 'dc']) {
+                if (ptBooks[bookCode].categories.includes(section)) {
+                    ret.stats[`n${section.toUpperCase()}`]++;
+                }
+            }
+        }
+        const sequenceTypes = new Set([]);
+        for (const sequences of docSet.documents.map(d => d.sequences)) {
+            for (const sequenceType of sequences.map(s => s.type)) {
+                sequenceTypes.add(sequenceType);
+            }
+        }
+
         let metadataTags = `"title:${metadata.title}" "copyright:${metadata.copyright}" "language:${metadata.languageCode}"`;
+        metadataTags += ` "nOT:${ret.stats.nOT}" "nNT:${ret.stats.nNT}" "nDC:${ret.stats.nDC}"`;
         if (metadata.textDirection) {
             metadataTags += ` "direction:${metadata.textDirection}"`;
         }
@@ -134,26 +163,34 @@ function makeDownloads(dataPath, org, metadata, docType, docs, vrsContent) {
         if (vrsContent) {
             pk.gqlQuerySync(`mutation { setVerseMapping(docSetId: "${docSetId}" vrsSource: """${vrsContent}""")}`);
         }
-        ret.succinct = pk.serializeSuccinct(docSetId);
     } catch (err) {
         ret.succinctError = {
             generatedBy: 'cron',
             context: {
                 docSetId: docSetId || "???",
-                making: "succinct",
+                making: "populatePk",
             },
             message: err.message
         };
         parentPort.postMessage(ret.succinctError);
-        fse.remove(lockPath(dataPath, orgDir, owner, transId, revision));
+        fse.remove(lockPath(dataPath, orgDir, metadata.owner, metadata.id, metadata.revision));
         return;
     }
-    const documents = pk.gqlQuerySync(`{docSet(id: """${docSetId}""") {documents { id bookCode: header(id:"bookCode")} } }`).data.docSet.documents.map(d => ({id: d.id, book: d.bookCode}));
+    const documents = pk.gqlQuerySync(`{docSet(id: """${docSetId}""") {documents { id bookCode: header(id:"bookCode")} } }`).data.docSet.documents.map(d => ({
+        id: d.id,
+        book: d.bookCode
+    }));
     for (const doc of documents) {
+        let docResult = null;
         try {
-            let docResult = pk.gqlQuerySync(`{ document(id: """${doc.id}""") { bookCode: header(id:"bookCode") perf } }`).data.document;
-            ret.perf.push([docResult.bookCode, docResult.perf]);
+            docResult = pk.gqlQuerySync(`{ document(id: """${doc.id}""") { bookCode: header(id:"bookCode") perf } }`).data.document;
+            const perfD = perfDir(dataPath, orgDir, metadata.owner, metadata.id, metadata.revision);
+            if (!fse.pathExistsSync(perfD)) {
+                fse.mkdirSync(perfD);
+            }
+            fse.writeFileSync(path.join(perfD, `${doc.book}.json`), JSON.stringify(JSON.parse(docResult.perf), null, 2));
         } catch (err) {
+            docResult = null;
             parentPort.postMessage({
                 generatedBy: 'cron',
                 context: {
@@ -165,9 +202,87 @@ function makeDownloads(dataPath, org, metadata, docType, docs, vrsContent) {
                 message: err.message,
             });
         }
+        if (docResult) {
+            try {
+                const cl = new PerfRenderFromProskomma(
+                    {
+                        proskomma: pk,
+                        actions: mergeActions(
+                            [
+                                localJustTheBibleActions,
+                                transforms.perf2perf.identityActions
+                            ]
+                        ),
+                    },
+                );
+                const output = {};
+
+                cl.renderDocument(
+                    {
+                        docId: doc.id,
+                        config: {},
+                        output,
+                    },
+                );
+                const simplePerf = transforms.alignment.mergePerfText.code({perf: output.perf}).perf;
+                const simplePerfD = simplePerfDir(dataPath, orgDir, metadata.owner, metadata.id, metadata.revision);
+                if (!fse.pathExistsSync(simplePerfD)) {
+                    fse.mkdirSync(simplePerfD);
+                }
+                fse.writeFileSync(path.join(simplePerfD, `${doc.book}.json`), JSON.stringify(simplePerf, null, 2));
+            } catch (err) {
+                docResult = null;
+                parentPort.postMessage({
+                    generatedBy: 'cron',
+                    context: {
+                        docSetId,
+                        doc: doc.id,
+                        book: doc.book,
+                        making: "simplePerf"
+                    },
+                    message: err.message,
+                });
+            }
+        }
+        if (docResult) {
+            try {
+                const cl = new PerfRenderFromProskomma(
+                    {
+                        proskomma: pk,
+                        actions: documentStatsActions,
+                    },
+                );
+                const output = {};
+
+                cl.renderDocument(
+                    {
+                        docId: doc.id,
+                        config: {},
+                        output,
+                    },
+                );
+                ret.stats.documents[doc.book] = output;
+            } catch (err) {
+                docResult = null;
+                parentPort.postMessage({
+                    generatedBy: 'cron',
+                    context: {
+                        docSetId,
+                        doc: doc.id,
+                        book: doc.book,
+                        making: "stats"
+                    },
+                    message: err.message,
+                });
+            }
+        }
         try {
             const docResult = pk.gqlQuerySync(`{document(id: """${doc.id}""") { bookCode: header(id:"bookCode") sofria } }`).data.document;
-            ret.sofria.push([docResult.bookCode, docResult.sofria]);
+            const sofriaD = sofriaDir(dataPath, orgDir, metadata.owner, metadata.id, metadata.revision);
+            if (!fse.pathExistsSync(sofriaD)) {
+                fse.mkdirSync(sofriaD);
+            }
+            fse.writeFileSync(path.join(sofriaD, `${doc.book}.json`), JSON.stringify(JSON.parse(docResult.sofria), null, 2));
         } catch (err) {
             parentPort.postMessage({
                 generatedBy: 'cron',
@@ -180,6 +295,66 @@ function makeDownloads(dataPath, org, metadata, docType, docs, vrsContent) {
                 message: err.message,
             });
         }
+    }
+    try {
+        for (const bookStats of Object.values(ret.stats.documents)) {
+            for (const stat of [
+                "nChapters",
+                "nVerses",
+                "nIntroductions",
+                "nHeadings",
+                "nFootnotes",
+                "nXrefs",
+                "nStrong",
+                "nLemma",
+                "nGloss",
+                "nContent",
+                "nMorph",
+                "nOccurrences",
+            ]) {
+                ret.stats[stat] += bookStats[stat];
+            }
+            const metadataPath = path.join(
+                transPath(
+                    dataPath,
+                    orgDir,
+                    metadata.owner,
+                    metadata.id,
+                    metadata.revision
+                ),
+                'metadata.json'
+            );
+            const newMetadata = {...metadata, stats: ret.stats};
+            for (const toDelete of ["ot", "nt", "dc", "nOT", "nNT", "nDC", "hasIntroductions", "hasHeadings", "hasFootnotes", "hasXrefs"]) {
+                delete newMetadata[toDelete];
+            }
+            fse.writeFileSync(metadataPath, JSON.stringify(newMetadata, null, 2));
+        }
+        try {
+            ret.succinct = pk.serializeSuccinct(docSetId);
+        } catch (err) {
+            ret.succinctError = {
+                generatedBy: 'cron',
+                context: {
+                    docSetId: docSetId || "???",
+                    making: "succinct",
+                },
+                message: err.message
+            };
+            parentPort.postMessage(ret.succinctError);
+            fse.remove(lockPath(dataPath, orgDir, metadata.owner, metadata.id, metadata.revision));
+            return;
+        }
+    } catch
+        (err) {
+        parentPort.postMessage({
+            generatedBy: 'cron',
+            context: {
+                docSetId,
+                making: "augmented metadata.json"
+            },
+            message: err.message,
+        });
     }
     return ret;
 }

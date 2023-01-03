@@ -2,12 +2,33 @@
   "hostName": "0.0.0.0",
   "port": 1234,
   "debug": true,
-  "logAccess": false,
+  "logAccess": true,
   "logFormat": "dev",
   "useCors": true,
   "orgs": [],
-  "cronFrequency": "1 min",
+  "processFrequency": "1 min",
+  "nWorkers": 8,
   "verbose": true,
   "includeMutations": true,
-  "staticPath": "../diegesis-admin-client/build"
+  "sessionTimeoutInMins": 10,
+  "staticPaths": [
+    {
+      "path": "../diegesis-admin-client/build",
+      "url": "/admin"
+    },
+    {
+      "path": "../diegesis-user-client/build",
+      "url": "/",
+      "redirectTarget": "../diegesis-user-client/build/index.html",
+      "redirects": [
+        "/who",
+        "/how",
+        "/list",
+        "/blend",
+        "/entry/*"
+      ]
+    }
+  ],
+  "deleteGenerated": false
+
 }

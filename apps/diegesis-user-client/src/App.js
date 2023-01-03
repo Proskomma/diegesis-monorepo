@@ -1,13 +1,10 @@
-import React, {useState, useEffect, useMemo} from 'react';
+import React from 'react';
 import {
     createBrowserRouter,
     RouterProvider,
+    useRouteError,
 } from "react-router-dom";
-import {
-    ApolloClient,
-    ApolloProvider, gql,
-    InMemoryCache,
-} from "@apollo/client";
+import {ApolloProvider, ApolloClient, InMemoryCache} from "@apollo/client";
 import {
     createTheme,
     CssBaseline,
@@ -18,15 +15,12 @@ import HomePage from "./pages/HomePage";
 import WhoPage from "./pages/WhoPage";
 import HowPage from "./pages/HowPage";
 import ListPage from "./pages/ListPage";
+import BlendPage from "./pages/BlendPage";
 import EntryDetailsPage from "./pages/EntryDetailsPage";
 import EntryBrowsePage from "./pages/EntryBrowsePage";
 import EntryDownloadPage from "./pages/EntryDownloadPage";
 
 function App() {
-    const [searchOrg, setSearchOrg] = useState('all');
-    const [searchLang, setSearchLang] = useState('');
-    const [searchText, setSearchText] = useState('');
-    const [orgs, setOrgs] = useState([]);
 
     const theme = createTheme({});
 
@@ -37,63 +31,59 @@ function App() {
         }
     );
 
-    const memoClient = useMemo(() => client);
-
-    // This piece runs once, when the page is rendered
-    useEffect(
-        () => {
-            const doOrgs = async () => {
-                const result = await memoClient.query({query: gql`{ orgs { id: name } }`});
-                setOrgs(result.data.orgs.map(o => o.id));
-            };
-            doOrgs();
-        },
-        []
-    );
+    function ErrorBoundary() {
+        let error = useRouteError();
+        console.error(error);
+        return <div>An unexpected error has occurred: <i>{error.message}</i></div>;
+    }
 
     const router = createBrowserRouter([
         {
             path: "/",
-            element: <HomePage />,
+            element: <HomePage/>,
+            errorElement: <ErrorBoundary/>
         },
         {
             path: "/who",
-            element: <WhoPage />
+            element: <WhoPage/>,
+            errorElement: <ErrorBoundary/>
         },
         {
             path: "/how",
-            element: <HowPage />
+            element: <HowPage/>,
+            errorElement: <ErrorBoundary/>
         },
         {
             path: "/list",
-            element: <ListPage
-                orgs={orgs}
-                searchOrg={searchOrg}
-                setSearchOrg={setSearchOrg}
-                searchLang={searchLang}
-                setSearchLang={setSearchLang}
-                searchText={searchText}
-                setSearchText={setSearchText}
-            />,
+            element: <ListPage/>,
+            errorElement: <ErrorBoundary/>
+        },
+        {
+            path: "/blend",
+            element: <BlendPage />,
+            errorElement: <ErrorBoundary/>
         },
         {
             path: "/entry/details/:source/:owner/:entryId/:revision",
-            element: <EntryDetailsPage />
+            element: <EntryDetailsPage/>,
+            errorElement: <ErrorBoundary/>
         },
         {
             path: "/entry/browse/:source/:owner/:entryId/:revision",
-            element: <EntryBrowsePage />
+            element: <EntryBrowsePage/>,
+            errorElement: <ErrorBoundary/>
         },
         {
             path: "/entry/download/:source/:owner/:entryId/:revision",
-            element: <EntryDownloadPage />
+            element: <EntryDownloadPage/>,
+            errorElement: <ErrorBoundary/>
         }
     ]);
 
     return (<ApolloProvider client={client}>
             <ThemeProvider theme={theme}>
                 <CssBaseline/>
-                <RouterProvider router={router} />
+                <RouterProvider router={router}/>
             </ThemeProvider>
         </ApolloProvider>
     );

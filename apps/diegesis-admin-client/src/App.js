@@ -1,4 +1,5 @@
 import React, {useState, useEffect, useMemo} from 'react';
+import Cookies from 'js-cookie';
 import {
     ApolloClient,
     ApolloProvider, gql,
@@ -22,6 +23,37 @@ function App() {
     const [searchLang, setSearchLang] = useState('');
     const [searchText, setSearchText] = useState('');
     const [orgs, setOrgs] = useState([]);
+    const [authed, setAuthed] = useState(true);
+
+    useEffect(() => {
+            const sessionCode = Cookies.get('diegesis-auth');
+
+            if (!sessionCode) {
+                setAuthed(false);
+            } else {
+                fetch('/session-auth', {
+                    method: 'POST',
+                    headers: {
+                        'Content-type': 'application/json; charset=UTF-8',
+                    },
+                    body: JSON.stringify({
+                        session: sessionCode,
+                    })
+                })
+                    .then((response) => response.json())
+                    .then((data) => {
+                        if (!data.authenticated) {
+                            setAuthed(false);
+                        }
+                    })
+                    .catch((err) => {
+                        console.log(err.message);
+                    });
+            }
+            ;
+        },
+        []
+    );
 
     const theme = createTheme({});
 
@@ -49,29 +81,39 @@ function App() {
             <ThemeProvider theme={theme}>
                 <CssBaseline/>
                 <Container fixed className="App">
-                    <Header
-                        orgs={orgs}
-                        selectedOrgIndex={selectedOrgIndex}
-                        setSelectedOrgIndex={setSelectedOrgIndex}
-                        searchLang={searchLang}
-                        setSearchLang={setSearchLang}
-                        searchText={searchText}
-                        setSearchText={setSearchText}
-                    />
-                    <Box id="body">
-                        {orgs.length > 0 ?
-                            <TabbedBody
-                                selectedOrg={orgs[selectedOrgIndex]}
+                    {
+                        !authed &&
+                        <div>You need to authenticate to view this page. Please click <a
+                            href="/login?redirect=/admin">here</a> to log in</div>
+                    }
+                    {
+                        authed &&
+                        <>
+                            <Header
+                                orgs={orgs}
+                                selectedOrgIndex={selectedOrgIndex}
+                                setSelectedOrgIndex={setSelectedOrgIndex}
                                 searchLang={searchLang}
+                                setSearchLang={setSearchLang}
                                 searchText={searchText}
-                            /> :
-                            <Paper sx={{width: '100%', overflow: 'hidden'}}>
-                                <Box>
-                                    <Typography variant="h3">Loading</Typography>
-                                </Box>
-                            </Paper>
-                        }
-                    </Box>
+                                setSearchText={setSearchText}
+                            />
+                            <Box id="body">
+                                {orgs.length > 0 ?
+                                    <TabbedBody
+                                        selectedOrg={orgs[selectedOrgIndex]}
+                                        searchLang={searchLang}
+                                        searchText={searchText}
+                                    /> :
+                                    <Paper sx={{width: '100%', overflow: 'hidden'}}>
+                                        <Box>
+                                            <Typography variant="h3">Loading</Typography>
+                                        </Box>
+                                    </Paper>
+                                }
+                            </Box>
+                        </>
+                    }
                 </Container>
             </ThemeProvider>
         </ApolloProvider>

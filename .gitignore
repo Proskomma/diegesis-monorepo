@@ -1,6 +1,7 @@
 .idea/
 
 apps/diegesis-server/data
+apps/diegesis-server/local
 
 # Logs
 logs

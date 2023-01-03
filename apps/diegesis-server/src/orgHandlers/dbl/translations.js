@@ -14,6 +14,7 @@ async function getTranslationsCatalog() {
     const jsonData = JSON.parse(catalogResponse.data);
     const catalogData = Object.values(jsonData.aaData);
     const catalog = catalogData.map(t => ({
+        resourceTypes: ["bible"],
         id: t[0],
         languageCode: t[2],
         title: t[4],
@@ -57,10 +58,12 @@ const fetchUsx = async (org, trans, config) => {
             .getElementsByTagName('abbreviation')['0']
             .childNodes[0].nodeValue;
     metadataRecord.owner =
-        metadataRoot.getElementsByTagName('agencies')['0']
-            .getElementsByTagName('rightsHolder')['0']
-            .getElementsByTagName('abbr')['0']
-            .childNodes[0].nodeValue || '???';
+        (
+            metadataRoot.getElementsByTagName('agencies')['0']
+                .getElementsByTagName('rightsHolder')['0']
+                .getElementsByTagName('abbr')['0']
+                .childNodes[0].nodeValue || '???')
+            .replace(/\s/g, "__");
     metadataRecord.copyright =
         metadataRoot.getElementsByTagName('copyright')['0']
             .getElementsByTagName('fullStatement')['0']
@@ -71,7 +74,12 @@ const fetchUsx = async (org, trans, config) => {
             .trim();
     trans.owner = metadataRecord.owner;
     trans.revision = metadataRecord.revision;
-    const tp = transPath(config.dataPath, org.translationDir, metadataRecord.owner, trans.id, metadataRecord.revision);
+    const tp = transPath(
+        config.dataPath,
+        org.translationDir.replace(/\s/g, "__"),
+        metadataRecord.owner.replace(/\s/g, "__"),
+        trans.id, metadataRecord.revision.replace(/\s/g, "__")
+    );
     if (!fse.pathExistsSync(tp)) {
         fse.mkdirsSync(tp);
     }

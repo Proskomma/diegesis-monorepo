@@ -69,10 +69,14 @@ const querySchema = gql`
             withSuccinct: Boolean
             """Filter according to presence or absence of succinct generation error"""
             withSuccinctError: Boolean
+            """Filter by owners"""
+            withOwner: [String!]
             """Filter by language codes"""
             withLanguageCode: [String!]
             """Filter by text matches in title"""
             withMatchingMetadata: [String!]
+            """Filter by set features"""
+            withFeatures: [String!]
             """Sort by id, languageCode or title"""
             sortedBy: String
             """Sort in reverse order"""
@@ -159,6 +163,13 @@ const querySchema = gql`
             """The bookCode"""
             code: BookCode!
         ): String
+        """Is simplePERF available?"""
+        hasSimplePerf: Boolean!
+        """The simplePERF for this translation"""
+        simplePerfForBookCode(
+            """The bookCode"""
+            code: BookCode!
+        ): String
         """Is SOFRIA available?"""
         hasSofria: Boolean!
         """The SOFRIA for this translation"""
@@ -178,6 +189,34 @@ const querySchema = gql`
         hasVrs: Boolean!
         """The VRS file for this translation"""
         vrs: String
+        """The number of OT books in this document"""
+        nOT: Int!
+        """The number of NT books in this document"""
+        nNT: Int!
+        """The number of DC books in this document"""
+        nDC: Int!
+        """The number of introductions in this document"""
+        nIntroductions: Int!
+        """The number of xrefs in this document"""
+        nXrefs: Int!
+        """The number of footnotes in this document"""
+        nFootnotes: Int!
+        """The number of headings in this document"""
+        nHeadings: Int!
+        """The number of strong markup in this document"""
+        nStrong: Int!
+        """The number of lemma markup in this document"""
+        nLemma: Int!
+        """The number of gloss markup in this document"""
+        nGloss: Int!
+        """The number of content markup in this document"""
+        nContent: Int!
+        """The number of occurrences markup in this document"""
+        nOccurrences: Int!
+        """The number of chapters in this document"""
+        nChapters: Int!
+        """The number of verses in this document"""
+        nVerses: Int!
     }
     `;
 const mutationSchema = gql`
@@ -205,17 +244,6 @@ const mutationSchema = gql`
             org: OrgName!
             """The id of the translation"""
             translationId: TranslationId!
-        ) : Boolean!
-        """Makes succinct JSON from USFM or USX for the specified translation"""
-        makeSuccinct(
-            """The name of the organization"""
-            org: OrgName!
-            """The owner"""
-            owner: String!
-            """The id of the translation"""
-            id: TranslationId!
-            """The revision of the translation"""
-            revision: String!
         ) : Boolean!
         """Deletes a succinct error, if present, which will allow succinct generation by the cron"""
         deleteSuccinctError(

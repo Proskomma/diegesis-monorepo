@@ -70,6 +70,10 @@ export default function EntryDownloadPage() {
                 mime: "application/json",
                 suffix: "perf.json"
             },
+            simplePerf: {
+                mime: "application/json",
+                suffix: "simple_perf.json"
+            },
             sofria: {
                 mime: "application/json",
                 suffix: "sofria.json"
@@ -156,7 +160,7 @@ export default function EntryDownloadPage() {
         <Box style={{marginTop: "100px"}}>
             <Typography variant="h4" paragraph="true" sx={{mt: "20px"}}>
                 <Button>
-                    <RouterLink to="/list"><ArrowBack/></RouterLink></Button>
+                    <RouterLink to={`/entry/browse/${source}/${owner}/${entryId}/${revision}`} relative="path"><ArrowBack/></RouterLink></Button>
                 {translationInfo.title}
             </Typography>
             <Grid container>
@@ -199,8 +203,8 @@ export default function EntryDownloadPage() {
                         <Grid item xs={12}>
                             <Typography variant="h5" paragraph="true">Download by Book</Typography>
                         </Grid>
-                        <Grid item xs={4}>
-                            <Typography variant="body1" paragraph="true">Book Code</Typography>
+                        <Grid item xs={2}>
+                            <Typography variant="body1" paragraph="true">Book</Typography>
                         </Grid>
                         <Grid item xs={2}>
                             <Typography variant="body1" paragraph="true">USFM</Typography>
@@ -212,12 +216,15 @@ export default function EntryDownloadPage() {
                             <Typography variant="body1" paragraph="true">PERF</Typography>
                         </Grid>
                         <Grid item xs={2}>
+                            <Typography variant="body1" paragraph="true">sPERF</Typography>
+                        </Grid>
+                        <Grid item xs={2}>
                             <Typography variant="body1" paragraph="true">SOFRIA</Typography>
                         </Grid>
                         {
                             bookCodes.map(b =>
                                 <>
-                                    <Grid item xs={4}>
+                                    <Grid item xs={2}>
                                         <Typography variant="body1" paragraph="true">{b}</Typography>
                                     </Grid>
                                     <Grid item xs={2}>
@@ -244,6 +251,16 @@ export default function EntryDownloadPage() {
                                         <Typography variant="body1" paragraph="true">
                                             <Button
                                                 onClick={() => downloadBook("perf", b)}
+                                                disabled={!translationInfo.hasPerf}
+                                            >
+                                                <Download/>
+                                            </Button>
+                                        </Typography>
+                                    </Grid>
+                                    <Grid item xs={2}>
+                                        <Typography variant="body1" paragraph="true">
+                                            <Button
+                                                onClick={() => downloadBook("simplePerf", b)}
                                                 disabled={!translationInfo.hasPerf}
                                             >
                                                 <Download/>

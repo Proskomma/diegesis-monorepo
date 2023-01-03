@@ -6,19 +6,25 @@ const {ApolloServer} = require("apollo-server-express");
 const {mergeTypeDefs} = require('@graphql-tools/merge')
 const morgan = require('morgan');
 const winston = require('winston');
+const shajs = require('sha.js');
+const cookieParser = require('cookie-parser');
+const {randomInt} = require('node:crypto');
 const makeResolvers = require("../graphql/resolvers/index.js");
 const {scalarSchema, querySchema, mutationSchema} = require("../graphql/schema/index.js");
-const doCron = require("./cron.js");
+const {doRenderCron, doSessionCron} = require("./cron.js");
 
 const appRoot = path.resolve(".");
 
 async function makeServer(config) {
     // Express
     const app = express();
+    app.use(express.json());
+    app.use(express.urlencoded({extended: true}));
     app.use(helmet({
         crossOriginEmbedderPolicy: !config.debug,
         contentSecurityPolicy: !config.debug,
     }));
+    app.use(cookieParser());
     if (config.useCors) {
         app.all('*', (req, res, next) => {
             res.header('Access-Control-Allow-Origin', '*');
@@ -28,9 +34,42 @@ async function makeServer(config) {
             next();
         });
     }
-    // Maybe static
-    if (config.staticPath) {
-        app.use(express.static(config.staticPath));
+    // Maybe log access using Morgan
+    if (config.logAccess) {
+        if (config.accessLogPath) {
+            const accessLogStream = fse.createWriteStream(config.accessLogPath, {flags: 'a'});
+            app.use(
+                morgan(
+                    config.logFormat,
+                    {stream: accessLogStream}
+                )
+            );
+        } else {
+            app.use(
+                morgan(config.logFormat)
+            );
+        }
+    }
+    // Log incidents using Winston
+    config.incidentLogger = winston.createLogger({
+        level: 'info',
+        format: winston.format.json(),
+        transports: [new winston.transports.Console()],
+    });
+    // Maybe static, each with optional 'to root' redirects
+    if (config.staticPaths) {
+        for (const staticPathSpec of config.staticPaths) {
+            app.use(staticPathSpec.url, express.static(staticPathSpec.path));
+            for (const redirect of staticPathSpec.redirects) {
+                app.get(redirect, (req, res) => {
+                    res.sendFile(staticPathSpec.redirectTarget, function (err) {
+                        if (err) {
+                            res.status(500).send(err)
+                        }
+                    })
+                });
+            }
+        }
     }
 
     // Maybe copy local translations
@@ -55,38 +94,94 @@ async function makeServer(config) {
         });
     }
 
-    // Maybe log access using Morgan
-    if (config.logAccess) {
-        if (config.accessLogPath) {
-            const accessLogStream = fse.createWriteStream(config.accessLogPath, {flags: 'a'});
-            app.use(
-                morgan(
-                    config.logFormat,
-                    {stream: accessLogStream}
-                )
-            );
+    // Login
+
+    const processSession = function (session, superusers, authSalts) {
+        const failJson = {authenticated: false, msg: "Could not authenticate (bad session?)"};
+        if (!session) {
+            return ({authenticated: false, msg: "Please include session!"});
         } else {
-            app.use(
-                morgan(config.logFormat)
-            );
+            // Get username and server-side hash for that user
+            const username = session.split('-')[0];
+            const superPass = superusers[username];
+            if (!superPass) {
+                return failJson;
+            } else {
+                let matched = false;
+                for (const salt of authSalts) {
+                    // Make sessionCode for this user using the server-side hash and salt
+                    const session2 = `${username}-${shajs('sha256')
+                        .update(`${superPass}-${salt}`)
+                        .digest('hex')}`;
+                    // Compare this new sessionCode with the one the client provided
+                    if (session2 === session) {
+                        matched = true;
+                        break;
+                    }
+                }
+                if (matched) {
+                    return ({authenticated: true, msg: "Success"});
+                } else {
+                    return failJson;
+                }
+            }
         }
     }
 
-    // Log incidents using Winston
-    config.incidentLogger = winston.createLogger({
-        level: 'info',
-        format: winston.format.json(),
-        transports: [new winston.transports.Console()],
-    });
+    app.superusers = config.superusers;
+    if (Object.keys(app.superusers).length > 0) {
+        app.sessionTimeoutInMins = config.sessionTimeoutInMins;
+        app.authSalts = [shajs('sha256')
+            .update(randomInt(1000000, 9999999).toString())
+            .digest('hex')];
+        app.authSalts.push(app.authSalts[0]);  // Start with 2 identical salts
 
-    // Redirect to root, for one-page apps
-    for (const redirect of config.redirectToRoot) {
-        app.get(redirect, function (req, res) {
-            res.sendFile(`${config.staticPath}/index.html`, function (err) {
-                if (err) {
-                    res.status(500).send(err)
+        doSessionCron(app, `${config.sessionTimeoutInMins} min`);
+
+        app.get('/login', (req, res) => {
+            const payload = fse.readFileSync(
+                path.resolve(appRoot, 'src', 'html', 'login.html')
+            ).toString()
+                .replace('%redirect%', req.query.redirect || '/');
+            res.send(payload);
+        });
+
+        app.post('/new-login-auth', function (request, response) {
+            const failMsg = "Could not authenticate (bad username/password?)";
+            let username = request.body.username;
+            let password = request.body.password;
+            if (!username || !password) {
+                response.send('Please include username and password!');
+            } else {
+                const superPass = app.superusers[username];
+                if (!superPass) {
+                    response.send(failMsg);
+                } else {
+                    const hash = shajs('sha256')
+                        .update(`${username}${password}`)
+                        .digest('hex');
+                    if (hash !== superPass) {
+                        response.send(failMsg);
+                    } else {
+                        const sessionCode =
+                            `${username}-${shajs('sha256')
+                                .update(`${hash}-${app.authSalts[app.authSalts.length - 1]}`)
+                                .digest('hex')}`;
+                        response.cookie(
+                            'diegesis-auth',
+                            sessionCode,
+                            {
+                                expires: new Date(new Date().getTime() + app.sessionTimeoutInMins * 60 * 1000)
+                            }
+                        );
+                        response.redirect(request.body.redirect || '/');
+                    }
                 }
-            })
+            }
+        });
+
+        app.post('/session-auth', function (req, res) {
+            res.send(processSession(req.body.session, app.superusers, app.authSalts));
         });
     }
 
@@ -98,7 +193,13 @@ async function makeServer(config) {
                 const transDir = path.join(orgDir, trans);
                 for (const revision of fse.readdirSync(transDir)) {
                     const revisionDir = path.join(transDir, revision);
-                    for (const toRemove of (config.deleteGenerated ? ["succinct.json", "succinctError.json", "lock.json", "sofriaBooks", "perfBooks"] : ["lock.json"])) {
+                    for (
+                        const toRemove of (
+                        config.deleteGenerated ?
+                            ["succinct.json", "succinctError.json", "lock.json", "sofriaBooks", "perfBooks"] :
+                            ["lock.json"]
+                    )
+                        ) {
                         fse.remove(path.join(revisionDir, toRemove));
                     }
                 }
@@ -116,11 +217,18 @@ async function makeServer(config) {
         ),
         resolvers,
         debug: config.debug,
+        context: ({req}) => {
+            return {
+                auth: !req.cookies || !req.cookies["diegesis-auth"] ?
+                    {authenticated: false, msg: "No auth cookie"} :
+                    processSession(req.cookies["diegesis-auth"], app.superusers, app.authSalts)
+            };
+        }
     });
 
     // Maybe start cron
-    if (config.cronFrequency !== 'never') {
-        doCron(config);
+    if (config.processFrequency !== 'never') {
+        doRenderCron(config);
     }
 
     // Start server
