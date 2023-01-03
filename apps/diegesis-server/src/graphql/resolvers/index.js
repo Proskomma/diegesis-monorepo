@@ -2,7 +2,7 @@ const path = require('path');
 const fse = require('fs-extra');
 const {GraphQLScalarType, Kind} = require('graphql');
 const {ptBooks} = require('proskomma-utils');
-const {transPath, transParentPath, usfmDir, usxDir, succinctPath, succinctErrorPath, vrsPath, perfDir, simplePerfDir, sofriaDir} = require('../../lib/dataPaths');
+const {orgPath, transPath, transParentPath, usfmDir, usxDir, succinctPath, succinctErrorPath, vrsPath, perfDir, simplePerfDir, sofriaDir} = require('../../lib/dataPaths');
 
 const appRoot = path.resolve(".");
 
@@ -24,6 +24,11 @@ const makeResolvers = async config => {
             continue;
         }
         config.verbose && console.log(`    ${orgRecord.name}`);
+        const orgFQPath = orgPath(config.dataPath, orgDir);
+        if (!fse.existsSync(orgFQPath)) {
+            config.verbose && console.log(`      Making org dir at ${orgFQPath}`);
+            fse.mkdirSync(orgFQPath);
+        }
         const translations = require(path.resolve(appRoot, 'src', 'orgHandlers', orgDir, 'translations.js'));
         orgHandlers[orgRecord.name] = {
             getTranslationsCatalog: translations.getTranslationsCatalog,
