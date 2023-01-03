@@ -261,7 +261,7 @@ const makeResolvers = async config => {
         let ret = true;
         for (const f of features) {
             const fField = `n${f.substring(0, 1).toUpperCase()}${f.substring(1)}`;
-            if (!trans.stats[fField]) {
+            if (!trans.stats || !trans.stats[fField]) {
                 ret = false;
                 break;
             }
@@ -277,7 +277,7 @@ const makeResolvers = async config => {
     }
     const queryResolver = {
         Query: {
-            orgs: (root, args, context) => {
+            orgs: () => {
                 return Object.values(orgsData);
             },
             org: (root, args, context) => {
@@ -292,7 +292,7 @@ const makeResolvers = async config => {
                 }
                 return org.translations.length
             },
-            nLocalTranslations: (org, args, context) => {
+            nLocalTranslations: (org, args) => {
                 let ret = localTranslations(org);
                 if (args.withUsfm) {
                     ret = ret.filter(t => fse.pathExistsSync(usfmDir(config.dataPath, org.translationDir, t.owner, t.id, t.revision)));
