@@ -1,5 +1,5 @@
 const {Proskomma} = require('proskomma-core');
-const {PerfRenderFromProskomma, transforms, mergeActions} = require('proskomma-json-tools');
+const {PerfRenderFromProskomma, render, mergeActions} = require('proskomma-json-tools');
 const {ptBooks} = require('proskomma-utils');
 const path = require("path");
 const fse = require('fs-extra');
@@ -210,7 +210,7 @@ function makeDownloads(dataPath, org, orgDir, metadata, docType, docs, vrsConten
                         actions: mergeActions(
                             [
                                 localJustTheBibleActions,
-                                transforms.perf2perf.identityActions
+                                render.perfToPerf.renderActions.identityActions
                             ]
                         ),
                     },
@@ -224,7 +224,7 @@ function makeDownloads(dataPath, org, orgDir, metadata, docType, docs, vrsConten
                         output,
                     },
                 );
-                const simplePerf = transforms.alignment.mergePerfText.code({perf: output.perf}).perf;
+                const simplePerf = render.perfToPerf.transforms.mergePerfTextCode({perf: output.perf}).perf;
                 const simplePerfD = simplePerfDir(dataPath, orgDir, metadata.owner, metadata.id, metadata.revision);
                 if (!fse.pathExistsSync(simplePerfD)) {
                     fse.mkdirSync(simplePerfD);
