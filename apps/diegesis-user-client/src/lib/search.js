@@ -11,18 +11,15 @@ function searchClause(searchTerms) {
         ${searchTerms.lang.trim().length > 0 ? `withLanguageCode: [${listifyTerms(searchTerms.lang)}]` : ''}
         ${searchTerms.text.trim().length > 0 ? `withMatchingMetadata: [${listifyTerms(searchTerms.text)}]` : ''}
         ${featuresString.length > 0 ? `withFeatures: [${featuresString(searchTerms.features)}]` : ""}
+        reverse: ${searchTerms.sortDirection === "z-a"}
         )`;
 }
 
 function searchQuery(query, searchTerms) {
-    const trimmed = Object.entries(searchTerms).filter(kv => kv[0] !== 'org' && kv[0] !== 'features').map(kv => kv[1].trim());
-    const setFeatures = Object.entries(searchTerms.features).filter(kv => kv[1]);
-   return query.replace(
-           '%searchClause%',
-           trimmed.filter(fl => fl.length > 0).length > 0 || setFeatures.length > 0 ?
-               searchClause(searchTerms) :
-               ''
-       );
+    return query.replace(
+        '%searchClause%',
+        searchClause(searchTerms)
+    );
 }
 
-export { searchClause, searchQuery };
+export {searchClause, searchQuery};

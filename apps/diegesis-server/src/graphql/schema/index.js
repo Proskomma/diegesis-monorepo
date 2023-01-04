@@ -47,7 +47,7 @@ const querySchema = gql`
             withLanguageCode: [String!]
             """Filter by text matches in title"""
             withMatchingMetadata: [String!]
-            """Sort by id, languageCode or title"""
+            """Sort field"""
             sortedBy: String
             """Sort in reverse order"""
             reverse: Boolean
