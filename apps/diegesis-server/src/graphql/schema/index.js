@@ -107,6 +107,8 @@ const querySchema = gql`
     }
     """A Local Translation"""
     type Translation {
+        """A list of resource types for this entry"""
+        resourceTypes: [String!]!
         """An id for the translation which is unique within the organization"""
         id: TranslationId!
         """The revision of the translation"""

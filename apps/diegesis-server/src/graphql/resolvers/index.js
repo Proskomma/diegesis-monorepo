@@ -330,6 +330,7 @@ const makeResolvers = async config => {
         },
         CatalogEntry: {},
         Translation: {
+            resourceTypes: trans => trans.resourceTypes || [],
             nUsfmBooks: (trans, args, context) => {
                 const usfmDirPath = usfmDir(config.dataPath, context.orgData.translationDir, trans.owner, trans.id, trans.revision);
                 if (fse.pathExistsSync(usfmDirPath)) {

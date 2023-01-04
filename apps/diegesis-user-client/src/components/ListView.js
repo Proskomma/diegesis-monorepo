@@ -13,6 +13,7 @@ export default function ListView({searchTerms}) {
         orgs {
             id: name
             localTranslations%searchClause% {
+                resourceTypes
                 id
                 languageCode
                 owner
@@ -89,6 +90,8 @@ export default function ListView({searchTerms}) {
         }
         return <Grid container xs={12} sx={{borderTop: "solid 1px #ccc", padding: "2px", marginBottom: "2px"}}>
             <Grid item xs={12} md={2}>
+                <Typography variant="body2"
+                            sx={{fontWeight: "bold", fontSize: "x-small"}}>{localTranslation.resourceTypes?.join(', ') || "?"}</Typography>
                 <Typography variant="body2"
                             sx={{fontWeight: "bold", fontSize: "x-small"}}>{localTranslation.owner}@{localTranslation.org}</Typography>
                 <Typography variant="body2"
