@@ -141,6 +141,11 @@ const sofria2WebActions = {
     ],
     startWrapper: [
         {
+            description: "Skip usfm:w outside main sequence",
+            test: ({context}) => context.sequences[0].element.subType === "usfm:w" && context.sequences[0].type !== "main",
+            action: () => {}
+        },
+        {
             description: "Handle standard w attributes",
             test: ({context}) => context.sequences[0].element.subType === "usfm:w",
             action: ({context, workspace}) => {
@@ -175,6 +180,11 @@ const sofria2WebActions = {
         },
     ],
     endWrapper: [
+        {
+            description: "Skip usfm:w outside main sequence",
+            test: ({context}) => context.sequences[0].element.subType === "usfm:w" && context.sequences[0].type !== "main",
+            action: () => {}
+        },
         {
             description: "Handle standard w attributes",
             test: ({context}) => context.sequences[0].element.subType === "usfm:w",
