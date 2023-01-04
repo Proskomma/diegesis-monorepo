@@ -11,12 +11,15 @@ import ListView from "../components/ListView";
 import Spinner from "../components/Spinner";
 import Footer from "../components/Footer";
 import OrgSelector from "../components/OrgSelector";
+import SortSelector from "../components/SortSelector";
 
 export default function ListPage({}) {
     const [searchOrg, setSearchOrg] = useState('all');
     const [searchOwner, setSearchOwner] = useState('');
     const [searchLang, setSearchLang] = useState('');
     const [searchText, setSearchText] = useState('');
+    const [sortField, setSortField] = useState('title');
+    const [sortDirection, setSortDirection] = useState('a-z');
     const [orgs, setOrgs] = useState([]);
     const [features, setFeatures] = useState({
         introductions: false,
@@ -65,14 +68,14 @@ export default function ListPage({}) {
             {
                 showSettings &&
                 <Grid container>
-                    <Grid item xs={12} sm={6} md={3} sx={{paddingBottom: "15px"}}>
+                    <Grid item xs={12} sm={6} md={2} sx={{paddingBottom: "15px"}}>
                         <OrgSelector
                             orgs={orgs}
                             searchOrg={searchOrg}
                             setSearchOrg={setSearchOrg}
                         />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={3}>
+                    <Grid item xs={12} sm={6} md={2}>
                         <TextField
                             value={searchOwner}
                             onChange={e => setSearchOwner(e.target.value)}
@@ -84,7 +87,7 @@ export default function ListPage({}) {
                             sx={{display: 'flex', marginLeft: "1em"}}
                         />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={3}>
+                    <Grid item xs={12} sm={6} md={2}>
                         <TextField
                             value={searchLang}
                             onChange={e => setSearchLang(e.target.value)}
@@ -96,7 +99,7 @@ export default function ListPage({}) {
                             sx={{display: 'flex', marginLeft: "1em"}}
                         />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={3}>
+                    <Grid item xs={12} sm={6} md={2}>
                         <TextField
                             value={searchText}
                             onChange={e => setSearchText(e.target.value)}
@@ -107,6 +110,25 @@ export default function ListPage({}) {
                             color="primary"
                             sx={{display: 'flex', marginLeft: "1em"}}
                         />
+                    </Grid>
+                    <Grid item xs={6} sm={6} md={2}>
+                        <SortSelector
+                            sortField={sortField}
+                            setSortField={setSortField}
+                        />
+                    </Grid>
+                    <Grid item xs={6} sm={6} md={2}>
+                        <Button
+                            value={searchText}
+                            onClick={() => setSortDirection(sortDirection === 'a-z' ? 'z-a' : 'a-z')}
+                            size="small"
+                            id="searchTitle"
+                            variant="outline"
+                            color="primary"
+                            sx={{display: 'flex', marginLeft: "1em"}}
+                        >
+                            {sortDirection}
+                        </Button>
                     </Grid>
                     {
                         [
@@ -156,6 +178,8 @@ export default function ListPage({}) {
                     lang: searchLang,
                     text: searchText,
                     features: features,
+                    sortField: sortField,
+                    sortDirection: sortDirection
                 }}/>
                 :
                 <Spinner/>

@@ -18,7 +18,7 @@ async function getTranslationsCatalog() {
     }
     const jsonData = JSON.parse(catalogResponse.data);
     const catalog = jsonData.map(t => ({
-        resourceType: ["bible"],
+        resourceTypes: ["bible"],
         id: t.sourceName,
         languageCode: t.language.code,
         title: t.version.versionName,

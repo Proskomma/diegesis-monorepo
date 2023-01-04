@@ -164,7 +164,7 @@ const makeResolvers = async config => {
     const filteredCatalog = (org, args, context, translations) => {
         context.orgData = org;
         context.orgHandler = orgHandlers[org.name];
-        let ret = translations;
+        let ret = [...translations];
         if (args.withId) {
             ret = ret.filter(t => args.withId.includes(t.id));
         }
@@ -186,22 +186,6 @@ const makeResolvers = async config => {
                         md => t.title.toLowerCase().includes(md.toLowerCase())
                     ).length > 0
             )
-        }
-        if (args.sortedBy) {
-            if (!['id', 'languageCode', 'languageName', 'title'].includes(args.sortedBy)) {
-                throw new Error(`Invalid sortedBy option '${args.sortedBy}'`);
-            }
-            ret.sort(function (a, b) {
-                const lca = a[args.sortedBy].toLowerCase();
-                const lcb = b[args.sortedBy].toLowerCase();
-                if (lca > lcb) {
-                    return args.reverse ? -1 : 1;
-                } else if (lcb > lca) {
-                    return args.reverse ? 1 : -1;
-                } else {
-                    return 0;
-                }
-            });
         }
         if ('withUsfm' in args) {
             if (args.withUsfm) {
@@ -230,6 +214,19 @@ const makeResolvers = async config => {
             } else {
                 ret = ret.filter(t => !fse.pathExistsSync(succinctErrorPath(config.dataPath, context.orgData.translationDir, t.id)));
             }
+        }
+        if (args.sortedBy) {
+            if (!['id', 'languageCode', 'owner', 'title'].includes(args.sortedBy)) {
+                throw new Error(`Invalid sortedBy option '${args.sortedBy}'`);
+            }
+            ret.sort(function (a, b) {
+                const lca = a[args.sortedBy].toLowerCase();
+                const lcb = b[args.sortedBy].toLowerCase();
+                return lca.localeCompare(lcb);
+            });
+        }
+        if (args.reverse) {
+            ret.reverse();
         }
         return ret;
     }
@@ -261,7 +258,7 @@ const makeResolvers = async config => {
         let ret = true;
         for (const f of features) {
             const fField = `n${f.substring(0, 1).toUpperCase()}${f.substring(1)}`;
-            if (!trans.stats[fField]) {
+            if (!trans.stats || !trans.stats[fField]) {
                 ret = false;
                 break;
             }
@@ -277,7 +274,7 @@ const makeResolvers = async config => {
     }
     const queryResolver = {
         Query: {
-            orgs: (root, args, context) => {
+            orgs: () => {
                 return Object.values(orgsData);
             },
             org: (root, args, context) => {
@@ -292,7 +289,7 @@ const makeResolvers = async config => {
                 }
                 return org.translations.length
             },
-            nLocalTranslations: (org, args, context) => {
+            nLocalTranslations: (org, args) => {
                 let ret = localTranslations(org);
                 if (args.withUsfm) {
                     ret = ret.filter(t => fse.pathExistsSync(usfmDir(config.dataPath, org.translationDir, t.owner, t.id, t.revision)));
@@ -333,6 +330,7 @@ const makeResolvers = async config => {
         },
         CatalogEntry: {},
         Translation: {
+            resourceTypes: trans => trans.resourceTypes || [],
             nUsfmBooks: (trans, args, context) => {
                 const usfmDirPath = usfmDir(config.dataPath, context.orgData.translationDir, trans.owner, trans.id, trans.revision);
                 if (fse.pathExistsSync(usfmDirPath)) {

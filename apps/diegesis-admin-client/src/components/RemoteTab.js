@@ -62,7 +62,6 @@ export default function RemoteTab({selectedOrg, searchLang, searchText}) {
             languageCode: catalogEntry.languageCode,
             title: catalogEntry.title,
             actions: <Button
-                disabled={catalogEntry.hasLocalUsfm || catalogEntry.hasLocalUsx}
                 onClick={
                     () => fetchTranslation(
                         client,

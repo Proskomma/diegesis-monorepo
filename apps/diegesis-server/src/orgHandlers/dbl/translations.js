@@ -4,6 +4,7 @@ const jszip = require("jszip");
 const {ptBookArray} = require("proskomma-utils");
 const DOMParser = require('xmldom').DOMParser;
 const {transPath} = require('../../lib/dataPaths.js');
+const languageCodes = require('../../lib/languageCodes.json');
 const appRoot = path.resolve(".");
 
 async function getTranslationsCatalog() {
@@ -16,7 +17,7 @@ async function getTranslationsCatalog() {
     const catalog = catalogData.map(t => ({
         resourceTypes: ["bible"],
         id: t[0],
-        languageCode: t[2],
+        languageCode: languageCodes[t[2]] || t[2],
         title: t[4],
         downloadURL: `https://app.thedigitalbiblelibrary.org/entry?id=${t[0]}`,
     }));

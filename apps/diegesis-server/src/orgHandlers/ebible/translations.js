@@ -3,6 +3,7 @@ const fse  = require("fs-extra");
 const jszip = require("jszip");
 const {ptBookArray} = require("proskomma-utils");
 const {transPath} = require('../../lib/dataPaths.js');
+const languageCodes = require('../../lib/languageCodes.json');
 const appRoot = path.resolve(".");
 
 async function getTranslationsCatalog() {
@@ -26,9 +27,9 @@ async function getTranslationsCatalog() {
         }
     ).filter(t => t.languageCode)
     .map(t => ({
-        resourceType: ["bible"],
+        resourceTypes: ["bible"],
         id: t.translationId,
-        languageCode: t.languageCode,
+        languageCode: languageCodes[t.languageCode] || t.languageCode,
         title: t.title,
         downloadURL: `https://eBible.org/Scriptures/${t.translationId}_usfm.zip`,
         textDirection: t.textDirection,
