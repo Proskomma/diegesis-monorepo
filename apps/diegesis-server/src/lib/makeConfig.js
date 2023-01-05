@@ -12,6 +12,7 @@ const croak = msg => {
 
 // Default config - override by passing config JSON file
 const defaultConfig = {
+    name: null,
     hostName: 'localhost',
     port: 2468,
     dataPath: path.resolve(appRoot, 'data'),
@@ -29,6 +30,25 @@ const defaultConfig = {
     sessionTimeoutInMins: 15,
     staticPaths: [],
     superusers: {},
+    orgsConfig: {}
+}
+
+const staticPathTemplate = {
+    path: true,
+    url: true,
+    redirects: true,
+    redirectTarget: true,
+}
+
+const orgConfigTemplate = {
+    name: true,
+    resourceTypes: true,
+    languages: true,
+    whitelist: true,
+    blacklist: true,
+    syncFrequency: true,
+    peerUrl: true,
+    etc: true,
 }
 
 const cronOptions = {
@@ -46,6 +66,14 @@ const cronOptions = {
     '7 day': '*/7 * *',
 };
 
+const syncCronOptions = {
+    '4 hr': '*/4 * * *',
+    '8 hr': '*/8 * * *',
+    '12 hr': '*/12 * * *',
+    '1 day': '* * *',
+    '7 day': '*/7 * *',
+};
+
 const logFormatOptions = ["combined", "common", "dev", "short", "tiny"];
 
 function makeConfig(providedConfig) {
@@ -55,9 +83,19 @@ function makeConfig(providedConfig) {
         }
     }
     const config = defaultConfig;
+    if (!providedConfig.name) {
+        croak(`ERROR: you must specify a server name`);
+    }
+    if (typeof providedConfig.name !== 'string') {
+        croak(`ERROR: name should be a string, not '${providedConfig.name}'`);
+    }
+    const nameRE = new RegExp('^[A-Za-z][A-Za-z0-9_]*[A-Za-z0-9]$');
+    if (!nameRE.test(providedConfig.name)) {
+        croak(`ERROR: name '${providedConfig.name}' contains illegal characters'`);
+    }
+    config.name = providedConfig.name;
     if (providedConfig.hostName) {
-        if (
-            typeof providedConfig.hostName !== 'string') {
+        if (typeof providedConfig.hostName !== 'string') {
             croak(`ERROR: hostName should be a string, not '${providedConfig.port}'`);
         }
         config.hostName = providedConfig.hostName;
@@ -92,6 +130,11 @@ function makeConfig(providedConfig) {
         }
         let specs = [];
         for (const staticPathSpec of providedConfig.staticPaths) {
+            for (const specKey of Object.keys(staticPathSpec)) {
+                if (!staticPathTemplate[specKey]) {
+                    croak(`Unknown staticPaths spec option '${specKey}'`);
+                }
+            }
             const spec = {};
             if (typeof staticPathSpec !== 'object' || Array.isArray(staticPathSpec)) {
                 croak(`ERROR: static path spec should be an object, not '${JSON.stringify(staticPathSpec)}'`);
@@ -251,6 +294,102 @@ function makeConfig(providedConfig) {
         }
         config.orgs = providedConfig.orgs;
     }
+    if (providedConfig.orgsConfig) {
+        if (!Array.isArray(providedConfig.orgsConfig)) {
+            croak(`ERROR: orgsConfig, if present, should be an array, not '${providedConfig.orgsConfig}'`);
+        }
+        config.orgsConfig = providedConfig.orgsConfig;
+        for (const orgConfig of providedConfig.orgsConfig) {
+            if (typeof orgConfig !== 'object' || Array.isArray(orgConfig)) {
+                croak(`ERROR: each orgsConfig spec should be an object, not '${JSON.stringify(orgConfig)}'`);
+            }
+            for (const orgKey of Object.keys(orgConfig)) {
+                if (!orgConfigTemplate[orgKey]) {
+                    croak(`Unknown orgsConfig spec option '${orgKey}'`);
+                }
+            }
+            if (!orgConfig.name) {
+                croak(`ERROR: each orgsConfig spec must have a name`);
+            }
+            if (!nameRE.test(orgConfig.name)) {
+                croak(`ERROR: orgsConfig name '${orgConfig.name}' contains illegal characters'`);
+            }
+            if (orgConfig.resourceTypes) {
+                if (!Array.isArray(orgConfig.resourceTypes)) {
+                    croak(`ERROR: orgsConfig resourceTypes, if present, must be an array, not '${orgConfig.resourceTypes}'`);
+                }
+                for (const resourceType of orgConfig.resourceTypes) {
+                    if (typeof resourceType !== "string") {
+                        croak(`ERROR: each orgsConfig resourceType element should be a string, not '${JSON.stringify(resourceType)}'`);
+                    }
+                }
+            }
+            if (orgConfig.languages) {
+                if (!Array.isArray(orgConfig.languages)) {
+                    croak(`ERROR: orgsConfig languages, if present, must be an array, not '${orgConfig.languages}'`);
+                }
+                for (const language of orgConfig.languages) {
+                    if (typeof language !== "string") {
+                        croak(`ERROR: each orgsConfig language element should be a string, not '${JSON.stringify(language)}'`);
+                    }
+                }
+            }
+            if (orgConfig.whitelist) {
+                if (!Array.isArray(orgConfig.whitelist)) {
+                    croak(`ERROR: orgsConfig whitelist, if present, must be an array, not '${orgConfig.whitelist}'`);
+                }
+                for (const white of orgConfig.whitelist) {
+                    if (typeof white !== 'object' || Array.isArray(white)) {
+                        croak(`ERROR: orgsConfig whitelist elements should be an object, not '${JSON.stringify(white)}'`);
+                    }
+                    if (Object.keys(white).length === 0) {
+                        croak(`ERROR: orgsConfig whitelist elements should contain at least one value`);
+                    }
+                    for (const whiteField of ["owner", "id", "revision"]) {
+                        if (white[whiteField] && typeof white[whiteField] !== 'string') {
+                            croak(`ERROR: ${whiteField} field in orgsConfig whitelist elements must be a string, not '${whiteField}'`);
+                        }
+                    }
+                }
+            }
+            if (orgConfig.blacklist) {
+                if (!Array.isArray(orgConfig.blacklist)) {
+                    croak(`ERROR: orgsConfig blacklist, if present, must be an array, not '${orgConfig.blacklist}'`);
+                }
+                for (const black of orgConfig.blacklist) {
+                    if (typeof black !== 'object' || Array.isArray(black)) {
+                        croak(`ERROR: orgsConfig blacklist elements should be an object, not '${JSON.stringify(black)}'`);
+                    }
+                    if (Object.keys(black).length === 0) {
+                        croak(`ERROR: orgsConfig blacklist elements should contain at least one value`);
+                    }
+                    for (const blackField of ["owner", "id", "revision"]) {
+                        if (black[blackField] && typeof black[blackField] !== 'string') {
+                            croak(`ERROR: ${blackField} field in orgsConfig blacklist elements must be a string, not '${blackField}'`);
+                        }
+                    }
+                }
+            }
+            if (orgConfig.syncFrequency) {
+                if (typeof orgConfig.syncFrequency !== 'string') {
+                    croak(`ERROR: orgsConfig syncFrequency, if present, must be a string, not '${orgConfig.syncFrequency}'`);
+                }
+                if (orgConfig.syncFrequency !== 'never' && !(orgConfig.syncFrequency in syncCronOptions)) {
+                    croak(`ERROR: unknown orgConfig syncFrequency option '${orgConfig.syncFrequency}' - should be one of never, ${Object.keys(syncCronOptions).join(', ')}`);
+                }
+            }
+            if (orgConfig.peerUrl) {
+                if (typeof orgConfig.peerUrl !== 'string') {
+                    croak(`ERROR: orgsConfig peerUrl, if present, must be a string, not '${orgConfig.peerUrl}'`);
+                }
+            }
+            if (orgConfig.etc) {
+                if (typeof orgConfig.etc !== 'object' || Array.isArray(orgConfig.etc)) {
+                    croak(`ERROR: orgsConfig etc, if present, should be an object, not '${JSON.stringify(orgConfig.etc)}'`);
+                }
+            }
+        }
+    }
     if ('verbose' in providedConfig) {
         if (typeof providedConfig.verbose !== 'boolean') {
             croak(`ERROR: verbose should be boolean, not ${typeof providedConfig.verbose}`);
@@ -264,11 +403,12 @@ const staticDescription = specs => {
     return 'Static Paths:\n' +
         specs.map(
             sp =>
-                `      serve '${sp.path}'\n        at '${sp.url}${sp.redirects.length > 1 ? "\n        redirecting " + sp.redirects.join(', ') + '\n          to ' + sp.redirectTarget + "'": ""}`
+                `      serve '${sp.path}'\n        at '${sp.url}${sp.redirects.length > 1 ? "\n        redirecting " + sp.redirects.join(', ') + '\n          to ' + sp.redirectTarget + "'" : ""}`
         ).join('\n')
 }
 
 const configSummary = config => `  Listening on ${config.hostName}:${config.port}
+    Server name is ${config.name}
     Data directory is ${config.dataPath}
     ${config.staticPaths ? `${staticDescription(config.staticPaths)}` : "No static paths"}
     ${config.localUsfmPath ? `Local USFM copied from ${config.localUsfmPath}` : 'No local USFM copied'}
