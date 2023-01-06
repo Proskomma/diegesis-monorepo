@@ -30,7 +30,7 @@ const defaultConfig = {
     sessionTimeoutInMins: 15,
     staticPaths: [],
     superusers: {},
-    orgsConfig: {}
+    orgsConfig: []
 }
 
 const staticPathTemplate = {
@@ -43,6 +43,7 @@ const staticPathTemplate = {
 const orgConfigTemplate = {
     name: true,
     resourceTypes: true,
+    resourceFormats: true,
     languages: true,
     whitelist: true,
     blacklist: true,
@@ -63,7 +64,6 @@ const cronOptions = {
     '8 hr': '*/8 * * *',
     '12 hr': '*/12 * * *',
     '1 day': '* * *',
-    '7 day': '*/7 * *',
 };
 
 const syncCronOptions = {
@@ -72,7 +72,16 @@ const syncCronOptions = {
     '12 hr': '*/12 * * *',
     '1 day': '* * *',
     '7 day': '*/7 * *',
+    '14 day': '*/14 * *',
+    '1 mon': '1 * *'
 };
+
+const resourceFormats = [
+    "original",
+    "succinct",
+    "perf",
+    "sofria"
+]
 
 const logFormatOptions = ["combined", "common", "dev", "short", "tiny"];
 
@@ -298,11 +307,12 @@ function makeConfig(providedConfig) {
         if (!Array.isArray(providedConfig.orgsConfig)) {
             croak(`ERROR: orgsConfig, if present, should be an array, not '${providedConfig.orgsConfig}'`);
         }
-        config.orgsConfig = providedConfig.orgsConfig;
+        config.orgsConfig = [];
         for (const orgConfig of providedConfig.orgsConfig) {
             if (typeof orgConfig !== 'object' || Array.isArray(orgConfig)) {
                 croak(`ERROR: each orgsConfig spec should be an object, not '${JSON.stringify(orgConfig)}'`);
             }
+            const orgOb = {};
             for (const orgKey of Object.keys(orgConfig)) {
                 if (!orgConfigTemplate[orgKey]) {
                     croak(`Unknown orgsConfig spec option '${orgKey}'`);
@@ -312,82 +322,121 @@ function makeConfig(providedConfig) {
                 croak(`ERROR: each orgsConfig spec must have a name`);
             }
             if (!nameRE.test(orgConfig.name)) {
-                croak(`ERROR: orgsConfig name '${orgConfig.name}' contains illegal characters'`);
+                croak(`ERROR: orgsConfig name '${orgConfig.name}' for ${orgConfig.name} contains illegal characters'`);
             }
+            orgOb.name = orgConfig.name;
             if (orgConfig.resourceTypes) {
                 if (!Array.isArray(orgConfig.resourceTypes)) {
-                    croak(`ERROR: orgsConfig resourceTypes, if present, must be an array, not '${orgConfig.resourceTypes}'`);
+                    croak(`ERROR: orgsConfig resourceTypes for ${orgConfig.name}, if present, must be an array, not '${orgConfig.resourceTypes}'`);
                 }
                 for (const resourceType of orgConfig.resourceTypes) {
                     if (typeof resourceType !== "string") {
-                        croak(`ERROR: each orgsConfig resourceType element should be a string, not '${JSON.stringify(resourceType)}'`);
+                        croak(`ERROR: each orgsConfig resourceType element for ${orgConfig.name} should be a string, not '${JSON.stringify(resourceType)}'`);
                     }
                 }
+                orgOb.resourceTypes = orgConfig.resourceTypes;
+            } else {
+                orgOb.resourceTypes = [];
+            }
+            if (orgConfig.resourceFormats) {
+                if (!Array.isArray(orgConfig.resourceFormats)) {
+                    croak(`ERROR: orgsConfig resourceFormats for ${orgConfig.name}, if present, must be an array, not '${orgConfig.resourceFormats}'`);
+                }
+                for (const resourceFormat of orgConfig.resourceFormats) {
+                    if (typeof resourceFormat !== "string") {
+                        croak(`ERROR: each orgsConfig resourceFormat element for ${orgConfig.name} should be a string, not '${JSON.stringify(resourceFormat)}'`);
+                    }
+                    if (!resourceFormats.includes(resourceFormat)) {
+                        croak(`ERROR: each orgsConfig resourceFormat element for ${orgConfig.name} should be one of ${resourceFormats.join(', ')}, not '${JSON.stringify(resourceFormat)}'`);
+                    }
+                }
+                orgOb.resourceFormats = orgConfig.resourceFormats;
+            } else {
+                orgOb.resourceFormats = [];
             }
             if (orgConfig.languages) {
                 if (!Array.isArray(orgConfig.languages)) {
-                    croak(`ERROR: orgsConfig languages, if present, must be an array, not '${orgConfig.languages}'`);
+                    croak(`ERROR: orgsConfig languages for ${orgConfig.name}, if present, must be an array, not '${orgConfig.languages}'`);
                 }
                 for (const language of orgConfig.languages) {
                     if (typeof language !== "string") {
-                        croak(`ERROR: each orgsConfig language element should be a string, not '${JSON.stringify(language)}'`);
+                        croak(`ERROR: each orgsConfig language element for ${orgConfig.name} should be a string, not '${JSON.stringify(language)}'`);
                     }
                 }
+                orgOb.languages = orgConfig.languages;
+            } else {
+                orgOb.languages = [];
             }
             if (orgConfig.whitelist) {
                 if (!Array.isArray(orgConfig.whitelist)) {
-                    croak(`ERROR: orgsConfig whitelist, if present, must be an array, not '${orgConfig.whitelist}'`);
+                    croak(`ERROR: orgsConfig whitelist for ${orgConfig.name}, if present, must be an array, not '${orgConfig.whitelist}'`);
                 }
                 for (const white of orgConfig.whitelist) {
                     if (typeof white !== 'object' || Array.isArray(white)) {
-                        croak(`ERROR: orgsConfig whitelist elements should be an object, not '${JSON.stringify(white)}'`);
+                        croak(`ERROR: orgsConfig whitelist elements for ${orgConfig.name} should be an object, not '${JSON.stringify(white)}'`);
                     }
                     if (Object.keys(white).length === 0) {
-                        croak(`ERROR: orgsConfig whitelist elements should contain at least one value`);
+                        croak(`ERROR: orgsConfig whitelist elements for ${orgConfig.name} should contain at least one value`);
                     }
                     for (const whiteField of ["owner", "id", "revision"]) {
                         if (white[whiteField] && typeof white[whiteField] !== 'string') {
-                            croak(`ERROR: ${whiteField} field in orgsConfig whitelist elements must be a string, not '${whiteField}'`);
+                            croak(`ERROR: ${whiteField} field in orgsConfig whitelist elements for ${orgConfig.name} must be a string, not '${whiteField}'`);
                         }
                     }
                 }
+                orgOb.whitelist = orgConfig.whitelist;
+            } else {
+                orgOb.whitelist = [];
             }
             if (orgConfig.blacklist) {
                 if (!Array.isArray(orgConfig.blacklist)) {
-                    croak(`ERROR: orgsConfig blacklist, if present, must be an array, not '${orgConfig.blacklist}'`);
+                    croak(`ERROR: orgsConfig blacklist for ${orgConfig.name}, if present, must be an array, not '${orgConfig.blacklist}'`);
                 }
                 for (const black of orgConfig.blacklist) {
                     if (typeof black !== 'object' || Array.isArray(black)) {
-                        croak(`ERROR: orgsConfig blacklist elements should be an object, not '${JSON.stringify(black)}'`);
+                        croak(`ERROR: orgsConfig blacklist elements for ${orgConfig.name} should be an object, not '${JSON.stringify(black)}'`);
                     }
                     if (Object.keys(black).length === 0) {
-                        croak(`ERROR: orgsConfig blacklist elements should contain at least one value`);
+                        croak(`ERROR: orgsConfig blacklist elements for ${orgConfig.name} should contain at least one value`);
                     }
                     for (const blackField of ["owner", "id", "revision"]) {
                         if (black[blackField] && typeof black[blackField] !== 'string') {
-                            croak(`ERROR: ${blackField} field in orgsConfig blacklist elements must be a string, not '${blackField}'`);
+                            croak(`ERROR: ${blackField} field in orgsConfig blacklist elements for ${orgConfig.name} must be a string, not '${blackField}'`);
                         }
                     }
                 }
+                orgOb.blacklist = orgConfig.blacklist;
+            } else {
+                orgOb.blacklist = [];
             }
             if (orgConfig.syncFrequency) {
                 if (typeof orgConfig.syncFrequency !== 'string') {
-                    croak(`ERROR: orgsConfig syncFrequency, if present, must be a string, not '${orgConfig.syncFrequency}'`);
+                    croak(`ERROR: orgsConfig syncFrequency for ${orgConfig.name}, if present, must be a string, not '${orgConfig.syncFrequency}'`);
                 }
                 if (orgConfig.syncFrequency !== 'never' && !(orgConfig.syncFrequency in syncCronOptions)) {
-                    croak(`ERROR: unknown orgConfig syncFrequency option '${orgConfig.syncFrequency}' - should be one of never, ${Object.keys(syncCronOptions).join(', ')}`);
+                    croak(`ERROR: unknown orgConfig syncFrequency option '${orgConfig.syncFrequency}' for ${orgConfig.name} - should be one of never, ${Object.keys(syncCronOptions).join(', ')}`);
                 }
+                orgOb.syncFrequency = orgConfig.syncFrequency;
+            } else {
+                orgOb.syncFrequency = "never";
             }
             if (orgConfig.peerUrl) {
                 if (typeof orgConfig.peerUrl !== 'string') {
-                    croak(`ERROR: orgsConfig peerUrl, if present, must be a string, not '${orgConfig.peerUrl}'`);
+                    croak(`ERROR: orgsConfig peerUrl for ${orgConfig.name}, if present, must be a string, not '${orgConfig.peerUrl}'`);
                 }
+                orgOb.peerUrl = orgConfig.peerUrl;
+            } else {
+                orgOb.peerUrl = null;
             }
             if (orgConfig.etc) {
                 if (typeof orgConfig.etc !== 'object' || Array.isArray(orgConfig.etc)) {
-                    croak(`ERROR: orgsConfig etc, if present, should be an object, not '${JSON.stringify(orgConfig.etc)}'`);
+                    croak(`ERROR: orgsConfig etc for ${orgConfig.name}, if present, should be an object, not '${JSON.stringify(orgConfig.etc)}'`);
                 }
+                orgOb.etc = orgConfig.etc;
+            } else {
+                orgOb.etc = {};
             }
+            config.orgsConfig.push(orgOb);
         }
     }
     if ('verbose' in providedConfig) {
@@ -407,22 +456,53 @@ const staticDescription = specs => {
         ).join('\n')
 }
 
-const configSummary = config => `  Listening on ${config.hostName}:${config.port}
-    Server name is ${config.name}
-    Data directory is ${config.dataPath}
-    ${config.staticPaths ? `${staticDescription(config.staticPaths)}` : "No static paths"}
-    ${config.localUsfmPath ? `Local USFM copied from ${config.localUsfmPath}` : 'No local USFM copied'}
-    ${config.localUsxPath ? `Local USX copied from ${config.localUsxPath}` : 'No local USX copied'}
+const orgsConfigDescription = configs => {
+    return 'Org Configs:\n' +
+        configs.map(
+            cf => {
+                let lines = [`      ${cf.name}`];
+                lines.push(`        ${cf.syncFrequency === 'never' ? 'Never sync' : 'Sync every ' + cf.syncFrequency}`);
+                if (cf.peerUrl) {
+                    lines.push(`        Peer org at '${cf.peerUrl}'`);
+                }
+                if (cf.resourceTypes.length > 0) {
+                    lines.push(`        Pull resources of type ${cf.resourceTypes.join(', ')}`);
+                }
+                if (cf.resourceFormats.length > 0) {
+                    lines.push(`        Pull resources as ${cf.resourceFormats.join(', ')}`);
+                }
+                if (cf.languages.length > 0) {
+                    lines.push(`        Pull resources with language ${cf.languages.join(', ')}`);
+                }
+                if (cf.whitelist.length > 0) {
+                    lines.push(`        ${cf.whitelist.length} item${cf.whitelist.length === 1 ? "" : "s"} in whitelist`);
+                }
+                if (cf.blacklist.length > 0) {
+                    lines.push(`        ${cf.blacklist.length} item${cf.blacklist.length === 1 ? "" : "s"} in blacklist`);
+                }
+                if (Object.keys(cf.etc).length > 0) {
+                    lines.push(`        ${Object.keys(cf.etc).length} item${Object.keys(cf.etc).length === 1 ? "" : "s"} in etc`);
+                }
+                return lines.join('\n');
+            })
+}
+
+const configSummary = config => `Server ${config.name} is listening on ${config.hostName}:${config.port}
     Debug ${config.debug ? "en" : "dis"}abled
     Verbose ${config.verbose ? "en" : "dis"}abled
     Access logging ${!config.logAccess ? "disabled" : `to ${config.accessLogPath || 'console'} in Morgan '${config.logFormat}' format`}
     CORS ${config.useCors ? "en" : "dis"}abled
-    Mutations ${config.includeMutations ? "included" : "not included"}
+    Mutations ${config.includeMutations ? "en" : "dis"}abled
+    ${config.orgsConfig ? `${orgsConfigDescription(config.orgsConfig)}` : "No org configuration"}
+    Data directory is ${config.dataPath}
+    ${config.localUsfmPath ? `Local USFM copied from ${config.localUsfmPath}` : 'No local USFM copied'}
+    ${config.localUsxPath ? `Local USX copied from ${config.localUsxPath}` : 'No local USX copied'}
+    ${config.staticPaths ? `${staticDescription(config.staticPaths)}` : "No static paths"}
     Process new data ${config.processFrequency === 'never' ? "disabled" : `every ${config.processFrequency}
     ${config.nWorkers} worker thread${config.nWorkers === 1 ? "" : "s"}
-    ${config.deleteGenerated ? "Delete all generated content" : "Delete lock files only"}
     ${Object.keys(config.superusers).length} superuser${Object.keys(config.superusers).length === 1 ? "" : "s"}
     ${Object.keys(config.superusers).length === 0 ? "" : `Session cookies expire after ${config.sessionTimeoutInMins} min`}
+    ${config.deleteGenerated ? "Delete all generated content" : "Delete lock files only"} on startup
 `}`
 
 module.exports = {makeConfig, cronOptions, configSummary};
