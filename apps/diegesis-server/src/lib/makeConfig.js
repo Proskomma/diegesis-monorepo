@@ -195,28 +195,6 @@ function makeConfig(providedConfig) {
     if (providedConfig.redirectToRoot) {
         croak("ERROR: redirectToRoot has been replaced by 'redirects' inside static path specs");
     }
-    if (providedConfig.localUsfmPath) {
-        if (
-            typeof providedConfig.localUsfmPath !== 'string') {
-            croak(`ERROR: localUsfmPath, if present, should be a string, not '${providedConfig.localUsfmPath}'`);
-        }
-        const fqPath = path.resolve(providedConfig.localUsfmPath);
-        if (!fse.existsSync(fqPath) || !fse.lstatSync(fqPath).isDirectory()) {
-            croak(`ERROR: localUsfmPath '${fqPath}' does not exist or is not a directory`);
-        }
-        config.localUsfmPath = fqPath;
-    }
-    if (providedConfig.localUsxPath) {
-        if (
-            typeof providedConfig.localUsxPath !== 'string') {
-            croak(`ERROR: localUsxPath, if present, should be a string, not '${providedConfig.localUsxPath}'`);
-        }
-        const fqPath = path.resolve(providedConfig.localUsxPath);
-        if (!fse.existsSync(fqPath) || !fse.lstatSync(fqPath).isDirectory()) {
-            croak(`ERROR: localUsxPath '${fqPath}' does not exist or is not a directory`);
-        }
-        config.localUsxPath = fqPath;
-    }
     if ('debug' in providedConfig) {
         if (typeof providedConfig.debug !== 'boolean') {
             croak(`ERROR: debug should be boolean, not ${typeof providedConfig.debug}`);
@@ -495,8 +473,6 @@ const configSummary = config => `Server ${config.name} is listening on ${config.
     Mutations ${config.includeMutations ? "en" : "dis"}abled
     ${config.orgsConfig ? `${orgsConfigDescription(config.orgsConfig)}` : "No org configuration"}
     Data directory is ${config.dataPath}
-    ${config.localUsfmPath ? `Local USFM copied from ${config.localUsfmPath}` : 'No local USFM copied'}
-    ${config.localUsxPath ? `Local USX copied from ${config.localUsxPath}` : 'No local USX copied'}
     ${config.staticPaths ? `${staticDescription(config.staticPaths)}` : "No static paths"}
     Process new data ${config.processFrequency === 'never' ? "disabled" : `every ${config.processFrequency}
     ${config.nWorkers} worker thread${config.nWorkers === 1 ? "" : "s"}
