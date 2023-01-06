@@ -25,11 +25,6 @@ function makeServerApp(config) {
     }
 
     if (config.debug) {
-        // Hello world index
-        app.get('/', (req, res) => {
-            res.sendFile(path.resolve(appRoot, 'src', 'html', 'index.xhtml'));
-        });
-
         // DIY GraphQL form
         app.get('/gql_form', (req, res) => {
             res.sendFile(path.resolve(appRoot, 'src', 'html', 'gql_form.xhtml'));

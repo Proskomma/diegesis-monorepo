@@ -465,7 +465,7 @@ const orgsConfigDescription = configs => {
             })
 }
 
-const configSummary = config => `Server ${config.name} is listening on ${config.hostName}:${config.port}
+const configSummary = config => `  Server ${config.name} is listening on ${config.hostName}:${config.port}
     Debug ${config.debug ? "en" : "dis"}abled
     Verbose ${config.verbose ? "en" : "dis"}abled
     Access logging ${!config.logAccess ? "disabled" : `to ${config.accessLogPath || 'console'} in Morgan '${config.logFormat}' format`}

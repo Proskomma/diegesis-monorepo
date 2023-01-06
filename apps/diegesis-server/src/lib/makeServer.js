@@ -1,5 +1,3 @@
-const path = require("path");
-const fse = require('fs-extra');
 const {ApolloServer} = require("apollo-server-express");
 const {mergeTypeDefs} = require('@graphql-tools/merge')
 const makeResolvers = require("../graphql/resolvers/index.js");
@@ -13,6 +11,8 @@ const makeServerLogging = require('./makeServerLogging');
 const makeServerDelete = require('./makeServerDelete');
 
 async function makeServer(config) {
+
+    config.verbose && console.log("Diegesis Server");
 
     // Express
     const app = makeServerApp(config);
