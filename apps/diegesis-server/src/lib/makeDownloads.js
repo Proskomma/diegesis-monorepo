@@ -17,7 +17,6 @@ const {
     lockPath,
 } = require("./dataPaths.js");
 const documentStatsActions = require("./documentStatsActions");
-const localJustTheBibleActions = require("./localJustTheBibleActions");
 
 const appRoot = path.resolve(".");
 
@@ -209,7 +208,7 @@ function makeDownloads(dataPath, org, orgDir, metadata, docType, docs, vrsConten
                         proskomma: pk,
                         actions: mergeActions(
                             [
-                                localJustTheBibleActions,
+                                render.perfToPerf.renderActions.justTheBibleActions,
                                 render.perfToPerf.renderActions.identityActions
                             ]
                         ),
