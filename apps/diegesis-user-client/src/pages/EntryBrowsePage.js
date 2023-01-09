@@ -13,13 +13,12 @@ import BrowseScripture from "../components/BrowseScripture";
 
 export default function EntryBrowsePage() {
 
-    const {source, owner, entryId, revision} = useParams();
+    const {source, entryId, revision} = useParams();
 
     const queryString =
         `query {
           org(name:"""%source%""") {
             localTranslation(
-              owner: """%owner%"""
               id: """%entryId%"""
               revision: """%revision%"""
             ) {
@@ -30,7 +29,6 @@ export default function EntryBrowsePage() {
           }
         }`
             .replace("%source%", source)
-            .replace("%owner%", owner)
             .replace("%entryId%", entryId)
             .replace("%revision%", revision);
 
@@ -79,11 +77,11 @@ export default function EntryBrowsePage() {
                 </Button>
                 {translationInfo.title}
                 <Button>
-                    <RouterLink to={`/entry/details/${source}/${owner}/${entryId}/${revision}`}><Info/></RouterLink>
+                    <RouterLink to={`/entry/details/${source}/${entryId}/${revision}`}><Info/></RouterLink>
                 </Button>
                 <Button>
                     <RouterLink
-                        to={`/entry/download/${source}/${owner}/${entryId}/${revision}`}><Download/></RouterLink>
+                        to={`/entry/download/${source}/${entryId}/${revision}`}><Download/></RouterLink>
                 </Button>
             </Typography>
             {translationInfo.succinct && <BrowseScripture pk={pk}/>}

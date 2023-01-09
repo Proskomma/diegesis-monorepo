@@ -10,13 +10,12 @@ import Spinner from "../components/Spinner";
 
 export default function EntryDetailsPage() {
 
-    const {source, owner, entryId, revision} = useParams();
+    const {source, entryId, revision} = useParams();
 
     const queryString =
         `query {
           org(name:"""%source%""") {
             localTranslation(
-              owner: """%owner%"""
               id: """%entryId%"""
               revision: """%revision%"""
             ) {
@@ -26,11 +25,11 @@ export default function EntryDetailsPage() {
               script
               copyright
               abbreviation
+              owner
             }
           }
         }`
             .replace("%source%", source)
-            .replace("%owner%", owner)
             .replace("%entryId%", entryId)
             .replace("%revision%", revision);
 
@@ -52,7 +51,7 @@ export default function EntryDetailsPage() {
         <Box style={{marginTop: "100px"}}>
             <Typography variant="h4" paragraph="true" sx={{mt: "20px"}}>
                 <Button>
-                    <RouterLink to={`/entry/browse/${source}/${owner}/${entryId}/${revision}`} relative="path"><ArrowBack/></RouterLink></Button>
+                    <RouterLink to={`/entry/browse/${source}/${entryId}/${revision}`} relative="path"><ArrowBack/></RouterLink></Button>
                 {translationInfo.title}
             </Typography>
             <Typography variant="h5" paragraph="true">Details</Typography>
@@ -97,7 +96,7 @@ export default function EntryDetailsPage() {
                     <Typography variant="body1" paragraph="true">Owner</Typography>
                 </Grid>
                 <Grid item xs={9}>
-                    <Typography variant="body1" paragraph="true">{owner}</Typography>
+                    <Typography variant="body1" paragraph="true">{translationInfo.owner}</Typography>
                 </Grid>
                 <Grid item xs={3}>
                     <Typography variant="body1" paragraph="true">Entry ID</Typography>

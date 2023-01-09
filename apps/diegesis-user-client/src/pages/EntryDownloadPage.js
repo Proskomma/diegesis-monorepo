@@ -11,7 +11,7 @@ import Spinner from "../components/Spinner";
 
 export default function EntryDownloadPage() {
 
-    const {source, owner, entryId, revision} = useParams();
+    const {source, entryId, revision} = useParams();
 
     const client = useApolloClient();
 
@@ -33,7 +33,6 @@ export default function EntryDownloadPage() {
         const queryString = `query {
             org(name:"""%source%""") {
               localTranslation(
-                owner: """%owner%"""
                 id: """%entryId%"""
                 revision: """%revision%"""
               ) {
@@ -42,7 +41,6 @@ export default function EntryDownloadPage() {
             }
           }`
             .replace("%source%", source)
-            .replace("%owner%", owner)
             .replace("%entryId%", entryId)
             .replace("%revision%", revision)
             .replace("%downloadType%", downloadType);
@@ -51,7 +49,7 @@ export default function EntryDownloadPage() {
         const element = document.createElement("a");
         const file = new Blob([result.data.org.localTranslation[downloadType]], {type: downloadTypes[downloadType].mime});
         element.href = URL.createObjectURL(file);
-        element.download = `${source}_${owner}_${entryId}_${revision}_${downloadTypes[downloadType].suffix}`;
+        element.download = `${source}_${entryId}_${revision}_${downloadTypes[downloadType].suffix}`;
         document.body.appendChild(element);
         element.click();
     }
@@ -86,7 +84,6 @@ export default function EntryDownloadPage() {
         const queryString = `query {
             org(name:"""%source%""") {
               localTranslation(
-                owner: """%owner%"""
                 id: """%entryId%"""
                 revision: """%revision%"""
               ) {
@@ -95,7 +92,6 @@ export default function EntryDownloadPage() {
             }
           }`
             .replace("%source%", source)
-            .replace("%owner%", owner)
             .replace("%entryId%", entryId)
             .replace("%revision%", revision)
             .replace("%downloadType%", downloadType)
@@ -105,7 +101,7 @@ export default function EntryDownloadPage() {
         const element = document.createElement("a");
         const file = new Blob([result.data.org.localTranslation.download], {type: downloadTypes[downloadType].mime});
         element.href = URL.createObjectURL(file);
-        element.download = `${source}_${owner}_${entryId}_${revision}_${bookCode}_${downloadTypes[downloadType].suffix}`;
+        element.download = `${source}_${entryId}_${revision}_${bookCode}_${downloadTypes[downloadType].suffix}`;
         document.body.appendChild(element);
         element.click();
     }
@@ -114,7 +110,6 @@ export default function EntryDownloadPage() {
         `query {
           org(name:"""%source%""") {
             localTranslation(
-              owner: """%owner%"""
               id: """%entryId%"""
               revision: """%revision%"""
             ) {
@@ -131,7 +126,6 @@ export default function EntryDownloadPage() {
           }
         }`
             .replace("%source%", source)
-            .replace("%owner%", owner)
             .replace("%entryId%", entryId)
             .replace("%revision%", revision);
 
@@ -160,7 +154,7 @@ export default function EntryDownloadPage() {
         <Box style={{marginTop: "100px"}}>
             <Typography variant="h4" paragraph="true" sx={{mt: "20px"}}>
                 <Button>
-                    <RouterLink to={`/entry/browse/${source}/${owner}/${entryId}/${revision}`} relative="path"><ArrowBack/></RouterLink></Button>
+                    <RouterLink to={`/entry/browse/${source}/${entryId}/${revision}`} relative="path"><ArrowBack/></RouterLink></Button>
                 {translationInfo.title}
             </Typography>
             <Grid container>

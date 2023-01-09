@@ -64,17 +64,17 @@ function App() {
             errorElement: <ErrorBoundary/>
         },
         {
-            path: "/entry/details/:source/:owner/:entryId/:revision",
+            path: "/entry/details/:source/:entryId/:revision",
             element: <EntryDetailsPage/>,
             errorElement: <ErrorBoundary/>
         },
         {
-            path: "/entry/browse/:source/:owner/:entryId/:revision",
+            path: "/entry/browse/:source/:entryId/:revision",
             element: <EntryBrowsePage/>,
             errorElement: <ErrorBoundary/>
         },
         {
-            path: "/entry/download/:source/:owner/:entryId/:revision",
+            path: "/entry/download/:source/:entryId/:revision",
             element: <EntryDownloadPage/>,
             errorElement: <ErrorBoundary/>
         }

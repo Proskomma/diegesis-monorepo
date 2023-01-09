@@ -99,7 +99,7 @@ export default function ListView({searchTerms}) {
             </Grid>
             <Grid item xs={10} md={6}>
                 <RouterLink
-                    to={`/entry/browse/${localTranslation.org}/${localTranslation.owner.replace(/\s/g, "__")}/${localTranslation.id}/${localTranslation.revision.replace(/\s/g, "__")}`}
+                    to={`/entry/browse/${localTranslation.org}/${localTranslation.id}/${localTranslation.revision.replace(/\s/g, "__")}`}
                     style={{textDecoration: "none"}}> <Typography sx={{fontWeight: 'bold', textAlign: "center"}}
                                                                   variant="body1">
                     {localTranslation.title}

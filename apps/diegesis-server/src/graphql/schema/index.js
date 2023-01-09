@@ -84,8 +84,6 @@ const querySchema = gql`
         ): [Translation!]!
         """Translation of this organization with the given id, if found locally"""
         localTranslation(
-            """The owner"""
-            owner: String!
             """The id of the translation"""
             id: TranslationId!
             """The revision of the translation"""
@@ -233,9 +231,6 @@ const mutationSchema = gql`
         deleteLocalTranslation (
             """The name of the organization"""
             org: OrgName!
-            """The owner"""
-            owner: String!
-            """The id of the translation"""
             id: TranslationId!
             """The revision of the translation"""
             revision: String!
@@ -251,8 +246,6 @@ const mutationSchema = gql`
         deleteSuccinctError(
             """The name of the organization"""
             org: OrgName!
-            """The owner"""
-            owner: String!
             """The id of the translation"""
             id: TranslationId!
             """The revision of the translation"""
