@@ -55,11 +55,6 @@ export default function EntryBrowsePage() {
             regex: "^[^\\s]+$"
         },
         {
-            name: "owner",
-            type: "string",
-            regex: "^[^\\s]+$"
-        },
-        {
             name: "project",
             type: "string",
             regex: "^[^\\s]+$"

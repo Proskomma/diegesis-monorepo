@@ -20,25 +20,25 @@ const documentStatsActions = require("./documentStatsActions");
 
 const appRoot = path.resolve(".");
 
-function doDownloads({dataPath, orgDir, owner, transId, revision, contentType}) {
+function doDownloads({dataPath, orgDir, transId, revision, contentType}) {
     try {
         const orgJson = require(path.join(appRoot, 'src', 'orgHandlers', orgDir, 'org.json'));
         const org = orgJson.name;
         const t = Date.now();
         const metadataPath = path.join(
-            transPath(dataPath, orgDir, owner, transId, revision),
+            transPath(dataPath, orgDir, transId, revision),
             'metadata.json'
         );
-        fse.writeJsonSync(lockPath(dataPath, orgDir, owner, transId, revision), {orgDir, owner, transId, revision});
+        fse.writeJsonSync(lockPath(dataPath, orgDir, transId, revision), {orgDir, transId, revision});
         const metadata = fse.readJsonSync(metadataPath);
         let contentDir = (contentType === 'usfm') ?
-            usfmDir(dataPath, orgDir, owner, transId, revision) :
-            usxDir(dataPath, orgDir, owner, transId, revision);
+            usfmDir(dataPath, orgDir, transId, revision) :
+            usxDir(dataPath, orgDir, transId, revision);
         if (!fse.pathExistsSync(contentDir)) {
-            throw new Error(`${contentType} content directory for ${org}/${owner}/${transId}/${revision} does not exist`);
+            throw new Error(`${contentType} content directory for ${org}/${transId}/${revision} does not exist`);
         }
         let vrsContent = null;
-        const vrsP = vrsPath(dataPath, orgDir, owner, transId, revision);
+        const vrsP = vrsPath(dataPath, orgDir, transId, revision);
         if (fse.pathExistsSync(vrsP)) {
             vrsContent = fse.readFileSync(vrsP).toString();
         }
@@ -52,11 +52,11 @@ function doDownloads({dataPath, orgDir, owner, transId, revision, contentType}) 
             vrsContent,
         );
         if (downloads.succinctError) {
-            fse.writeJsonSync(succinctErrorPath(dataPath, orgDir, owner, transId, revision), downloads.succinctError);
-            fse.remove(lockPath(dataPath, orgDir, owner, transId, revision));
+            fse.writeJsonSync(succinctErrorPath(dataPath, orgDir, transId, revision), downloads.succinctError);
+            fse.remove(lockPath(dataPath, orgDir, transId, revision));
             return;
         }
-        fse.writeJsonSync(succinctPath(dataPath, orgDir, owner, transId, revision), downloads.succinct);
+        fse.writeJsonSync(succinctPath(dataPath, orgDir, transId, revision), downloads.succinct);
     } catch (err) {
         const succinctError = {
             generatedBy: 'cron',
@@ -66,23 +66,18 @@ function doDownloads({dataPath, orgDir, owner, transId, revision, contentType}) 
             message: err.message
         };
         parentPort.postMessage(succinctError);
-        fse.writeJsonSync(succinctErrorPath(dataPath, orgDir, owner, transId, revision), succinctError);
-        fse.remove(lockPath(dataPath, orgDir, owner, transId, revision));
+        fse.writeJsonSync(succinctErrorPath(dataPath, orgDir, transId, revision), succinctError);
+        fse.remove(lockPath(dataPath, orgDir, transId, revision));
         return;
     }
-    fse.remove(lockPath(dataPath, orgDir, owner, transId, revision));
-    parentPort.postMessage({orgDir, owner, transId, revision, status: "done"});
+    fse.remove(lockPath(dataPath, orgDir, transId, revision));
+    parentPort.postMessage({orgDir, transId, revision, status: "done"});
 }
 
 function makeDownloads(dataPath, org, orgDir, metadata, docType, docs, vrsContent) {
     const pk = new Proskomma([
         {
             name: "source",
-            type: "string",
-            regex: "^[^\\s]+$"
-        },
-        {
-            name: "owner",
             type: "string",
             regex: "^[^\\s]+$"
         },
@@ -126,7 +121,6 @@ function makeDownloads(dataPath, org, orgDir, metadata, docType, docs, vrsConten
         pk.importDocuments(
             {
                 source: org,
-                owner: metadata.owner,
                 project: metadata.id,
                 revision: metadata.revision,
             },
@@ -172,7 +166,7 @@ function makeDownloads(dataPath, org, orgDir, metadata, docType, docs, vrsConten
             message: err.message
         };
         parentPort.postMessage(ret.succinctError);
-        fse.remove(lockPath(dataPath, orgDir, metadata.owner, metadata.id, metadata.revision));
+        fse.remove(lockPath(dataPath, orgDir, metadata.id, metadata.revision));
         return;
     }
     const documents = pk.gqlQuerySync(`{docSet(id: """${docSetId}""") {documents { id bookCode: header(id:"bookCode")} } }`).data.docSet.documents.map(d => ({
@@ -183,7 +177,7 @@ function makeDownloads(dataPath, org, orgDir, metadata, docType, docs, vrsConten
         let docResult = null;
         try {
             docResult = pk.gqlQuerySync(`{ document(id: """${doc.id}""") { bookCode: header(id:"bookCode") perf } }`).data.document;
-            const perfD = perfDir(dataPath, orgDir, metadata.owner, metadata.id, metadata.revision);
+            const perfD = perfDir(dataPath, orgDir, metadata.id, metadata.revision);
             if (!fse.pathExistsSync(perfD)) {
                 fse.mkdirSync(perfD);
             }
@@ -224,7 +218,7 @@ function makeDownloads(dataPath, org, orgDir, metadata, docType, docs, vrsConten
                     },
                 );
                 const simplePerf = render.perfToPerf.transforms.mergePerfTextCode({perf: output.perf}).perf;
-                const simplePerfD = simplePerfDir(dataPath, orgDir, metadata.owner, metadata.id, metadata.revision);
+                const simplePerfD = simplePerfDir(dataPath, orgDir, metadata.id, metadata.revision);
                 if (!fse.pathExistsSync(simplePerfD)) {
                     fse.mkdirSync(simplePerfD);
                 }
@@ -277,7 +271,7 @@ function makeDownloads(dataPath, org, orgDir, metadata, docType, docs, vrsConten
         }
         try {
             const docResult = pk.gqlQuerySync(`{document(id: """${doc.id}""") { bookCode: header(id:"bookCode") sofria } }`).data.document;
-            const sofriaD = sofriaDir(dataPath, orgDir, metadata.owner, metadata.id, metadata.revision);
+            const sofriaD = sofriaDir(dataPath, orgDir, metadata.id, metadata.revision);
             if (!fse.pathExistsSync(sofriaD)) {
                 fse.mkdirSync(sofriaD);
             }
@@ -317,7 +311,6 @@ function makeDownloads(dataPath, org, orgDir, metadata, docType, docs, vrsConten
                 transPath(
                     dataPath,
                     orgDir,
-                    metadata.owner,
                     metadata.id,
                     metadata.revision
                 ),
@@ -341,7 +334,7 @@ function makeDownloads(dataPath, org, orgDir, metadata, docType, docs, vrsConten
                 message: err.message
             };
             parentPort.postMessage(ret.succinctError);
-            fse.remove(lockPath(dataPath, orgDir, metadata.owner, metadata.id, metadata.revision));
+            fse.remove(lockPath(dataPath, orgDir, metadata.id, metadata.revision));
             return;
         }
     } catch

@@ -90,7 +90,6 @@ export default function LocalTab({selectedOrg, searchLang, searchText}) {
                     () => deleteTranslation(
                         client,
                         selectedOrg,
-                        localTranslation.owner,
                         localTranslation.id,
                         localTranslation.revision,
                     )

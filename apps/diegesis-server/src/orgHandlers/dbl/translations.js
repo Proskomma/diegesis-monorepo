@@ -78,7 +78,6 @@ const fetchUsx = async (org, trans, config) => {
     const tp = transPath(
         config.dataPath,
         org.translationDir.replace(/\s/g, "__"),
-        metadataRecord.owner.replace(/\s/g, "__"),
         trans.id, metadataRecord.revision.replace(/\s/g, "__")
     );
     if (!fse.pathExistsSync(tp)) {
