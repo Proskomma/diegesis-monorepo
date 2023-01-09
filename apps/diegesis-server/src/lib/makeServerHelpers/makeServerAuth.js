@@ -1,5 +1,5 @@
 const {randomInt} = require("node:crypto");
-const {doSessionCron} = require("./cron.js");
+const {doSessionCron} = require("../cron.js");
 const fse = require('fs-extra');
 const path = require("path");
 const shajs = require('sha.js');

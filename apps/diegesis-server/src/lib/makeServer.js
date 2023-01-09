@@ -3,12 +3,12 @@ const {mergeTypeDefs} = require('@graphql-tools/merge')
 const makeResolvers = require("../graphql/resolvers/index.js");
 const {scalarSchema, querySchema, mutationSchema} = require("../graphql/schema/index.js");
 const {doRenderCron} = require("./cron.js");
-const makeServerApp = require('./makeServerApp');
-const {makeServerAuth, processSession} = require('./makeServerAuth');
-const makeServerOrgs = require('./makeServerOrgs');
-const makeServerStatic = require('./makeServerStatic');
-const makeServerLogging = require('./makeServerLogging');
-const makeServerDelete = require('./makeServerDelete');
+const makeServerApp = require('./makeServerHelpers/makeServerApp');
+const {makeServerAuth, processSession} = require('./makeServerHelpers/makeServerAuth');
+const makeServerOrgs = require('./makeServerHelpers/makeServerOrgs');
+const makeServerStatic = require('./makeServerHelpers/makeServerStatic');
+const makeServerLogging = require('./makeServerHelpers/makeServerLogging');
+const makeServerDelete = require('./makeServerHelpers/makeServerDelete');
 
 async function makeServer(config) {
 

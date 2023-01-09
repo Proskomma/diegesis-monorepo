@@ -1,6 +1,6 @@
 const fse = require('fs-extra');
 const path = require("path");
-const {orgPath} = require("./dataPaths");
+const {orgPath} = require("../dataPaths");
 
 const appRoot = path.resolve(".");
 
@@ -35,7 +35,7 @@ async function setupNonPeerOrg(config, orgRecord) {
 async function setupPeerOrg(config, orgRecord) {
     const orgDir = orgRecord.translationDir;
     maybeMakeOrgDir(orgDir, config);
-    const translations = require('./peerTranslations');
+    const translations = require('../peerTranslations');
     const orgHandler = {
         getTranslationsCatalog: translations.getTranslationsCatalog,
         fetchUsfm: translations.fetchUsfm,
