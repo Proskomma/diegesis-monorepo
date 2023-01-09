@@ -30,7 +30,8 @@ const defaultConfig = {
     sessionTimeoutInMins: 15,
     staticPaths: [],
     superusers: {},
-    orgsConfig: []
+    orgsConfig: [],
+    localContent: false,
 }
 
 const staticPathTemplate = {
@@ -82,6 +83,13 @@ const resourceFormats = [
     "perf",
     "sofria"
 ]
+
+const superuserRecord = {
+    roles: true,
+    password: true
+}
+
+const superuserRoles = ["admin", "archivist"];
 
 const logFormatOptions = ["combined", "common", "dev", "short", "tiny"];
 
@@ -222,7 +230,7 @@ function makeConfig(providedConfig) {
     }
     if ('includeMutations' in providedConfig) {
         if (typeof providedConfig.includeMutations !== 'boolean') {
-            croak(`ERROR: includeMutaitons should be boolean, not ${typeof providedConfig.includeMutations}`);
+            croak(`ERROR: includeMutations should be boolean, not ${typeof providedConfig.includeMutations}`);
         }
         config.includeMutations = providedConfig.includeMutations;
     }
@@ -230,9 +238,31 @@ function makeConfig(providedConfig) {
         if (typeof providedConfig.superusers !== 'object' || Array.isArray(providedConfig.superusers)) {
             croak(`ERROR: superusers, if present, should be an object, not '${JSON.stringify(providedConfig.superusers)}'`);
         }
-        for (const password of Object.values(providedConfig.superusers)) {
-            if (typeof password !== 'string') {
-                croak(`ERROR: superuser password hash should be a string, not '${JSON.stringify(providedConfig.superusers)}'`)
+        for (const suOb of Object.values(providedConfig.superusers)) {
+            if (typeof suOb !== 'object' || Array.isArray(suOb)) {
+                croak(`ERROR: superuser records should be an object, not '${JSON.stringify(suOb)}'`);
+            }
+            for (const suKey of Object.keys(suOb)) {
+                if (!superuserRecord[suKey]) {
+                    croak(`Unknown superuser record option '${suKey}'`);
+                }
+            }
+            if (typeof suOb.password !== 'string') {
+                croak(`ERROR: superuser password hash should be a string, not '${JSON.stringify(suOb.password)}'`);
+            }
+            if (!Array.isArray(suOb.roles)) {
+                croak(`ERROR: superuser roles should be an array, not '${JSON.stringify(suOb.roles)}'`);
+            }
+            if (suOb.roles.length === 0) {
+                croak(`ERROR: superuser roles array should not be empty`);
+            }
+            for (const role of suOb.roles) {
+                if (typeof role !== 'string') {
+                    croak(`ERROR: superuser role should be a string, not '${JSON.stringify(role)}'`);
+                }
+                if (!superuserRoles.includes(role)) {
+                    croak(`ERROR: superuser role should be one of ${superuserRoles.join(', ')}, not '${role}'`);
+                }
             }
         }
         config.superusers = providedConfig.superusers;
@@ -423,6 +453,12 @@ function makeConfig(providedConfig) {
         }
         config.verbose = providedConfig.verbose;
     }
+    if ('localContent' in providedConfig) {
+        if (typeof providedConfig.localContent !== 'boolean') {
+            croak(`ERROR: localContent should be boolean, not ${typeof providedConfig.localContent}`);
+        }
+        config.localContent = providedConfig.localContent;
+    }
     return config;
 }
 
@@ -472,6 +508,7 @@ const configSummary = config => `  Server ${config.name} is listening on ${confi
     CORS ${config.useCors ? "en" : "dis"}abled
     Mutations ${config.includeMutations ? "en" : "dis"}abled
     ${config.orgsConfig ? `${orgsConfigDescription(config.orgsConfig)}` : "No org configuration"}
+    Local content ${config.localContent ? "en" : "dis"}abled
     Data directory is ${config.dataPath}
     ${config.staticPaths ? `${staticDescription(config.staticPaths)}` : "No static paths"}
     Process new data ${config.processFrequency === 'never' ? "disabled" : `every ${config.processFrequency}

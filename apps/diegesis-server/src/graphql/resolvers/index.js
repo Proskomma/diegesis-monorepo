@@ -2,9 +2,7 @@ const path = require('path');
 const fse = require('fs-extra');
 const {GraphQLScalarType, Kind} = require('graphql');
 const {ptBooks} = require('proskomma-utils');
-const {orgPath, transPath, transParentPath, usfmDir, usxDir, succinctPath, succinctErrorPath, vrsPath, perfDir, simplePerfDir, sofriaDir} = require('../../lib/dataPaths');
-
-const appRoot = path.resolve(".");
+const {transPath, transParentPath, usfmDir, usxDir, succinctPath, succinctErrorPath, vrsPath, perfDir, simplePerfDir, sofriaDir} = require('../../lib/dataPaths');
 
 const makeResolvers = async (orgsData, orgHandlers, config) => {
 
@@ -245,6 +243,9 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                 if (!context.auth || !context.auth.authenticated) {
                     throw new Error(`No auth found for nCatalogEntries`);
                 }
+                if (!context.auth.roles || !context.auth.roles.includes("admin")) {
+                    throw new Error(`Required auth role 'admin' not found for nCatalogEntries`);
+                }
                 return org.translations.length
             },
             nLocalTranslations: (org, args) => {
@@ -261,6 +262,9 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                 if (!context.auth || !context.auth.authenticated) {
                     throw new Error(`No auth found for catalogEntries`);
                 }
+                if (!context.auth.roles || !context.auth.roles.includes("admin")) {
+                    throw new Error(`Required auth role 'admin' not found for catalogEntries`);
+                }
                 return filteredCatalog(org, args, context, org.translations);
             },
             localTranslations: (org, args, context) => {
@@ -274,6 +278,9 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
             catalogEntry: (org, args, context) => {
                 if (!context.auth || !context.auth.authenticated) {
                     throw new Error(`No auth found for catalogEntry`);
+                }
+                if (!context.auth.roles || !context.auth.roles.includes("admin")) {
+                    throw new Error(`Required auth role 'admin' not found for catalogEntry`);
                 }
                 context.orgData = org;
                 context.orgHandler = orgHandlers[org.name];
@@ -461,6 +468,9 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                 if (!context.auth || !context.auth.authenticated) {
                     throw new Error(`No auth found for fetchUsfm mutation`);
                 }
+                if (!context.auth.roles || !context.auth.roles.includes("admin")) {
+                    throw new Error(`Required auth role 'admin' not found for fetchUsfm`);
+                }
                 const orgOb = orgsData[args.org];
                 if (!orgOb) {
                     return false;
@@ -484,6 +494,9 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
             deleteLocalTranslation: async (root, args, context) => {
                 if (!context.auth || !context.auth.authenticated) {
                     throw new Error(`No auth found for deleteLocalTranslation mutation`);
+                }
+                if (!context.auth.roles || !context.auth.roles.includes("admin")) {
+                    throw new Error(`Required auth role 'admin' not found for deleteLocalTranslation`);
                 }
                 const orgOb = orgsData[args.org];
                 if (!orgOb) {
@@ -510,6 +523,12 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                 if (!context.auth || !context.auth.authenticated) {
                     throw new Error(`No auth found for fetchUsx mutation`);
                 }
+                if (!context.auth.roles || !context.auth.roles.includes("admin")) {
+                    throw new Error(`Required auth role 'admin' not found for fetchUsx`);
+                }
+                if (!context.auth.roles || !context.auth.roles.includes("admin")) {
+                    throw new Error(`Required auth role 'admin' not found for fetchUsx`);
+                }
                 const orgOb = orgsData[args.org];
                 if (!orgOb) {
                     return false;
@@ -533,6 +552,9 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
             deleteSuccinctError: async (root, args, context) => {
                 if (!context.auth || !context.auth.authenticated) {
                     throw new Error(`No auth found for deleteSuccinctError mutation`);
+                }
+                if (!context.auth.roles || !context.auth.roles.includes("admin")) {
+                    throw new Error(`Required auth role 'admin' not found for deleteSuccinctError`);
                 }
                 const orgOb = orgsData[args.org];
                 if (!orgOb) {

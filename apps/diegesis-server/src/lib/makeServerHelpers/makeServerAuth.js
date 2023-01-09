@@ -13,7 +13,11 @@ const processSession = function (session, superusers, authSalts) {
     } else {
         // Get username and server-side hash for that user
         const username = session.split('-')[0];
-        const superPass = superusers[username];
+        const superRecord = superusers[username];
+        if (!superRecord) {
+            return failJson;
+        }
+        const superPass = superRecord.password;
         if (!superPass) {
             return failJson;
         } else {
@@ -30,7 +34,7 @@ const processSession = function (session, superusers, authSalts) {
                 }
             }
             if (matched) {
-                return ({authenticated: true, msg: "Success"});
+                return ({authenticated: true, msg: "Success", roles: superRecord.roles});
             } else {
                 return failJson;
             }
@@ -58,38 +62,43 @@ function makeServerAuth(app, config) {
         });
 
         app.post('/new-login-auth', function (request, response) {
-            const failMsg = "Could not authenticate (bad username/password?)";
-            let username = request.body.username;
-            let password = request.body.password;
-            if (!username || !password) {
-                response.send('Please include username and password!');
-            } else {
-                const superPass = app.superusers[username];
-                if (!superPass) {
-                    response.send(failMsg);
+                const failMsg = "Could not authenticate (bad username/password?)";
+                let username = request.body.username;
+                let password = request.body.password;
+                if (!username || !password) {
+                    response.send('Please include username and password!');
                 } else {
-                    const hash = shajs('sha256')
-                        .update(`${username}${password}`)
-                        .digest('hex');
-                    if (hash !== superPass) {
+                    const superRecord = app.superusers[username];
+                    if (!superRecord) {
                         response.send(failMsg);
                     } else {
-                        const sessionCode =
-                            `${username}-${shajs('sha256')
-                                .update(`${hash}-${app.authSalts[app.authSalts.length - 1]}`)
-                                .digest('hex')}`;
-                        response.cookie(
-                            'diegesis-auth',
-                            sessionCode,
-                            {
-                                expires: new Date(new Date().getTime() + app.sessionTimeoutInMins * 60 * 1000)
+                        const superPass = superRecord.password;
+                        if (!superPass) {
+                        } else {
+                            const hash = shajs('sha256')
+                                .update(`${username}${password}`)
+                                .digest('hex');
+                            if (hash !== superPass) {
+                                response.send(failMsg);
+                            } else {
+                                const sessionCode =
+                                    `${username}-${shajs('sha256')
+                                        .update(`${hash}-${app.authSalts[app.authSalts.length - 1]}`)
+                                        .digest('hex')}`;
+                                response.cookie(
+                                    'diegesis-auth',
+                                    sessionCode,
+                                    {
+                                        expires: new Date(new Date().getTime() + app.sessionTimeoutInMins * 60 * 1000)
+                                    }
+                                );
+                                response.redirect(request.body.redirect || '/');
                             }
-                        );
-                        response.redirect(request.body.redirect || '/');
+                        }
                     }
                 }
             }
-        });
+        );
 
         app.post('/session-auth', function (req, res) {
             res.send(processSession(req.body.session, app.superusers, app.authSalts));
