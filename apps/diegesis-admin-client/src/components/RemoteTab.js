@@ -28,6 +28,7 @@ export default function RemoteTab({selectedOrg, searchLang, searchText}) {
                     id
                     languageCode
                     title
+                    isLocal
                 }
             }
         }`,
@@ -70,6 +71,7 @@ export default function RemoteTab({selectedOrg, searchLang, searchText}) {
                         contentType
                     )
                 }
+                disabled={catalogEntry.isLocal}
             >
                 <Download/>
             </Button>

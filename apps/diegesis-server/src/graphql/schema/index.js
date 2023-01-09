@@ -102,6 +102,8 @@ const querySchema = gql`
         owner: String!
         """a title of the translation"""
         title: String!
+        """is this org/id local?"""
+        isLocal: Boolean!
     }
     """A Local Translation"""
     type Translation {

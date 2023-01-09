@@ -293,7 +293,9 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                 return localTranslation(org.orgDir, args.id, args.revision);
             },
         },
-        CatalogEntry: {},
+        CatalogEntry: {
+            isLocal: (trans, args, context) => fse.pathExists(transParentPath(config.dataPath, context.orgData.translationDir, trans.id)),
+        },
         Translation: {
             resourceTypes: trans => trans.resourceTypes || [],
             nUsfmBooks: (trans, args, context) => {
