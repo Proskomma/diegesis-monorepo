@@ -35,10 +35,10 @@ function doRenderCron(config) {
                                     continue;
                                 }
                                 if (!fse.pathExistsSync(path.join(transDir, translationId, revision, 'succinct.json'))) {
-                                    if (fse.pathExistsSync(path.join(transDir, translationId, revision, 'usfmBooks'))) {
+                                    if (fse.pathExistsSync(path.join(transDir, translationId, revision,'original', 'usfmBooks'))) {
                                         taskSpecs.push([orgDir, translationId, revision, 'usfm']);
                                     }
-                                    if (fse.pathExistsSync(path.join(transDir, translationId, revision, 'usxBooks'))) {
+                                    if (fse.pathExistsSync(path.join(transDir, translationId, revision, 'original', 'usxBooks'))) {
                                         taskSpecs.push([orgDir, translationId, revision, 'usx']);
                                     }
                                 }

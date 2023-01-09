@@ -29,7 +29,7 @@ function doDownloads({dataPath, orgDir, transId, revision, contentType}) {
             transPath(dataPath, orgDir, transId, revision),
             'metadata.json'
         );
-        fse.writeJsonSync(lockPath(dataPath, orgDir, transId, revision), {orgDir, transId, revision});
+        fse.writeJsonSync(lockPath(dataPath, orgDir, transId, revision), {actor: "makeDownloads", orgDir, transId, revision});
         const metadata = fse.readJsonSync(metadataPath);
         let contentDir = (contentType === 'usfm') ?
             usfmDir(dataPath, orgDir, transId, revision) :
@@ -144,7 +144,7 @@ function makeDownloads(dataPath, org, orgDir, metadata, docType, docs, vrsConten
             }
         }
 
-        let metadataTags = `"title:${metadata.title}" "copyright:${metadata.copyright}" "language:${metadata.languageCode}"`;
+        let metadataTags = `"title:${metadata.title}" "copyright:${metadata.copyright}" "language:${metadata.languageCode}" """owner:${metadata.owner}"""`;
         metadataTags += ` "nOT:${ret.stats.nOT}" "nNT:${ret.stats.nNT}" "nDC:${ret.stats.nDC}"`;
         if (metadata.textDirection) {
             metadataTags += ` "direction:${metadata.textDirection}"`;
@@ -179,7 +179,7 @@ function makeDownloads(dataPath, org, orgDir, metadata, docType, docs, vrsConten
             docResult = pk.gqlQuerySync(`{ document(id: """${doc.id}""") { bookCode: header(id:"bookCode") perf } }`).data.document;
             const perfD = perfDir(dataPath, orgDir, metadata.id, metadata.revision);
             if (!fse.pathExistsSync(perfD)) {
-                fse.mkdirSync(perfD);
+                fse.mkdirsSync(perfD);
             }
             fse.writeFileSync(path.join(perfD, `${doc.book}.json`), JSON.stringify(JSON.parse(docResult.perf), null, 2));
         } catch (err) {
@@ -220,7 +220,7 @@ function makeDownloads(dataPath, org, orgDir, metadata, docType, docs, vrsConten
                 const simplePerf = render.perfToPerf.transforms.mergePerfTextCode({perf: output.perf}).perf;
                 const simplePerfD = simplePerfDir(dataPath, orgDir, metadata.id, metadata.revision);
                 if (!fse.pathExistsSync(simplePerfD)) {
-                    fse.mkdirSync(simplePerfD);
+                    fse.mkdirsSync(simplePerfD);
                 }
                 fse.writeFileSync(path.join(simplePerfD, `${doc.book}.json`), JSON.stringify(simplePerf, null, 2));
             } catch (err) {
@@ -273,7 +273,7 @@ function makeDownloads(dataPath, org, orgDir, metadata, docType, docs, vrsConten
             const docResult = pk.gqlQuerySync(`{document(id: """${doc.id}""") { bookCode: header(id:"bookCode") sofria } }`).data.document;
             const sofriaD = sofriaDir(dataPath, orgDir, metadata.id, metadata.revision);
             if (!fse.pathExistsSync(sofriaD)) {
-                fse.mkdirSync(sofriaD);
+                fse.mkdirsSync(sofriaD);
             }
             fse.writeFileSync(path.join(sofriaD, `${doc.book}.json`), JSON.stringify(JSON.parse(docResult.sofria), null, 2));
         } catch (err) {

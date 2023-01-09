@@ -493,34 +493,6 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                     return false;
                 }
             },
-            deleteLocalTranslation: async (root, args, context) => {
-                if (!context.auth || !context.auth.authenticated) {
-                    throw new Error(`No auth found for deleteLocalTranslation mutation`);
-                }
-                if (!context.auth.roles || !context.auth.roles.includes("admin")) {
-                    throw new Error(`Required auth role 'admin' not found for deleteLocalTranslation`);
-                }
-                const orgOb = orgsData[args.org];
-                if (!orgOb) {
-                    return false;
-                }
-                try {
-                    let pathDir = transPath(config.dataPath, orgOb.orgDir, args.id, args.revision);
-                    if (fse.pathExistsSync(pathDir)) {
-                        fse.rmSync(pathDir, {recursive: true});
-                        pathDir = transParentPath(config.dataPath, orgOb.orgDir, args.id);
-                        if (fse.readdirSync(pathDir).length === 0) {
-                            fse.rmSync(pathDir, {recursive: true});
-                        }
-                        return true;
-                    }
-                    return false;
-                } catch (err) {
-                    console.log(err);
-                    return false;
-                }
-
-            },
             fetchUsx: async (root, args, context) => {
                 if (!context.auth || !context.auth.authenticated) {
                     throw new Error(`No auth found for fetchUsx mutation`);
@@ -550,6 +522,34 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                     console.log(err);
                     return false;
                 }
+            },
+            deleteLocalTranslation: async (root, args, context) => {
+                if (!context.auth || !context.auth.authenticated) {
+                    throw new Error(`No auth found for deleteLocalTranslation mutation`);
+                }
+                if (!context.auth.roles || !context.auth.roles.includes("admin")) {
+                    throw new Error(`Required auth role 'admin' not found for deleteLocalTranslation`);
+                }
+                const orgOb = orgsData[args.org];
+                if (!orgOb) {
+                    return false;
+                }
+                try {
+                    let pathDir = transPath(config.dataPath, orgOb.orgDir, args.id, args.revision);
+                    if (fse.pathExistsSync(pathDir)) {
+                        fse.rmSync(pathDir, {recursive: true});
+                        pathDir = transParentPath(config.dataPath, orgOb.orgDir, args.id);
+                        if (fse.readdirSync(pathDir).length === 0) {
+                            fse.rmSync(pathDir, {recursive: true});
+                        }
+                        return true;
+                    }
+                    return false;
+                } catch (err) {
+                    console.log(err);
+                    return false;
+                }
+
             },
             deleteSuccinctError: async (root, args, context) => {
                 if (!context.auth || !context.auth.authenticated) {

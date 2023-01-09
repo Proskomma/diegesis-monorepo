@@ -40,6 +40,7 @@ const usfmDir =
         }
        return path.join(
             transPath(dataPath, translationDir, translationId, translationRevision),
+            'original',
             'usfmBooks'
         );
     }
@@ -51,6 +52,7 @@ const usxDir =
         }
         return path.join(
             transPath(dataPath, translationDir, translationId, translationRevision),
+            'original',
             'usxBooks'
         );
     }
@@ -62,6 +64,7 @@ const perfDir =
         }
         return path.join(
             transPath(dataPath, translationDir, translationId, translationRevision),
+            'generated',
             'perfBooks'
         );
     }
@@ -73,6 +76,7 @@ const simplePerfDir =
         }
         return path.join(
             transPath(dataPath, translationDir, translationId, translationRevision),
+            'generated',
             'simplePerfBooks'
         );
     }
@@ -84,6 +88,7 @@ const sofriaDir =
         }
         return path.join(
             transPath(dataPath, translationDir, translationId, translationRevision),
+            'generated',
             'sofriaBooks'
         );
     }
@@ -128,6 +133,7 @@ const vrsPath =
         }
         return path.join(
             transPath(dataPath, translationDir, translationId, translationRevision),
+            'original',
             'versification.vrs'
         );
     }
