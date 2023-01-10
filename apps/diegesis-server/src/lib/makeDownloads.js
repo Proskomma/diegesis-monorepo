@@ -15,6 +15,7 @@ const {
     sofriaDir,
     succinctPath,
     lockPath,
+    generatedResourcePath
 } = require("./dataPaths.js");
 const documentStatsActions = require("./documentStatsActions");
 
@@ -55,6 +56,10 @@ function doDownloads({dataPath, orgDir, transId, revision, contentType}) {
             fse.writeJsonSync(succinctErrorPath(dataPath, orgDir, transId, revision), downloads.succinctError);
             fse.remove(lockPath(dataPath, orgDir, transId, revision));
             return;
+        }
+        const genP = generatedResourcePath(dataPath, orgDir, transId, revision);
+        if (!fse.pathExistsSync(genP)) {
+            fse.mkdirsSync(genP);
         }
         fse.writeJsonSync(succinctPath(dataPath, orgDir, transId, revision), downloads.succinct);
     } catch (err) {

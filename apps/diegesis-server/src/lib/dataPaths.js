@@ -38,7 +38,7 @@ const usfmDir =
         if (!translationRevision || extra) {
             throw new Error("usfmDir requires 4 args");
         }
-       return path.join(
+        return path.join(
             transPath(dataPath, translationDir, translationId, translationRevision),
             'original',
             'usfmBooks'
@@ -100,6 +100,7 @@ const succinctPath =
         }
         return path.join(
             transPath(dataPath, translationDir, translationId, translationRevision),
+            'generated',
             'succinct.json'
         );
     }
@@ -138,6 +139,28 @@ const vrsPath =
         );
     }
 
+const originalResourcePath =
+    (dataPath, translationDir, translationId, translationRevision, extra) => {
+        if (!translationRevision || extra) {
+            throw new Error("originalResourcePath requires 4 args");
+        }
+        return path.join(
+            transPath(dataPath, translationDir, translationId, translationRevision),
+            'original',
+        );
+    }
+
+const generatedResourcePath =
+    (dataPath, translationDir, translationId, translationRevision, extra) => {
+        if (!translationRevision || extra) {
+            throw new Error("generatedResourcePath requires 4 args");
+        }
+        return path.join(
+            transPath(dataPath, translationDir, translationId, translationRevision),
+            'generated',
+        );
+    }
+
 module.exports = {
     orgPath,
     transPath,
@@ -150,5 +173,7 @@ module.exports = {
     succinctPath,
     succinctErrorPath,
     lockPath,
-    vrsPath
+    vrsPath,
+    originalResourcePath,
+    generatedResourcePath
 };

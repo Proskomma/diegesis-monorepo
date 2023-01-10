@@ -12,7 +12,7 @@ function makeServerDelete(config) {
                     for (
                         const toRemove of (
                         config.deleteGenerated ?
-                            ["succinct.json", "succinctError.json", "lock.json", "sofriaBooks", "perfBooks", "simplePerfBooks"] :
+                            ["lock.json", "generated"] :
                             ["lock.json"]
                     )
                         ) {

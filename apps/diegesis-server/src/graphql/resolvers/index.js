@@ -2,7 +2,20 @@ const path = require('path');
 const fse = require('fs-extra');
 const {GraphQLScalarType, Kind} = require('graphql');
 const {ptBooks} = require('proskomma-utils');
-const {transPath, transParentPath, usfmDir, usxDir, succinctPath, succinctErrorPath, vrsPath, perfDir, simplePerfDir, sofriaDir} = require('../../lib/dataPaths');
+const {
+    transPath,
+    transParentPath,
+    usfmDir,
+    usxDir,
+    succinctPath,
+    succinctErrorPath,
+    vrsPath,
+    perfDir,
+    simplePerfDir,
+    sofriaDir,
+    originalResourcePath,
+    generatedResourcePath
+} = require('../../lib/dataPaths');
 
 const makeResolvers = async (orgsData, orgHandlers, config) => {
 
@@ -237,6 +250,213 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                 context.incidentLogger = config.incidentLogger;
                 return orgsData[args.name];
             },
+            entries: (root, args, context) => {
+                let ret = [];
+                for (const source of fse.readdirSync(config.dataPath)) {
+                    const sourcePath = path.join(config.dataPath, source);
+                    if (!fse.lstatSync(sourcePath).isDirectory()) {
+                        continue;
+                    }
+                    for (const transId of fse.readdirSync(sourcePath)) {
+                        const idPath = path.join(sourcePath, transId);
+                        if (!fse.lstatSync(idPath).isDirectory()) {
+                            continue;
+                        }
+                        for (const revision of fse.readdirSync(idPath)) {
+                            const metadataPath = path.join(idPath, revision, "metadata.json");
+                            ret.push(fse.readJsonSync(metadataPath));
+                        }
+                    }
+                }
+                return ret;
+            }
+        },
+        Entry: {
+            types: root => root.resourceTypes,
+            language: root => root.languageCode,
+            stat: (root, args) => {
+                const stats = root.stats;
+                if (!stats || typeof stats[args.field] !== 'number') {
+                    return null;
+                }
+                return stats[args.field];
+            },
+            resourceStat: (root, args) => {
+                const stats = root.stats;
+                if (!stats || !stats.documents || !stats.documents[args.bookCode] || typeof stats.documents[args.bookCode][args.field] !== 'number') {
+                    return null;
+                }
+                return stats.documents[args.bookCode][args.field];
+            },
+            resourcesStat: (root, args) => {
+                const stats = root.stats;
+                if (!stats) {
+                    return null;
+                }
+                const documentStats = stats.documents;
+                if (!documentStats) {
+                    return null;
+                }
+                return Object.entries(documentStats).map(kv => ({
+                    bookCode: kv[0],
+                    stat: typeof kv[1][args.field] === "number" ? kv[1][args.field] : null
+                }));
+            },
+            canonResources: root => {
+                let ret = [];
+                const searchPaths = [
+                    ['original', originalResourcePath(config.dataPath, orgsData[root.source].translationDir, root.id, root.revision)],
+                    ['generated', generatedResourcePath(config.dataPath, orgsData[root.source].translationDir, root.id, root.revision)],
+                ];
+                for (const [searchName, searchPath] of searchPaths) {
+                    if (!fse.existsSync(searchPath)) {
+                        continue;
+                    }
+                    for (const resource of fse.readdirSync(searchPath)) {
+                        const resourcePath = path.join(searchPath, resource);
+                        if (fse.lstatSync(resourcePath).isDirectory()) {
+                            continue;
+                        }
+                        ret.push({
+                            type: resource.split('.')[0],
+                            isOriginal: searchName === 'original',
+                            content: fse.readFileSync(resourcePath).toString(),
+                            suffix: resource.split('.')[1]
+                        })
+                    }
+                }
+                return ret;
+            },
+            canonResource: (root, args) => {
+                const searchPaths = [
+                    ['original', originalResourcePath(config.dataPath, orgsData[root.source].translationDir, root.id, root.revision)],
+                    ['generated', generatedResourcePath(config.dataPath, orgsData[root.source].translationDir, root.id, root.revision)],
+                ];
+                for (const [searchName, searchPath] of searchPaths) {
+                    if (!fse.existsSync(searchPath)) {
+                        continue;
+                    }
+                    for (const resource of fse.readdirSync(searchPath)) {
+                        const resourcePath = path.join(searchPath, resource);
+                        if (fse.lstatSync(resourcePath).isDirectory()) {
+                            continue;
+                        }
+                        if (resource.split('.')[0] === args.type) {
+                            return {
+                                type: resource.split('.')[0],
+                                isOriginal: searchName === 'original',
+                                content: fse.readFileSync(resourcePath).toString(),
+                                suffix: resource.split('.')[1]
+                            };
+                        }
+                    }
+                }
+                return null;
+            },
+            bookResources: (root, args) => {
+                let ret = [];
+                const searchPaths = [
+                    ['original', originalResourcePath(config.dataPath, orgsData[root.source].translationDir, root.id, root.revision)],
+                    ['generated', generatedResourcePath(config.dataPath, orgsData[root.source].translationDir, root.id, root.revision)],
+                ];
+                for (const [searchName, searchPath] of searchPaths) {
+                    if (!fse.existsSync(searchPath)) {
+                        continue;
+                    }
+                    for (const resourceDir of fse.readdirSync(searchPath)) {
+                        const resourceDirPath = path.join(searchPath, resourceDir);
+                        if (!fse.lstatSync(resourceDirPath).isDirectory()) {
+                            continue;
+                        }
+                        for (const bookResource of fse.readdirSync(resourceDirPath)) {
+                            if (bookResource.split('.')[0] === args.bookCode) {
+                                ret.push({
+                                    type: resourceDir.replace('Books', ''),
+                                    isOriginal: searchName === 'original',
+                                    content: fse.readFileSync(path.join(resourceDirPath, bookResource)).toString(),
+                                    suffix: bookResource.split('.')[1]
+                                })
+                            }
+                        }
+                    }
+                }
+                return ret;
+            },
+            bookResource: (root, args) => {
+                const searchPaths = [
+                    ['original', originalResourcePath(config.dataPath, orgsData[root.source].translationDir, root.id, root.revision)],
+                    ['generated', generatedResourcePath(config.dataPath, orgsData[root.source].translationDir, root.id, root.revision)],
+                ];
+                for (const [searchName, searchPath] of searchPaths) {
+                    if (!fse.existsSync(searchPath)) {
+                        continue;
+                    }
+                    const resourceDirPath = path.join(searchPath, `${args.type}Books`);
+                    if (!fse.existsSync(resourceDirPath) || !fse.lstatSync(resourceDirPath).isDirectory()) {
+                        continue;
+                    }
+                    for (const bookResource of fse.readdirSync(resourceDirPath)) {
+                        if (bookResource.split('.')[0] === args.bookCode) {
+                            return {
+                                type: args.type,
+                                isOriginal: searchName === 'original',
+                                content: fse.readFileSync(path.join(resourceDirPath, bookResource)).toString(),
+                                suffix: bookResource.split('.')[1]
+                            };
+                        }
+                    }
+                }
+                return null;
+            },
+            bookCodes: (root, args) => {
+                let ret = new Set([]);
+                const searchPaths = [
+                    ['original', originalResourcePath(config.dataPath, orgsData[root.source].translationDir, root.id, root.revision)],
+                    ['generated', generatedResourcePath(config.dataPath, orgsData[root.source].translationDir, root.id, root.revision)],
+                ];
+                for (const [searchName, searchPath] of searchPaths) {
+                    if (!fse.existsSync(searchPath)) {
+                        continue;
+                    }
+                    for (const resourceDir of fse.readdirSync(searchPath)) {
+                        const resourceDirPath = path.join(searchPath, resourceDir);
+                        if (!fse.lstatSync(resourceDirPath).isDirectory()) {
+                            continue;
+                        }
+                        if (args.type && resourceDir !== `${args.type}Books`) {
+                            continue;
+                        }
+                        for (const bookResource of fse.readdirSync(resourceDirPath)) {
+                            const bookCode = bookResource.split('.')[0];
+                            ret.add(bookCode);
+                        }
+                    }
+                }
+                return Array.from(ret).sort((a, b) => ptBooks[a].position - ptBooks[b].position);
+            },
+            bookResourceTypes: (root, args) => {
+                let ret = [];
+                const searchPaths = [
+                    ['original', originalResourcePath(config.dataPath, orgsData[root.source].translationDir, root.id, root.revision)],
+                    ['generated', generatedResourcePath(config.dataPath, orgsData[root.source].translationDir, root.id, root.revision)],
+                ];
+                for (const [searchName, searchPath] of searchPaths) {
+                    if (!fse.existsSync(searchPath)) {
+                        continue;
+                    }
+                    for (const resourceDir of fse.readdirSync(searchPath)) {
+                        const resourceDirPath = path.join(searchPath, resourceDir);
+                        if (!fse.lstatSync(resourceDirPath).isDirectory()) {
+                            continue;
+                        }
+                        if (args.type && resourceDir !== `${args.type}Books`) {
+                            continue;
+                        }
+                        ret.push(resourceDir.replace('Books', ''));
+                    }
+                }
+                return ret;
+            }
         },
         Org: {
             nCatalogEntries: (org, args, context) => {
@@ -577,11 +797,12 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
         },
     };
 
-    if (config.includeMutations) {
+    if (config.includeMutations
+    ) {
         return {...scalarResolvers, ...queryResolver, ...mutationResolver};
     } else {
         return {...scalarResolvers, ...queryResolver};
     }
-};
+}
 
 module.exports = makeResolvers;

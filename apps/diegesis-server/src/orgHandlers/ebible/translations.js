@@ -27,6 +27,7 @@ async function getTranslationsCatalog() {
             }
         ).filter(t => t.languageCode)
         .map(t => ({
+            source: "eBible",
             resourceTypes: ["bible"],
             id: t.translationId,
             languageCode: languageCodes[t.languageCode] || t.languageCode,

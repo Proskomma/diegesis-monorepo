@@ -16,7 +16,133 @@ const querySchema = gql`
             """The name of the organization"""
             name: OrgName!
         ): Org
+    
+        """Entries available across all sources on this server"""
+        entries(
+            """Only entries from these sources"""
+            sources:  [String!]
+            """Only entries from these owners"""
+            owners:  [String!]
+            """Only entries from these types"""
+            types:  [String!]
+            """Only entries with these ids"""
+            ids:  [String!]
+            """Only entries with these languages"""
+            languages:  [String!]
+            """Only entries with title matching regex"""
+            titleMatching: String
+        ) : [Entry!]!
+        
+        """An entry, by primary key, if it exists"""
+        entry(
+            """The entry source"""
+            source: String!
+            """The entry id"""
+            id: String!
+            """The entry revision"""
+            revision: String!
+        ): Entry
     }
+    
+    """An entry"""
+    type Entry {
+        """The types of the entry"""
+        types: [String!]!
+        """The source of the entry"""
+        source: String!
+        """The owner of the entry"""
+        owner: String!
+        """The id of the entry"""
+        id: String!
+        """The revision of the entry"""
+        revision: String!
+        """The language of the entry"""
+        language: String!
+        """The title of the entry"""
+        title: String!
+        """The abbreviation of the entry"""
+        abbreviation: String!
+        """The copyright of the entry"""
+        copyright: String!
+        """The text direction of the entry"""
+        textDirection: String!
+        """A named stat, if it exists"""
+        stat(
+            """The name of the stat field"""
+            field: String!
+        ): Int
+        """A named resource stat, if the resource and the stat exist"""
+        resourceStat(
+            """The bookCode of the resource"""
+            bookCode: String!
+            """The name of the stat field"""
+            field: String!
+        ): Int
+        """A named resource stat for each resource"""
+        resourcesStat(
+            """The name of the stat field"""
+            field: String!
+        ): [ResourceStat!]
+        """Canon-level resources for the entry"""
+        canonResources: [CanonResource!]!
+        """Canon-level resource of a given type for the entry, if it exists"""
+        canonResource(
+            """The resource type"""
+            type: String!
+        ): CanonResource
+        """Book-level resources"""
+        bookResources(
+          """The bookCode"""
+          bookCode: String!
+        ): [BookResource!]!
+        """Book-level resource of a given type for the entry, if it exists"""
+        bookResource(
+          """The bookCode"""
+          bookCode: String!
+          """The resource type"""
+          type: String!
+        ): BookResource
+        """Book codes for book-level resources, optionally filtered by type"""
+        bookCodes(
+            """The resource type"""
+            type: String
+        ) : [String!]!
+        """Resource types that exist for this book"""
+        bookResourceTypes: [String!]!
+    }
+    
+    """A resource stat"""
+    type ResourceStat {
+        """The bookCode"""
+        bookCode: String!
+        """The stat"""
+        stat: Int
+    }
+    
+    """Canon-level Resource"""
+    type CanonResource {
+        """The resource type"""
+        type: String!
+        """The resource content"""
+        content: String!
+        """The resource file suffix"""
+        suffix: String!
+        """Is the resource original?"""
+        isOriginal: Boolean!
+    }        
+
+    """Book-level Resource"""
+    type BookResource {
+        """The resource type"""
+        type: String!
+        """The resource content"""
+        content: String!
+        """The resource file suffix"""
+        suffix: String!
+        """Is the resource original?"""
+        isOriginal: Boolean!
+    }        
+
     """An organization from which this server can serve data"""
     type Org {
         """A short name for the organization"""

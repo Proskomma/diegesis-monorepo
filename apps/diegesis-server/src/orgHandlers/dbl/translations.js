@@ -41,6 +41,7 @@ const fetchUsx = async (org, trans, config) => {
     const metadataContent = await metadata[0].async('text');
     const parser = new DOMParser();
     const metadataRoot = parser.parseFromString(metadataContent, "application/xml").documentElement;
+    metadataRecord.source = "DBL";
     metadataRecord.revision = metadataRoot.getAttribute('revision') || '???';
     metadataRecord.description =
         metadataRoot.getElementsByTagName('identification')['0']
