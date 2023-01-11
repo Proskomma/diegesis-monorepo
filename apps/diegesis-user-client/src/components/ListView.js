@@ -31,7 +31,7 @@ export default function ListView({searchTerms}) {
 
 const queryString = searchQuery(
         `query {
-        entries(titleMatching:"trans") {source owner id revision}
+        entries(withStatsFeatures:["footnotes"]) {source owner id revision}
         orgs {
             id: name
             localTranslations%searchClause% {

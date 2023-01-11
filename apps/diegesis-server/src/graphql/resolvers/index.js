@@ -290,7 +290,19 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                         args.types
                             .filter(t => e.resourceTypes.includes(t))
                             .length > 0
-                    );
+                    )
+                    .filter(e =>
+                        !args.withStatsFeatures ||
+                        (
+                            e.stats &&
+                            (args.withStatsFeatures
+                                .filter(f => {
+                                    const key = `n${f[0].toLocaleUpperCase()}${f.substring(1)}`;
+                                    return (key in e.stats && e.stats[key] > 0);
+                                })
+                                .length === args.withStatsFeatures.length)
+                        )
+                    )
             }
         },
         Entry: {

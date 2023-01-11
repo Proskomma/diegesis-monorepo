@@ -31,6 +31,8 @@ const querySchema = gql`
             languages:  [String!]
             """Only entries with title matching regex"""
             titleMatching: String
+            """Only entries with stats features"""
+            withStatsFeatures: [String!]!
         ) : [Entry!]!
         
         """An entry, by primary key, if it exists"""
