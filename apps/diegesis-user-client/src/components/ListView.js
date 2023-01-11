@@ -8,27 +8,30 @@ import Spinner from './Spinner';
 
 export default function ListView({searchTerms}) {
 
-    const queryString = searchQuery(
-        `query localTranslations {
-        entries {
-            source
-            types
-            owner
-            revision
-            id
-            language
-            title
-            copyright
-            textDirection
-            ot: stat(field:"nOT")
-            chapters: resourcesStat(field:"nChapters") {bookCode stat}
-            canonResources {type suffix isOriginal}
-            canonResource(type:"versification") {content}
-            bookResources(bookCode: "RUT") {type suffix, isOriginal content}
-            bookResource(bookCode: "RUT" type: "usfm") {type suffix, isOriginal content}
-            bookCodes
-            bookResourceTypes
-        }
+    const oldQuery =  `entries {
+    source
+    types
+    owner
+    revision
+    id
+    language
+    title
+    copyright
+    textDirection
+    ot: stat(field:"nOT")
+    chapters: resourcesStat(field:"nChapters") {bookCode stat}
+    canonResources {type suffix isOriginal}
+    canonResource(type:"versification") {content}
+    bookResources(bookCode: "RUT") {type suffix, isOriginal content}
+    bookResource(bookCode: "RUT" type: "usfm") {type suffix, isOriginal content}
+    bookCodes
+    bookResourceTypes
+}`;
+
+
+const queryString = searchQuery(
+        `query {
+        entries(titleMatching:"trans") {source owner id revision}
         orgs {
             id: name
             localTranslations%searchClause% {
@@ -154,7 +157,7 @@ export default function ListView({searchTerms}) {
     if (error) {
         return <GqlError error={error}/>
     }
-    // console.log(data.entries);
+    console.log(data.entries);
     let translations = [];
     const so = searchTerms.org.trim().toLowerCase();
     for (const orgData of data.orgs) {

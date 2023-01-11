@@ -268,7 +268,29 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                         }
                     }
                 }
-                return ret;
+                return ret
+                    .filter(e =>
+                        !args.sources ||
+                        args.sources.includes(e.source))
+                    .filter(e =>
+                        !args.owners ||
+                        args.owners.includes(e.owner))
+                    .filter(e =>
+                        !args.ids ||
+                        args.ids.includes(e.id))
+                    .filter(e =>
+                        !args.languages ||
+                        args.languages.includes(e.languageCode))
+                    .filter(e =>
+                        !args.titleMatching ||
+                        e.title.toLocaleLowerCase()
+                            .includes(args.titleMatching.toLocaleLowerCase()))
+                    .filter(e =>
+                        !args.types ||
+                        args.types
+                            .filter(t => e.resourceTypes.includes(t))
+                            .length > 0
+                    );
             }
         },
         Entry: {
