@@ -31,10 +31,9 @@ export default function ListView({searchTerms}) {
 
 const queryString = searchQuery(
         `query {
-        entries(sortedBy: "languageCode") {title source id}
         orgs {
             id: name
-            localTranslations%searchClause% {
+            localEntries%searchClause% {
                 resourceTypes
                 id
                 languageCode
@@ -157,11 +156,10 @@ const queryString = searchQuery(
     if (error) {
         return <GqlError error={error}/>
     }
-    console.log(data.entries);
     let translations = [];
     const so = searchTerms.org.trim().toLowerCase();
     for (const orgData of data.orgs) {
-        orgData.localTranslations.forEach(
+        orgData.localEntries.forEach(
             lt => {
                 if (so === 'all' || so === orgData.id.toLowerCase()) {
                     translations.push({...lt, org: orgData.id});

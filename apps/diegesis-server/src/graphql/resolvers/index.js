@@ -21,7 +21,7 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
 
     const scalarRegexes = {
         OrgName: new RegExp(/^[A-Za-z0-9]{2,64}$/),
-        TranslationId: new RegExp(/^[A-Za-z0-9_-]{1,64}$/),
+        EntryId: new RegExp(/^[A-Za-z0-9_-]{1,64}$/),
         BookCode: new RegExp(/^[A-Z0-9]{3}$/),
         ContentType: new RegExp(/^(USFM|USX)$/),
     }
@@ -78,14 +78,14 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
         },
     });
 
-    const translationIdScalar = new GraphQLScalarType({
-        name: 'TranslationId',
-        description: 'Identifier for a translation',
+    const entryIdScalar = new GraphQLScalarType({
+        name: 'EntryId',
+        description: 'Identifier for an entry',
         serialize(value) {
             if (typeof value !== 'string') {
                 return null;
             }
-            if (!scalarRegexes.TranslationId.test(value)) {
+            if (!scalarRegexes.EntryId.test(value)) {
                 return null;
             }
             return value;
@@ -97,7 +97,7 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
             if (ast.kind !== Kind.STRING) {
                 throw new Error(`Must be a string, not ${ast.kind}`);
             }
-            if (!scalarRegexes.TranslationId.test(ast.value)) {
+            if (!scalarRegexes.EntryId.test(ast.value)) {
                 throw new Error(`One or more characters is not allowed`);
             }
             return ast.value
@@ -130,10 +130,10 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
         },
     });
 
-    const filteredCatalog = (org, args, context, translations) => {
+    const filteredCatalog = (org, args, context, entries) => {
         context.orgData = org;
         context.orgHandler = orgHandlers[org.name];
-        let ret = [...translations];
+        let ret = [...entries];
         if (args.withId) {
             ret = ret.filter(t => args.withId.includes(t.id));
         }
@@ -200,7 +200,7 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
         return ret;
     }
 
-    const localTranslations = orgData => {
+    const localEntries = orgData => {
         const ret = [];
         const td = path.resolve(config.dataPath, orgData.translationDir);
         for (const entryId of fse.readdirSync(td)) {
@@ -214,7 +214,7 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
         return ret;
     }
 
-    const localTranslation = (org, entryId, revision) => {
+    const localEntry = (org, entryId, revision) => {
         const translationPath = transPath(config.dataPath, org, entryId, revision);
         if (fse.pathExistsSync(translationPath)) {
             return fse.readJsonSync(path.join(translationPath, "metadata.json"));
@@ -237,7 +237,7 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
 
     const scalarResolvers = {
         OrgName: orgNameScalar,
-        TranslationId: translationIdScalar,
+        EntryId: entryIdScalar,
         BookCode: bookCodeScalar,
         ContentType: ContentTypeScalar,
     }
@@ -250,7 +250,7 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                 context.incidentLogger = config.incidentLogger;
                 return orgsData[args.name];
             },
-            entries: (root, args) => {
+            localEntries: (root, args) => {
                 let ret = [];
                 for (const source of fse.readdirSync(config.dataPath)) {
                     const sourcePath = path.join(config.dataPath, source);
@@ -311,7 +311,7 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                 return ret;
             }
         },
-        Entry: {
+        LocalEntry: {
             types: root => root.resourceTypes,
             language: root => root.languageCode,
             stat: (root, args) => {
@@ -506,9 +506,9 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                 if (!context.auth.roles || !context.auth.roles.includes("admin")) {
                     throw new Error(`Required auth role 'admin' not found for nCatalogEntries`);
                 }
-                return org.translations.length
+                return org.entries.length
             },
-            nLocalTranslations: (org, args) => {
+            nLocalEntries: (org, args) => {
                 let ret = localTranslations(org);
                 if (args.withUsfm) {
                     ret = ret.filter(t => fse.pathExistsSync(usfmDir(config.dataPath, org.translationDir, t.id, t.revision)));
@@ -525,14 +525,14 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                 if (!context.auth.roles || !context.auth.roles.includes("admin")) {
                     throw new Error(`Required auth role 'admin' not found for catalogEntries`);
                 }
-                return filteredCatalog(org, args, context, org.translations);
+                return filteredCatalog(org, args, context, org.entries);
             },
-            localTranslations: (org, args, context) => {
+            localEntries: (org, args, context) => {
                 return filteredCatalog(
                     org,
                     args,
                     context,
-                    localTranslations(org) || [])
+                    localEntries(org) || [])
                     .filter(t => hasAllFeatures(t, args.withFeatures || []));
             },
             catalogEntry: (org, args, context) => {
@@ -544,19 +544,19 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                 }
                 context.orgData = org;
                 context.orgHandler = orgHandlers[org.name];
-                return org.translations
+                return org.entries
                     .filter(t => t.id === args.id)[0];
             },
-            localTranslation: (org, args, context) => {
+            localEntry: (org, args, context) => {
                 context.orgData = org;
                 context.orgHandler = orgHandlers[org.name];
-                return localTranslation(org.orgDir, args.id, args.revision);
+                return localEntry(org.orgDir, args.id, args.revision);
             },
         },
         CatalogEntry: {
             isLocal: (trans, args, context) => fse.pathExists(transParentPath(config.dataPath, context.orgData.translationDir, trans.id)),
         },
-        Translation: {
+        Entry: {
             resourceTypes: trans => trans.resourceTypes || [],
             nUsfmBooks: (trans, args, context) => {
                 const usfmDirPath = usfmDir(config.dataPath, context.orgData.translationDir, trans.id, trans.revision);
@@ -737,7 +737,7 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                 if (!orgOb) {
                     return false;
                 }
-                const transOb = orgOb.translations.filter(t => t.id === args.translationId)[0];
+                const transOb = orgOb.entries.filter(t => t.id === args.entryId)[0];
                 if (!transOb) {
                     return false;
                 }
@@ -767,7 +767,7 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                 if (!orgOb) {
                     return false;
                 }
-                const transOb = orgOb.translations.filter(t => t.id === args.translationId)[0];
+                const transOb = orgOb.entries.filter(t => t.id === args.entryId)[0];
                 if (!transOb) {
                     return false;
                 }
@@ -783,12 +783,12 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                     return false;
                 }
             },
-            deleteLocalTranslation: async (root, args, context) => {
+            deleteLocalEntry: async (root, args, context) => {
                 if (!context.auth || !context.auth.authenticated) {
-                    throw new Error(`No auth found for deleteLocalTranslation mutation`);
+                    throw new Error(`No auth found for deleteLocalEntry mutation`);
                 }
                 if (!context.auth.roles || !context.auth.roles.includes("admin")) {
-                    throw new Error(`Required auth role 'admin' not found for deleteLocalTranslation`);
+                    throw new Error(`Required auth role 'admin' not found for deleteLocalEntry`);
                 }
                 const orgOb = orgsData[args.org];
                 if (!orgOb) {
@@ -822,7 +822,7 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                 if (!orgOb) {
                     return false;
                 }
-                const transOb = orgOb.translations.filter(t => t.id === args.translationId)[0];
+                const transOb = orgOb.entries.filter(t => t.id === args.entryId)[0];
                 if (!transOb) {
                     return false;
                 }

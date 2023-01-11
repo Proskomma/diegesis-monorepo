@@ -18,7 +18,7 @@ export default function EntryBrowsePage() {
     const queryString =
         `query {
           org(name:"""%source%""") {
-            localTranslation(
+            localEntry(
               id: """%entryId%"""
               revision: """%revision%"""
             ) {
@@ -44,7 +44,7 @@ export default function EntryBrowsePage() {
         return <GqlError error={error}/>;
     }
 
-    const translationInfo = data.org.localTranslation;
+    const entryInfo = data.org.localEntry;
 
     const pk = new Proskomma([
         {
@@ -64,8 +64,8 @@ export default function EntryBrowsePage() {
         },
     ]);
 
-    if (translationInfo.succinct) {
-        pk.loadSuccinctDocSet(JSON.parse(translationInfo.succinct));
+    if (entryInfo.succinct) {
+        pk.loadSuccinctDocSet(JSON.parse(entryInfo.succinct));
     }
 
     return <Container fixed className="homepage">
@@ -75,7 +75,7 @@ export default function EntryBrowsePage() {
                 <Button>
                     <RouterLink to="/list"><ArrowBack/></RouterLink>
                 </Button>
-                {translationInfo.title}
+                {entryInfo.title}
                 <Button>
                     <RouterLink to={`/entry/details/${source}/${entryId}/${revision}`}><Info/></RouterLink>
                 </Button>
@@ -84,8 +84,8 @@ export default function EntryBrowsePage() {
                         to={`/entry/download/${source}/${entryId}/${revision}`}><Download/></RouterLink>
                 </Button>
             </Typography>
-            {translationInfo.succinct && <BrowseScripture pk={pk}/>}
-            {!translationInfo.succinct &&
+            {entryInfo.succinct && <BrowseScripture pk={pk}/>}
+            {!entryInfo.succinct &&
             <Typography paragraph="true">Unable to render this translation at present: please try later</Typography>}
             <Footer/>
         </Box>

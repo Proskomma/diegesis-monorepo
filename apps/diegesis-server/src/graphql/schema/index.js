@@ -2,7 +2,7 @@ const {gql} = require("apollo-server-express");
 
 const scalarSchema = gql`
     scalar OrgName
-    scalar TranslationId
+    scalar EntryId
     scalar BookCode
     scalar ContentType
     `;
@@ -18,7 +18,7 @@ const querySchema = gql`
         ): Org
     
         """Entries available across all sources on this server"""
-        entries(
+        localEntries(
             """Only entries from these sources"""
             sources:  [String!]
             """Only entries from these owners"""
@@ -37,21 +37,21 @@ const querySchema = gql`
             sortedBy: String
             """Sort in reverse order"""
             reverse: Boolean
-        ) : [Entry!]!
+        ) : [LocalEntry!]!
         
         """An entry, by primary key, if it exists"""
-        entry(
+        localEntry(
             """The entry source"""
             source: String!
             """The entry id"""
             id: String!
             """The entry revision"""
             revision: String!
-        ): Entry
+        ): LocalEntry
     }
     
     """An entry"""
-    type Entry {
+    type LocalEntry {
         """The types of the entry"""
         types: [String!]!
         """The source of the entry"""
@@ -159,18 +159,18 @@ const querySchema = gql`
         contentType: ContentType!
         """The number of catalog entries for this organization"""
         nCatalogEntries: Int!
-        """The number of local translations for this organization"""
-        nLocalTranslations(
-            """Only count translations with local USFM"""
+        """The number of local entries for this organization"""
+        nLocalEntries(
+            """Only count entries with local USFM"""
             withUsfm: Boolean
-            """Only count translations with local USX"""
+            """Only count entries with local USX"""
             withUsx: Boolean
         )
         : Int!
         """The catalog entries that are available from this organization"""
         catalogEntries(
             """The ids of the catalogEntries"""
-            withId: [TranslationId!]
+            withId: [EntryId!]
             """Filter according to presence or absence of USFM"""
             withUsfm: Boolean
             """Filter according to presence or absence of USX"""
@@ -187,12 +187,12 @@ const querySchema = gql`
         """Catalog entry of this organization with the given id, if found"""
         catalogEntry(
             """The id of the catalog entry"""
-            id: TranslationId!
+            id: EntryId!
         ): CatalogEntry
-        """The translations that are available locally from this organization"""
-        localTranslations(
-            """The ids of the translations"""
-            withId: [TranslationId!]
+        """The entries that are available locally from this organization"""
+        localEntries(
+            """The ids of the entries"""
+            withId: [EntryId!]
             """Filter according to presence or absence of USFM"""
             withUsfm: Boolean
             """Filter according to presence or absence of USX"""
@@ -213,43 +213,43 @@ const querySchema = gql`
             sortedBy: String
             """Sort in reverse order"""
             reverse: Boolean
-        ): [Translation!]!
-        """Translation of this organization with the given id, if found locally"""
-        localTranslation(
-            """The id of the translation"""
-            id: TranslationId!
-            """The revision of the translation"""
+        ): [Entry!]!
+        """Entry of this organization with the given id, if found locally"""
+        localEntry(
+            """The id of the entry"""
+            id: EntryId!
+            """The revision of the entry"""
             revision: String!
-        ): Translation
+        ): Entry
     }
     """A Catalog Entry"""
     type CatalogEntry {
-        """An id for the translation which is unique within the organization"""
-        id: TranslationId!
-        """The revision of the translation"""
+        """An id for the entry which is unique within the organization"""
+        id: EntryId!
+        """The revision of the entry"""
         revision: String!
         """The language code"""
         languageCode: String!
         """The owner"""
         owner: String!
-        """a title of the translation"""
+        """a title of the entry"""
         title: String!
         """is this org/id local?"""
         isLocal: Boolean!
     }
-    """A Local Translation"""
-    type Translation {
+    """A Local Entry"""
+    type Entry {
         """A list of resource types for this entry"""
         resourceTypes: [String!]!
-        """An id for the translation which is unique within the organization"""
-        id: TranslationId!
-        """The revision of the translation"""
+        """An id for the entry which is unique within the organization"""
+        id: EntryId!
+        """The revision of the entry"""
         revision: String!
         """The language code"""
         languageCode: String!
         """The owner"""
         owner: String!
-        """a title of the translation"""
+        """a title of the entry"""
         title: String!
         """The direction of the text"""
         textDirection: String
@@ -259,69 +259,69 @@ const querySchema = gql`
         copyright: String!
         """An abbreviation"""
         abbreviation: String!
-        """The number of Scripture books as USFM in this translation"""
+        """The number of Scripture books as USFM in this entry"""
         nUsfmBooks: Int
-        """The bookCodes of Scripture books as USFM in this translation"""
+        """The bookCodes of Scripture books as USFM in this entry"""
         usfmBookCodes: [BookCode!]
-        """Whether or not USFM for this bookCode is present for this translation"""
+        """Whether or not USFM for this bookCode is present for this entry"""
         hasUsfmBookCode(
             """The bookCode (3-char upper-case Paratext format)"""
             code: BookCode!
         ): Boolean
         """Is USFM available?"""
         hasUsfm: Boolean!
-        """The USFM for this translation"""
+        """The USFM for this entry"""
         usfmForBookCode(
             """The bookCode"""
             code: BookCode!
         ): String
         nUsxBooks: Int
-        """The bookCodes of Scripture books as USX in this translation"""
+        """The bookCodes of Scripture books as USX in this entry"""
         usxBookCodes: [BookCode!]
-        """Whether or not USX for this bookCode is present for this translation"""
+        """Whether or not USX for this bookCode is present for this entry"""
         hasUsxBookCode(
             """The bookCode (3-char upper-case Paratext format)"""
             code: BookCode!
         ): Boolean
         """Is USX available?"""
         hasUsx: Boolean!
-        """The USX for this translation"""
+        """The USX for this entry"""
         usxForBookCode(
             """The bookCode"""
             code: BookCode!
         ): String
         """Is PERF available?"""
         hasPerf: Boolean!
-        """The PERF for this translation"""
+        """The PERF for this entry"""
         perfForBookCode(
             """The bookCode"""
             code: BookCode!
         ): String
         """Is simplePERF available?"""
         hasSimplePerf: Boolean!
-        """The simplePERF for this translation"""
+        """The simplePERF for this entry"""
         simplePerfForBookCode(
             """The bookCode"""
             code: BookCode!
         ): String
         """Is SOFRIA available?"""
         hasSofria: Boolean!
-        """The SOFRIA for this translation"""
+        """The SOFRIA for this entry"""
         sofriaForBookCode(
             """The bookCode"""
             code: BookCode!
         ): String
         """Is Proskomma succinct docSet available?"""
         hasSuccinct: Boolean!
-        """The Proskomma succinct docSet for this translation"""
+        """The Proskomma succinct docSet for this entry"""
         succinct: String
         """Is there a succinct Json error?"""
         hasSuccinctError: Boolean!
-        """The succinct Json error for this translation"""
+        """The succinct Json error for this entry"""
         succinctError: String
         """Is VRS file available?"""
         hasVrs: Boolean!
-        """The VRS file for this translation"""
+        """The VRS file for this entry"""
         vrs: String
         """The number of OT books in this document"""
         nOT: Int!
@@ -359,30 +359,30 @@ const mutationSchema = gql`
         fetchUsfm(
             """The name of the organization"""
             org: OrgName!
-            """The id of the translation"""
-            translationId: TranslationId!
+            """The id of the entry"""
+            entryId: EntryId!
         ) : Boolean!
-        deleteLocalTranslation (
+        deleteLocalEntry (
             """The name of the organization"""
             org: OrgName!
-            id: TranslationId!
-            """The revision of the translation"""
+            id: EntryId!
+            """The revision of the entry"""
             revision: String!
         ) : Boolean!
         """Fetches and processes the specified USX content from a remote server"""
         fetchUsx(
             """The name of the organization"""
             org: OrgName!
-            """The id of the translation"""
-            translationId: TranslationId!
+            """The id of the entry"""
+            entryId: EntryId!
         ) : Boolean!
         """Deletes a succinct error, if present, which will allow succinct generation by the cron"""
         deleteSuccinctError(
             """The name of the organization"""
             org: OrgName!
-            """The id of the translation"""
-            id: TranslationId!
-            """The revision of the translation"""
+            """The id of the entry"""
+            id: EntryId!
+            """The revision of the entry"""
             revision: String!
         ) : Boolean!
     }

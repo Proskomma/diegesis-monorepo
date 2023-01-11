@@ -27,7 +27,7 @@ async function setupNonPeerOrg(config, orgRecord) {
         fullName: orgRecord.fullName,
         contentType: orgRecord.contentType,
         translationDir: orgRecord.translationDir,
-        translations: await orgHandler.getTranslationsCatalog(config),
+        entries: await orgHandler.getTranslationsCatalog(config),
     };
     return [orgHandler, orgData];
 }

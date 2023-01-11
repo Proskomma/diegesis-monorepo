@@ -15,7 +15,7 @@ export default function EntryDetailsPage() {
     const queryString =
         `query {
           org(name:"""%source%""") {
-            localTranslation(
+            localEntry(
               id: """%entryId%"""
               revision: """%revision%"""
             ) {
@@ -44,7 +44,7 @@ export default function EntryDetailsPage() {
         return <GqlError error={error}/>
     }
 
-    const translationInfo = data.org.localTranslation;
+    const entryInfo = data.org.localEntry;
 
     return <Container fixed className="homepage">
         <Header selected="list"/>
@@ -52,7 +52,7 @@ export default function EntryDetailsPage() {
             <Typography variant="h4" paragraph="true" sx={{mt: "20px"}}>
                 <Button>
                     <RouterLink to={`/entry/browse/${source}/${entryId}/${revision}`} relative="path"><ArrowBack/></RouterLink></Button>
-                {translationInfo.title}
+                {entryInfo.title}
             </Typography>
             <Typography variant="h5" paragraph="true">Details</Typography>
             <Grid container>
@@ -60,30 +60,30 @@ export default function EntryDetailsPage() {
                     <Typography variant="body1" paragraph="true">Abbreviation</Typography>
                 </Grid>
                 <Grid item xs={9}>
-                    <Typography variant="body1" paragraph="true">{translationInfo.abbreviation}</Typography>
+                    <Typography variant="body1" paragraph="true">{entryInfo.abbreviation}</Typography>
                 </Grid>
                 <Grid item xs={3}>
                     <Typography variant="body1" paragraph="true">Copyright</Typography>
                 </Grid>
                 <Grid item xs={9}>
-                    <Typography variant="body1" paragraph="true">{translationInfo.copyright}</Typography>
+                    <Typography variant="body1" paragraph="true">{entryInfo.copyright}</Typography>
                 </Grid>
                 <Grid item xs={3}>
                     <Typography variant="body1" paragraph="true">Language</Typography>
                 </Grid>
                 <Grid item xs={3}>
                     <Typography variant="body1" paragraph="true">
-                        {translationInfo.languageCode}
+                        {entryInfo.languageCode}
                     </Typography>
                 </Grid>
                 <Grid item xs={3}>
                     <Typography variant="body1" paragraph="true">
-                        {translationInfo.textDirection ? translationInfo.textDirection : ""}
+                        {entryInfo.textDirection ? entryInfo.textDirection : ""}
                     </Typography>
                 </Grid>
                 <Grid item xs={3}>
                     <Typography variant="body1" paragraph="true">
-                        {translationInfo.script ? translationInfo.script : ""}
+                        {entryInfo.script ? entryInfo.script : ""}
                     </Typography>
                 </Grid>
                 <Grid item xs={3}>
@@ -96,7 +96,7 @@ export default function EntryDetailsPage() {
                     <Typography variant="body1" paragraph="true">Owner</Typography>
                 </Grid>
                 <Grid item xs={9}>
-                    <Typography variant="body1" paragraph="true">{translationInfo.owner}</Typography>
+                    <Typography variant="body1" paragraph="true">{entryInfo.owner}</Typography>
                 </Grid>
                 <Grid item xs={3}>
                     <Typography variant="body1" paragraph="true">Entry ID</Typography>

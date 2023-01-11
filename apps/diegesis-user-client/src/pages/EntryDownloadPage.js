@@ -32,7 +32,7 @@ export default function EntryDownloadPage() {
         }
         const queryString = `query {
             org(name:"""%source%""") {
-              localTranslation(
+              localEntry(
                 id: """%entryId%"""
                 revision: """%revision%"""
               ) {
@@ -47,7 +47,7 @@ export default function EntryDownloadPage() {
         const query = gql`${queryString}`;
         const result = await client.query({query});
         const element = document.createElement("a");
-        const file = new Blob([result.data.org.localTranslation[downloadType]], {type: downloadTypes[downloadType].mime});
+        const file = new Blob([result.data.org.localEntry[downloadType]], {type: downloadTypes[downloadType].mime});
         element.href = URL.createObjectURL(file);
         element.download = `${source}_${entryId}_${revision}_${downloadTypes[downloadType].suffix}`;
         document.body.appendChild(element);
@@ -83,7 +83,7 @@ export default function EntryDownloadPage() {
         }
         const queryString = `query {
             org(name:"""%source%""") {
-              localTranslation(
+              localEntry(
                 id: """%entryId%"""
                 revision: """%revision%"""
               ) {
@@ -99,7 +99,7 @@ export default function EntryDownloadPage() {
         const query = gql`${queryString}`;
         const result = await client.query({query});
         const element = document.createElement("a");
-        const file = new Blob([result.data.org.localTranslation.download], {type: downloadTypes[downloadType].mime});
+        const file = new Blob([result.data.org.localEntry.download], {type: downloadTypes[downloadType].mime});
         element.href = URL.createObjectURL(file);
         element.download = `${source}_${entryId}_${revision}_${bookCode}_${downloadTypes[downloadType].suffix}`;
         document.body.appendChild(element);
@@ -109,7 +109,7 @@ export default function EntryDownloadPage() {
     const queryString =
         `query {
           org(name:"""%source%""") {
-            localTranslation(
+            localEntry(
               id: """%entryId%"""
               revision: """%revision%"""
             ) {
@@ -140,13 +140,13 @@ export default function EntryDownloadPage() {
         return <GqlError error={error}/>
     }
 
-    const translationInfo = data.org.localTranslation;
+    const entryInfo = data.org.localEntry;
 
     let bookCodes;
-    if (translationInfo.usfmBookCodes.length > 0) {
-        bookCodes = [...translationInfo.usfmBookCodes];
+    if (entryInfo.usfmBookCodes.length > 0) {
+        bookCodes = [...entryInfo.usfmBookCodes];
     } else {
-        bookCodes = [...translationInfo.usxBookCodes];
+        bookCodes = [...entryInfo.usxBookCodes];
     }
 
     return <Container fixed className="homepage">
@@ -155,14 +155,14 @@ export default function EntryDownloadPage() {
             <Typography variant="h4" paragraph="true" sx={{mt: "20px"}}>
                 <Button>
                     <RouterLink to={`/entry/browse/${source}/${entryId}/${revision}`} relative="path"><ArrowBack/></RouterLink></Button>
-                {translationInfo.title}
+                {entryInfo.title}
             </Typography>
             <Grid container>
                 <Grid item xs={12}>
                     <Typography variant="h5" paragraph="true">Download by Translation</Typography>
                 </Grid>
                 {
-                    translationInfo.hasSuccinct &&
+                    entryInfo.hasSuccinct &&
                     <>
                         <Grid item xs={4}>
                             <Typography variant="body1" paragraph="true">Proskomma Succinct</Typography>
@@ -177,7 +177,7 @@ export default function EntryDownloadPage() {
                     </>
                 }
                 {
-                    translationInfo.hasVrs &&
+                    entryInfo.hasVrs &&
                     <>
                         <Grid item xs={4}>
                             <Typography variant="body1" paragraph="true">Versification</Typography>
@@ -225,7 +225,7 @@ export default function EntryDownloadPage() {
                                         <Typography variant="body1" paragraph="true">
                                             <Button
                                                 onClick={() => downloadBook("usfm", b)}
-                                                disabled={!translationInfo.hasUsfm}
+                                                disabled={!entryInfo.hasUsfm}
                                             >
                                                 <Download/>
                                             </Button>
@@ -235,7 +235,7 @@ export default function EntryDownloadPage() {
                                         <Typography variant="body1" paragraph="true">
                                             <Button
                                                 onClick={() => downloadBook("usx", b)}
-                                                disabled={!translationInfo.hasUsx}
+                                                disabled={!entryInfo.hasUsx}
                                             >
                                                 <Download/>
                                             </Button>
@@ -245,7 +245,7 @@ export default function EntryDownloadPage() {
                                         <Typography variant="body1" paragraph="true">
                                             <Button
                                                 onClick={() => downloadBook("perf", b)}
-                                                disabled={!translationInfo.hasPerf}
+                                                disabled={!entryInfo.hasPerf}
                                             >
                                                 <Download/>
                                             </Button>
@@ -255,7 +255,7 @@ export default function EntryDownloadPage() {
                                         <Typography variant="body1" paragraph="true">
                                             <Button
                                                 onClick={() => downloadBook("simplePerf", b)}
-                                                disabled={!translationInfo.hasPerf}
+                                                disabled={!entryInfo.hasPerf}
                                             >
                                                 <Download/>
                                             </Button>
@@ -265,7 +265,7 @@ export default function EntryDownloadPage() {
                                         <Typography variant="body1" paragraph="true">
                                             <Button
                                                 onClick={() => downloadBook("sofria", b)}
-                                                disabled={!translationInfo.hasSofria}
+                                                disabled={!entryInfo.hasSofria}
                                             >
                                                 <Download/>
                                             </Button>

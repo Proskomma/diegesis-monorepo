@@ -1,10 +1,10 @@
 import React from 'react';
 import { searchQuery } from '../lib/search';
-import TranslationsTable from "./TranslationsTable";
+import EntriesTable from "./EntriesTable";
 import {gql, useQuery,useApolloClient,} from "@apollo/client";
 import GqlLoading from "./GqlLoading";
 import GqlError from "./GqlError";
-import { deleteTranslation } from '../lib/tableCallbacks';
+import { deleteEntry } from '../lib/tableCallbacks';
 import { Button } from '@mui/material';
 import {Delete} from '@mui/icons-material';
 
@@ -13,10 +13,10 @@ export default function LocalTab({selectedOrg, searchLang, searchText}) {
     const client = useApolloClient();
 
     const queryString = searchQuery(
-        `query localTranslations {
+        `query {
         org(name: "%org%") {
             id: name
-            localTranslations%searchClause% {
+            localEntries%searchClause% {
                 id
                 revision
                 languageCode
@@ -72,26 +72,26 @@ export default function LocalTab({selectedOrg, searchLang, searchText}) {
         },
     ];
 
-    const createData = localTranslation => {
-        let succinctState = localTranslation.hasSuccinct ? 'yes' : 'no';
-        if (localTranslation.hasSuccinctError) {
+    const createData = localEntry => {
+        let succinctState = localEntry.hasSuccinct ? 'yes' : 'no';
+        if (localEntry.hasSuccinctError) {
             succinctState = 'FAIL';
         }
         return {
-            id: localTranslation.id,
-            languageCode: localTranslation.languageCode,
-            title: localTranslation.title,
-            owner: localTranslation.owner,
-            revision: localTranslation.revision,
+            id: localEntry.id,
+            languageCode: localEntry.languageCode,
+            title: localEntry.title,
+            owner: localEntry.owner,
+            revision: localEntry.revision,
             hasSuccinct: succinctState,
-            hasVrs: localTranslation.hasVrs,
+            hasVrs: localEntry.hasVrs,
             actions: <Button
                 onClick={
-                    () => deleteTranslation(
+                    () => deleteEntry(
                         client,
                         selectedOrg,
-                        localTranslation.id,
-                        localTranslation.revision,
+                        localEntry.id,
+                        localEntry.revision,
                     )
                 }
             >
@@ -106,7 +106,7 @@ export default function LocalTab({selectedOrg, searchLang, searchText}) {
     if (error) {
         return <GqlError error={error} />
     }
-    const rows = data.org.localTranslations.map(lt => createData(lt));
-    return <TranslationsTable columns={columns} rows={rows}/>
+    const rows = data.org.localEntries.map(lt => createData(lt));
+    return <EntriesTable columns={columns} rows={rows}/>
 
 }
