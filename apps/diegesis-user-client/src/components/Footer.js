@@ -1,12 +1,11 @@
 import {Box, Typography} from '@mui/material';
 import { useContext } from 'react';
 import AppLangContext from '../contexts/AppLangContext';
-import i18n from '../translations';
+import i18n from '../i18n';
 
 export default function Footer() {
 
     const appLang = useContext(AppLangContext);
-    console.log(appLang);
     const start = i18n(appLang,'FOOTER_START')
     const end = i18n(appLang,'FOOTER_END')
     const link = i18n(appLang,'FOOTER_LINK')

@@ -9,8 +9,7 @@ import {
   Blender,
 } from "@mui/icons-material";
 import AppLangContext from "../contexts/AppLangContext";
-import { i18nTables } from "../translations";
-import i18n from "../translations";
+import langTable from "../i18n/languages.json"
 
 
 export default function Header({ selected, children,setAppLanguage }) {
@@ -27,7 +26,6 @@ export default function Header({ selected, children,setAppLanguage }) {
   };
 
   const appLang = useContext(AppLangContext);
-  console.log(appLang);
 
   const handleLanguageChange = e => setAppLanguage(e.target.value)
 
@@ -83,26 +81,14 @@ export default function Header({ selected, children,setAppLanguage }) {
             >
                 --
             </MenuItem>
-            <MenuItem
-                key={2}
-                value={"en"}
-            >
-                English
-            </MenuItem>
-            <MenuItem
-                key={0}
-                value={"fr"}
-            >
-                French
-            </MenuItem>
-            {/* {langTable.map((id, name) => (
+            {Object.entries(langTable).map((kv, n) => (
                 <MenuItem
-                    key={id}
-                    value={name}
+                    key={n}
+                    value={kv[0]}
                 >
-                    {name}
+                    {kv[1].autonym}
                 </MenuItem>
-            ))} */}
+            ))}
 
         </Select>
       </Toolbar>

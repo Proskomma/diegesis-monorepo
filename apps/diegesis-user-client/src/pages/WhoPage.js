@@ -4,7 +4,7 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import AppLangContext from "../contexts/AppLangContext";
 import { useContext } from "react";
-import i18n from "../translations";
+import i18n from "../i18n";
 
 export default function WhoPage({setAppLanguage}) {
 
@@ -13,7 +13,6 @@ export default function WhoPage({setAppLanguage}) {
     };
 
     const appLang = useContext(AppLangContext);
-    console.log(appLang);
     const title = i18n(appLang,'WHO_TITLE')
     const subtitle = i18n(appLang,'WHO_SUBTITLE1')
     const sSubtitle = i18n(appLang,'WHO_SUBTITLE2')

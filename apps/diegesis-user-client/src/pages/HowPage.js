@@ -4,12 +4,11 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { useContext } from "react";
 import AppLangContext from "../contexts/AppLangContext";
-import i18n from "../translations";
+import i18n from "../i18n";
 
 export default function HowPage({setAppLanguage}) {
 
     const appLang = useContext(AppLangContext);
-    console.log(appLang);
     const title = i18n(appLang,'HOW_TITLE')
     const phrase = i18n(appLang,'HOW_PHRASE')
     const suitePhrase = i18n(appLang,'HOW_SUITE_PHRASE')
