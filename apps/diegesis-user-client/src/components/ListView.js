@@ -34,31 +34,30 @@ const queryString = searchQuery(
         orgs {
             id: name
             localEntries%searchClause% {
-                resourceTypes
+                types
                 id
-                languageCode
+                language
                 owner
                 revision
                 title
-                hasUsfm
-                hasUsx
-                hasSuccinct
+                bookResourceTypes
+                succinctRecord: canonResource(type:"succinct") {type}
+                vrsRecord: canonResource(type:"succinct") {type}
+                nOT: stat(field:"nOT")
+                nNT: stat(field:"nNT")
+                nDC: stat(field:"nDC")
+                nIntroductions: stat(field:"nIntroductions")
+                nHeadings: stat(field:"nHeadings")
+                nFootnotes: stat(field:"nFootnotes")
+                nXrefs: stat(field:"nXrefs")
+                nStrong: stat(field:"nStrong")
+                nLemma: stat(field:"nLemma")
+                nGloss: stat(field:"nGloss")
+                nContent: stat(field:"nContent")
+                nOccurrences: stat(field:"nOccurrences")
+                nChapters: stat(field:"nChapters")
+                nVerses: stat(field:"nVerses")
                 hasSuccinctError
-                hasVrs
-                nOT,
-                nNT,
-                nDC,
-                nIntroductions,
-                nHeadings,
-                nFootnotes,
-                nXrefs,
-                nStrong,
-                nLemma,
-                nGloss,
-                nContent,
-                nOccurrences,
-                nChapters,
-                nVerses
             }
         }
     }`,
@@ -112,11 +111,11 @@ const queryString = searchQuery(
         return <Grid container xs={12} sx={{borderTop: "solid 1px #ccc", padding: "2px", marginBottom: "2px"}}>
             <Grid item xs={12} md={2}>
                 <Typography variant="body2"
-                            sx={{fontWeight: "bold", fontSize: "x-small"}}>{localTranslation.resourceTypes?.join(', ') || "?"}</Typography>
+                            sx={{fontWeight: "bold", fontSize: "x-small"}}>{localTranslation.types?.join(', ') || "?"}</Typography>
                 <Typography variant="body2"
                             sx={{fontWeight: "bold", fontSize: "x-small"}}>{localTranslation.owner}@{localTranslation.org}</Typography>
                 <Typography variant="body2"
-                            sx={{fontWeight: "bold", fontSize: "x-small"}}>{localTranslation.languageCode}</Typography>
+                            sx={{fontWeight: "bold", fontSize: "x-small"}}>{localTranslation.language}</Typography>
             </Grid>
             <Grid item xs={10} md={6}>
                 <RouterLink

@@ -115,6 +115,10 @@ const querySchema = gql`
         ) : [String!]!
         """Resource types that exist for this book"""
         bookResourceTypes: [String!]!
+        """Is there a succinctError file?"""
+        hasSuccinctError: Boolean!
+        """Is there a lock file?"""
+        hasLock: Boolean!
     }
     
     """A resource stat"""
@@ -189,39 +193,40 @@ const querySchema = gql`
             """The id of the catalog entry"""
             id: EntryId!
         ): CatalogEntry
-        """The entries that are available locally from this organization"""
+        
+        """Entries available for this org on this server"""
         localEntries(
-            """The ids of the entries"""
-            withId: [EntryId!]
-            """Filter according to presence or absence of USFM"""
-            withUsfm: Boolean
-            """Filter according to presence or absence of USX"""
-            withUsx: Boolean
-            """Filter according to presence or absence of succinct JSON"""
-            withSuccinct: Boolean
-            """Filter according to presence or absence of succinct generation error"""
-            withSuccinctError: Boolean
-            """Filter by owners"""
-            withOwner: [String!]
-            """Filter by language codes"""
-            withLanguageCode: [String!]
-            """Filter by text matches in title"""
-            withMatchingMetadata: [String!]
-            """Filter by set features"""
-            withFeatures: [String!]
-            """Sort by id, languageCode or title"""
+            """Only entries from these sources"""
+            sources:  [String!]
+            """Only entries from these owners"""
+            owners:  [String!]
+            """Only entries from these types"""
+            types:  [String!]
+            """Only entries with these ids"""
+            ids:  [String!]
+            """Only entries with these languages"""
+            languages:  [String!]
+            """Only entries with title matching regex"""
+            titleMatching: String
+            """Only entries with stats features"""
+            withStatsFeatures: [String!]
+            """Sort field"""
             sortedBy: String
             """Sort in reverse order"""
             reverse: Boolean
-        ): [Entry!]!
-        """Entry of this organization with the given id, if found locally"""
+        ) : [LocalEntry!]!
+        
+        """An entry, by primary key, if it exists"""
         localEntry(
-            """The id of the entry"""
-            id: EntryId!
-            """The revision of the entry"""
+            """The entry source"""
+            source: String!
+            """The entry id"""
+            id: String!
+            """The entry revision"""
             revision: String!
-        ): Entry
+        ): LocalEntry
     }
+
     """A Catalog Entry"""
     type CatalogEntry {
         """An id for the entry which is unique within the organization"""
@@ -236,121 +241,6 @@ const querySchema = gql`
         title: String!
         """is this org/id local?"""
         isLocal: Boolean!
-    }
-    """A Local Entry"""
-    type Entry {
-        """A list of resource types for this entry"""
-        resourceTypes: [String!]!
-        """An id for the entry which is unique within the organization"""
-        id: EntryId!
-        """The revision of the entry"""
-        revision: String!
-        """The language code"""
-        languageCode: String!
-        """The owner"""
-        owner: String!
-        """a title of the entry"""
-        title: String!
-        """The direction of the text"""
-        textDirection: String
-        """The script for the language"""
-        script: String
-        """A copyright message"""
-        copyright: String!
-        """An abbreviation"""
-        abbreviation: String!
-        """The number of Scripture books as USFM in this entry"""
-        nUsfmBooks: Int
-        """The bookCodes of Scripture books as USFM in this entry"""
-        usfmBookCodes: [BookCode!]
-        """Whether or not USFM for this bookCode is present for this entry"""
-        hasUsfmBookCode(
-            """The bookCode (3-char upper-case Paratext format)"""
-            code: BookCode!
-        ): Boolean
-        """Is USFM available?"""
-        hasUsfm: Boolean!
-        """The USFM for this entry"""
-        usfmForBookCode(
-            """The bookCode"""
-            code: BookCode!
-        ): String
-        nUsxBooks: Int
-        """The bookCodes of Scripture books as USX in this entry"""
-        usxBookCodes: [BookCode!]
-        """Whether or not USX for this bookCode is present for this entry"""
-        hasUsxBookCode(
-            """The bookCode (3-char upper-case Paratext format)"""
-            code: BookCode!
-        ): Boolean
-        """Is USX available?"""
-        hasUsx: Boolean!
-        """The USX for this entry"""
-        usxForBookCode(
-            """The bookCode"""
-            code: BookCode!
-        ): String
-        """Is PERF available?"""
-        hasPerf: Boolean!
-        """The PERF for this entry"""
-        perfForBookCode(
-            """The bookCode"""
-            code: BookCode!
-        ): String
-        """Is simplePERF available?"""
-        hasSimplePerf: Boolean!
-        """The simplePERF for this entry"""
-        simplePerfForBookCode(
-            """The bookCode"""
-            code: BookCode!
-        ): String
-        """Is SOFRIA available?"""
-        hasSofria: Boolean!
-        """The SOFRIA for this entry"""
-        sofriaForBookCode(
-            """The bookCode"""
-            code: BookCode!
-        ): String
-        """Is Proskomma succinct docSet available?"""
-        hasSuccinct: Boolean!
-        """The Proskomma succinct docSet for this entry"""
-        succinct: String
-        """Is there a succinct Json error?"""
-        hasSuccinctError: Boolean!
-        """The succinct Json error for this entry"""
-        succinctError: String
-        """Is VRS file available?"""
-        hasVrs: Boolean!
-        """The VRS file for this entry"""
-        vrs: String
-        """The number of OT books in this document"""
-        nOT: Int!
-        """The number of NT books in this document"""
-        nNT: Int!
-        """The number of DC books in this document"""
-        nDC: Int!
-        """The number of introductions in this document"""
-        nIntroductions: Int!
-        """The number of xrefs in this document"""
-        nXrefs: Int!
-        """The number of footnotes in this document"""
-        nFootnotes: Int!
-        """The number of headings in this document"""
-        nHeadings: Int!
-        """The number of strong markup in this document"""
-        nStrong: Int!
-        """The number of lemma markup in this document"""
-        nLemma: Int!
-        """The number of gloss markup in this document"""
-        nGloss: Int!
-        """The number of content markup in this document"""
-        nContent: Int!
-        """The number of occurrences markup in this document"""
-        nOccurrences: Int!
-        """The number of chapters in this document"""
-        nChapters: Int!
-        """The number of verses in this document"""
-        nVerses: Int!
     }
     `;
 const mutationSchema = gql`

@@ -16,9 +16,10 @@ function searchClause(searchTerms) {
 }
 
 function searchQuery(query, searchTerms) {
-    return query.replace(
+    return query
+    .replace(
         '%searchClause%',
-        searchClause(searchTerms)
+        ''
     );
 }
 
