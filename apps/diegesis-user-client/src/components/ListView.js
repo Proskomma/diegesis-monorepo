@@ -31,7 +31,7 @@ export default function ListView({searchTerms}) {
 
 const queryString = searchQuery(
         `query {
-        entries(withStatsFeatures:["footnotes"]) {source owner id revision}
+        entries(sortedBy: "languageCode") {title source id}
         orgs {
             id: name
             localTranslations%searchClause% {

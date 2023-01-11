@@ -32,7 +32,11 @@ const querySchema = gql`
             """Only entries with title matching regex"""
             titleMatching: String
             """Only entries with stats features"""
-            withStatsFeatures: [String!]!
+            withStatsFeatures: [String!]
+            """Sort field"""
+            sortedBy: String
+            """Sort in reverse order"""
+            reverse: Boolean
         ) : [Entry!]!
         
         """An entry, by primary key, if it exists"""

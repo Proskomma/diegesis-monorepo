@@ -250,7 +250,7 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                 context.incidentLogger = config.incidentLogger;
                 return orgsData[args.name];
             },
-            entries: (root, args, context) => {
+            entries: (root, args) => {
                 let ret = [];
                 for (const source of fse.readdirSync(config.dataPath)) {
                     const sourcePath = path.join(config.dataPath, source);
@@ -268,8 +268,7 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                         }
                     }
                 }
-                return ret
-                    .filter(e =>
+                ret = ret.filter(e =>
                         !args.sources ||
                         args.sources.includes(e.source))
                     .filter(e =>
@@ -302,7 +301,14 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                                 })
                                 .length === args.withStatsFeatures.length)
                         )
-                    )
+                    ).sort(
+                        (a, b) =>
+                            a[args.sortedBy || 'title'].toLowerCase().localeCompare(b[args.sortedBy || 'title'].toLowerCase())
+                    );
+                if (args.reverse) {
+                    ret.reverse();
+                }
+                return ret;
             }
         },
         Entry: {
