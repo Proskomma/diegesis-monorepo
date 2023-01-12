@@ -237,6 +237,9 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
         BookCode: bookCodeScalar,
         ContentType: ContentTypeScalar,
     }
+
+    const lowerCaseArray = arr => arr.map(e => e.trim().toLocaleLowerCase());
+
     const queryResolver = {
         Query: {
             orgs: () => {
@@ -266,23 +269,23 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                 }
                 ret = ret.filter(e =>
                         !args.sources ||
-                        args.sources.includes(e.source))
+                        lowerCaseArray(args.sources).includes(e.source.toLocaleLowerCase()))
                     .filter(e =>
                         !args.owners ||
-                        args.owners.includes(e.owner))
+                        lowerCaseArray(args.owners).includes(e.owner.toLocaleLowerCase()))
                     .filter(e =>
                         !args.ids ||
-                        args.ids.includes(e.id))
+                        lowerCaseArray(args.ids).includes(e.id.toLocaleLowerCase()))
                     .filter(e =>
                         !args.languages ||
-                        args.languages.includes(e.languageCode))
+                        lowerCaseArray(args.languages).includes(e.languageCode.toLocaleLowerCase()))
                     .filter(e =>
                         !args.titleMatching ||
                         e.title.toLocaleLowerCase()
                             .includes(args.titleMatching.toLocaleLowerCase()))
                     .filter(e =>
                         !args.types ||
-                        args.types
+                        lowerCaseArray(args.types)
                             .filter(t => e.resourceTypes.includes(t))
                             .length > 0
                     )

@@ -16,6 +16,7 @@ import SortSelector from "../components/SortSelector";
 export default function ListPage({}) {
     const [searchOrg, setSearchOrg] = useState('all');
     const [searchOwner, setSearchOwner] = useState('');
+    const [searchType, setSearchType] = useState('');
     const [searchLang, setSearchLang] = useState('');
     const [searchText, setSearchText] = useState('');
     const [sortField, setSortField] = useState('title');
@@ -60,7 +61,7 @@ export default function ListPage({}) {
         </Header>
         <Box style={{marginTop: "100px"}}>
             <Typography variant="h4" paragraph="true" sx={{mt: "20px"}}>
-                Resources
+                Entries
                 <Button onClick={() => setShowSettings(!showSettings)}>
                     <Tune />
                 </Button>
@@ -68,14 +69,14 @@ export default function ListPage({}) {
             {
                 showSettings &&
                 <Grid container>
-                    <Grid item xs={12} sm={6} md={2} sx={{paddingBottom: "15px"}}>
+                    <Grid item xs={12} sm={12} md={2} sx={{paddingBottom: "15px"}}>
                         <OrgSelector
                             orgs={orgs}
                             searchOrg={searchOrg}
                             setSearchOrg={setSearchOrg}
                         />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={2}>
+                    <Grid item xs={12} sm={6} md={1}>
                         <TextField
                             value={searchOwner}
                             onChange={e => setSearchOwner(e.target.value)}
@@ -89,9 +90,21 @@ export default function ListPage({}) {
                     </Grid>
                     <Grid item xs={12} sm={6} md={2}>
                         <TextField
+                            value={searchType}
+                            onChange={e => setSearchType(e.target.value)}
+                            label="Type"
+                            size="small"
+                            id="searchType"
+                            variant="filled"
+                            color="primary"
+                            sx={{display: 'flex', marginLeft: "1em"}}
+                        />
+                    </Grid>
+                    <Grid item xs={12} sm={6} md={1}>
+                        <TextField
                             value={searchLang}
                             onChange={e => setSearchLang(e.target.value)}
-                            label="Language"
+                            label="Lang"
                             size="small"
                             id="searchLanguage"
                             variant="filled"
@@ -123,8 +136,8 @@ export default function ListPage({}) {
                             onClick={() => setSortDirection(sortDirection === 'a-z' ? 'z-a' : 'a-z')}
                             size="small"
                             id="searchTitle"
-                            variant="outline"
-                            color="primary"
+                            variant="outlined"
+                            color="secondary"
                             sx={{display: 'flex', marginLeft: "1em"}}
                         >
                             {sortDirection}
@@ -132,6 +145,9 @@ export default function ListPage({}) {
                     </Grid>
                     {
                         [
+                            ["OT", "OT"],
+                            ["NT", "NT"],
+                            ["DC", "DC"],
                             ["Intro", "introductions"],
                             ["Heading", "headings"],
                             ["Footnote", "footnotes"],
@@ -175,6 +191,7 @@ export default function ListPage({}) {
                 <ListView searchTerms={{
                     org: searchOrg,
                     owner: searchOwner,
+                    resourceType: searchType,
                     lang: searchLang,
                     text: searchText,
                     features: features,
