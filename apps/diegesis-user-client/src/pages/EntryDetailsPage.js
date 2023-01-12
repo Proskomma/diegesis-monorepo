@@ -1,6 +1,6 @@
 import {Container, Typography, Grid, Box, Button} from "@mui/material";
 import {useParams, Link as RouterLink} from "react-router-dom";
-import {ArrowBack} from '@mui/icons-material';
+import {ArrowBack, AutoStories, Download} from '@mui/icons-material';
 import {gql, useQuery} from "@apollo/client";
 import GqlError from "../components/GqlError";
 
@@ -14,12 +14,12 @@ export default function EntryDetailsPage() {
 
     const queryString =
         `query {
-          org(name:"""%source%""") {
             localEntry(
+              source:"""%source%"""
               id: """%entryId%"""
               revision: """%revision%"""
             ) {
-              languageCode
+              language
               title
               textDirection
               script
@@ -27,8 +27,7 @@ export default function EntryDetailsPage() {
               abbreviation
               owner
             }
-          }
-        }`
+          }`
             .replace("%source%", source)
             .replace("%entryId%", entryId)
             .replace("%revision%", revision);
@@ -44,15 +43,22 @@ export default function EntryDetailsPage() {
         return <GqlError error={error}/>
     }
 
-    const entryInfo = data.org.localEntry;
+    const entryInfo = data.localEntry;
 
     return <Container fixed className="homepage">
         <Header selected="list"/>
         <Box style={{marginTop: "100px"}}>
             <Typography variant="h4" paragraph="true" sx={{mt: "20px"}}>
                 <Button>
-                    <RouterLink to={`/entry/browse/${source}/${entryId}/${revision}`} relative="path"><ArrowBack/></RouterLink></Button>
+                    <RouterLink to="/list" relative="path"><ArrowBack/></RouterLink></Button>
                 {entryInfo.title}
+                <Button>
+                    <RouterLink to={`/entry/browse/${source}/${entryId}/${revision}`}><AutoStories/></RouterLink>
+                </Button>
+                <Button>
+                    <RouterLink
+                        to={`/entry/download/${source}/${entryId}/${revision}`}><Download/></RouterLink>
+                </Button>
             </Typography>
             <Typography variant="h5" paragraph="true">Details</Typography>
             <Grid container>
@@ -71,19 +77,11 @@ export default function EntryDetailsPage() {
                 <Grid item xs={3}>
                     <Typography variant="body1" paragraph="true">Language</Typography>
                 </Grid>
-                <Grid item xs={3}>
+                <Grid item xs={9}>
                     <Typography variant="body1" paragraph="true">
-                        {entryInfo.languageCode}
-                    </Typography>
-                </Grid>
-                <Grid item xs={3}>
-                    <Typography variant="body1" paragraph="true">
-                        {entryInfo.textDirection ? entryInfo.textDirection : ""}
-                    </Typography>
-                </Grid>
-                <Grid item xs={3}>
-                    <Typography variant="body1" paragraph="true">
-                        {entryInfo.script ? entryInfo.script : ""}
+                        {entryInfo.language}
+                        {entryInfo.textDirection ? `, ${entryInfo.textDirection === 'ltr' ? "Left to Right" : "Right to Left"}` : ""}
+                        {entryInfo.script ? `, ${entryInfo.script} Script` : ""}
                     </Typography>
                 </Grid>
                 <Grid item xs={3}>

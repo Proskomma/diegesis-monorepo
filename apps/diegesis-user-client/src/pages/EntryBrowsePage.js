@@ -17,16 +17,15 @@ export default function EntryBrowsePage() {
 
     const queryString =
         `query {
-          org(name:"""%source%""") {
             localEntry(
+              source: """%source%"""
               id: """%entryId%"""
               revision: """%revision%"""
             ) {
-              languageCode
+              language
               title
-              succinct
+              canonResource(type:"succinct") {content}
             }
-          }
         }`
             .replace("%source%", source)
             .replace("%entryId%", entryId)
@@ -44,7 +43,7 @@ export default function EntryBrowsePage() {
         return <GqlError error={error}/>;
     }
 
-    const entryInfo = data.org.localEntry;
+    const entryInfo = data.localEntry;
 
     const pk = new Proskomma([
         {
@@ -64,8 +63,8 @@ export default function EntryBrowsePage() {
         },
     ]);
 
-    if (entryInfo.succinct) {
-        pk.loadSuccinctDocSet(JSON.parse(entryInfo.succinct));
+    if (entryInfo.canonResource.content) {
+        pk.loadSuccinctDocSet(JSON.parse(entryInfo.canonResource.content));
     }
 
     return <Container fixed className="homepage">
@@ -73,20 +72,18 @@ export default function EntryBrowsePage() {
         <Box style={{marginTop: "100px"}}>
             <Typography variant="h4" paragraph="true" sx={{mt: "20px"}}>
                 <Button>
-                    <RouterLink to="/list"><ArrowBack/></RouterLink>
+                    <RouterLink to={`/entry/details/${source}/${entryId}/${revision}`}><ArrowBack/></RouterLink>
                 </Button>
                 {entryInfo.title}
-                <Button>
-                    <RouterLink to={`/entry/details/${source}/${entryId}/${revision}`}><Info/></RouterLink>
-                </Button>
-                <Button>
-                    <RouterLink
-                        to={`/entry/download/${source}/${entryId}/${revision}`}><Download/></RouterLink>
-                </Button>
             </Typography>
-            {entryInfo.succinct && <BrowseScripture pk={pk}/>}
-            {!entryInfo.succinct &&
-            <Typography paragraph="true">Unable to render this translation at present: please try later</Typography>}
+            {
+                entryInfo.canonResource &&
+                entryInfo.canonResource.content && <BrowseScripture pk={pk}/>
+            }
+            {
+                (!entryInfo.canonResource || !entryInfo.canonResource.content) &&
+                <Typography paragraph="true">Unable to render this translation at present: please try later</Typography>
+            }
             <Footer/>
         </Box>
     </Container>;

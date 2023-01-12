@@ -224,6 +224,10 @@ const styles = {
             float: "right",
             fontStyle: "italic"
         },
+        "usfm:sc": {
+            fontSize: "smaller",
+            textTransform: "uppercase"
+        },
         "usfm:tl": {
             fontStyle: "italic"
         },

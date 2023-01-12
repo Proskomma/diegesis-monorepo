@@ -8,32 +8,10 @@ import Spinner from './Spinner';
 
 export default function ListView({searchTerms}) {
 
-    const oldQuery =  `entries {
-    source
-    types
-    owner
-    revision
-    id
-    language
-    title
-    copyright
-    textDirection
-    ot: stat(field:"nOT")
-    chapters: resourcesStat(field:"nChapters") {bookCode stat}
-    canonResources {type suffix isOriginal}
-    canonResource(type:"versification") {content}
-    bookResources(bookCode: "RUT") {type suffix, isOriginal content}
-    bookResource(bookCode: "RUT" type: "usfm") {type suffix, isOriginal content}
-    bookCodes
-    bookResourceTypes
-}`;
-
-
-const queryString = searchQuery(
+    const queryString = searchQuery(
         `query {
-        orgs {
-            id: name
             localEntries%searchClause% {
+                source
                 types
                 id
                 language
@@ -59,15 +37,13 @@ const queryString = searchQuery(
                 nVerses: stat(field:"nVerses")
                 hasSuccinctError
             }
-        }
-    }`,
+        }`,
         searchTerms
     );
 
     const {loading, error, data} = useQuery(
         gql`${queryString}`,
     );
-
 
     function rowData(localTranslation) {
         const canonStrings = [];
@@ -111,19 +87,26 @@ const queryString = searchQuery(
         return <Grid container xs={12} sx={{borderTop: "solid 1px #ccc", padding: "2px", marginBottom: "2px"}}>
             <Grid item xs={12} md={2}>
                 <Typography variant="body2"
-                            sx={{fontWeight: "bold", fontSize: "x-small"}}>{localTranslation.types?.join(', ') || "?"}</Typography>
+                            sx={{
+                                fontWeight: "bold",
+                                fontSize: "x-small"
+                            }}>{localTranslation.types?.join(', ') || "?"}</Typography>
                 <Typography variant="body2"
-                            sx={{fontWeight: "bold", fontSize: "x-small"}}>{localTranslation.owner}@{localTranslation.org}</Typography>
+                            sx={{
+                                fontWeight: "bold",
+                                fontSize: "x-small"
+                            }}>{localTranslation.owner}@{localTranslation.source}</Typography>
                 <Typography variant="body2"
                             sx={{fontWeight: "bold", fontSize: "x-small"}}>{localTranslation.language}</Typography>
             </Grid>
             <Grid item xs={10} md={6}>
                 <RouterLink
-                    to={`/entry/browse/${localTranslation.org}/${localTranslation.id}/${localTranslation.revision.replace(/\s/g, "__")}`}
-                    style={{textDecoration: "none"}}> <Typography sx={{fontWeight: 'bold', textAlign: "center"}}
-                                                                  variant="body1">
-                    {localTranslation.title}
-                </Typography>
+                    to={`/entry/details/${localTranslation.source}/${localTranslation.id}/${localTranslation.revision.replace(/\s/g, "__")}`}
+                    style={{textDecoration: "none"}}>
+                    <Typography sx={{fontWeight: 'bold', textAlign: "center"}}
+                                variant="body1">
+                        {localTranslation.title}
+                    </Typography>
                 </RouterLink>
             </Grid>
             <Grid item xs={2}>
@@ -155,23 +138,8 @@ const queryString = searchQuery(
     if (error) {
         return <GqlError error={error}/>
     }
-    let translations = [];
-    const so = searchTerms.org.trim().toLowerCase();
-    for (const orgData of data.orgs) {
-        orgData.localEntries.forEach(
-            lt => {
-                if (so === 'all' || so === orgData.id.toLowerCase()) {
-                    translations.push({...lt, org: orgData.id});
-                }
-            }
-        );
-    }
-    translations.sort((a, b) => a[searchTerms.sortField || 'title'].toLowerCase().localeCompare(b[searchTerms.sortField || 'title'].toLowerCase()));
-    if (searchTerms.sortDirection === 'z-a') {
-        translations.reverse();
-    }
     let displayRows = [];
-    translations.forEach(
+    data.localEntries.forEach(
         lt => {
             displayRows.push(rowData(lt));
         }

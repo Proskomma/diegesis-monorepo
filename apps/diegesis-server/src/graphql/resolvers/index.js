@@ -9,10 +9,6 @@ const {
     usxDir,
     succinctPath,
     succinctErrorPath,
-    vrsPath,
-    perfDir,
-    simplePerfDir,
-    sofriaDir,
     originalResourcePath,
     generatedResourcePath
 } = require('../../lib/dataPaths');
@@ -309,6 +305,13 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                     ret.reverse();
                 }
                 return ret;
+            },
+            localEntry: (root, args) => {
+                return localEntry(
+                    orgsData[args.source].translationDir,
+                    args.id,
+                    args.revision
+                );
             }
         },
         LocalEntry: {
@@ -505,25 +508,6 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
             }
         },
         Org: {
-            nCatalogEntries: (org, args, context) => {
-                if (!context.auth || !context.auth.authenticated) {
-                    throw new Error(`No auth found for nCatalogEntries`);
-                }
-                if (!context.auth.roles || !context.auth.roles.includes("admin")) {
-                    throw new Error(`Required auth role 'admin' not found for nCatalogEntries`);
-                }
-                return org.entries.length
-            },
-            nLocalEntries: (org, args) => {
-                let ret = localTranslations(org);
-                if (args.withUsfm) {
-                    ret = ret.filter(t => fse.pathExistsSync(usfmDir(config.dataPath, org.translationDir, t.id, t.revision)));
-                }
-                if (args.withUsx) {
-                    ret = ret.filter(t => fse.pathExistsSync(usxDir(config.dataPath, org.translationDir, t.id, t.revision)));
-                }
-                return ret.length;
-            },
             catalogEntries: (org, args, context) => {
                 if (!context.auth || !context.auth.authenticated) {
                     throw new Error(`No auth found for catalogEntries`);
@@ -532,14 +516,6 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                     throw new Error(`Required auth role 'admin' not found for catalogEntries`);
                 }
                 return filteredCatalog(org, args, context, org.entries);
-            },
-            localEntries: (org, args, context) => {
-                return filteredCatalog(
-                    org,
-                    args,
-                    context,
-                    localEntries(org) || [])
-                    .filter(t => hasAllFeatures(t, args.withFeatures || []));
             },
             catalogEntry: (org, args, context) => {
                 if (!context.auth || !context.auth.authenticated) {
@@ -552,11 +528,6 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                 context.orgHandler = orgHandlers[org.name];
                 return org.entries
                     .filter(t => t.id === args.id)[0];
-            },
-            localEntry: (org, args, context) => {
-                context.orgData = org;
-                context.orgHandler = orgHandlers[org.name];
-                return localEntry(org.orgDir, args.id, args.revision);
             },
         },
         CatalogEntry: {
