@@ -8,9 +8,9 @@ import {
 import { Button } from '@mui/material';
 import {Download} from '@mui/icons-material';
 
-import TranslationsTable from "./TranslationsTable";
-import { searchQuery } from '../lib/search';
-import { fetchTranslation } from '../lib/tableCallbacks';
+import EntriesTable from "./EntriesTable";
+import { searchQuery } from '../lib/remoteSearch';
+import { fetchEntry } from '../lib/tableCallbacks';
 import GqlLoading from "./GqlLoading";
 import GqlError from "./GqlError";
 
@@ -28,6 +28,7 @@ export default function RemoteTab({selectedOrg, searchLang, searchText}) {
                     id
                     languageCode
                     title
+                    isLocal
                 }
             }
         }`,
@@ -63,13 +64,20 @@ export default function RemoteTab({selectedOrg, searchLang, searchText}) {
             title: catalogEntry.title,
             actions: <Button
                 onClick={
-                    () => fetchTranslation(
-                        client,
-                        selectedOrg,
-                        catalogEntry.id,
-                        contentType
-                    )
+                    () => {
+                        try {
+                            fetchEntry(
+                                client,
+                                selectedOrg,
+                                catalogEntry.id,
+                                contentType
+                            );
+                        } catch (err) {
+                            console.log("ERROR FROM FETCHENTRY", err.msg);
+                        }
+                    }
                 }
+                disabled={catalogEntry.isLocal}
             >
                 <Download/>
             </Button>
@@ -84,5 +92,5 @@ export default function RemoteTab({selectedOrg, searchLang, searchText}) {
     }
     const orgContentType = data?.org.contentType;
     const rows = data.org.catalogEntries.map(ce => createData(ce, orgContentType));
-    return <TranslationsTable columns={columns} rows={rows}/>
+    return <EntriesTable columns={columns} rows={rows}/>
 }

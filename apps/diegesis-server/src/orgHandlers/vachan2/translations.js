@@ -18,6 +18,7 @@ async function getTranslationsCatalog() {
     }
     const jsonData = JSON.parse(catalogResponse.data);
     const catalog = jsonData.map(t => ({
+        source: "Vachan",
         resourceTypes: ["bible"],
         id: t.sourceName,
         languageCode: t.language.code,
@@ -35,22 +36,32 @@ async function getTranslationsCatalog() {
 }
 
 const fetchUsfm = async (org, trans, config) => {
-    const http = require(`${appRoot}/src/lib/http.js`);
-    const tp = transPath(config.dataPath, org.translationDir, trans.owner, trans.id, trans.revision);
-    const downloadResponse = await http.getText(trans.downloadURL);
-    const responseJson = downloadResponse.data;
-    const usfmBooksPath = path.join(tp, 'usfmBooks');
-    if (!fse.pathExistsSync(usfmBooksPath)) {
-        fse.mkdirsSync(usfmBooksPath);
+    const tp = transPath(config.dataPath, org.translationDir, trans.id, trans.revision);
+    if (!fse.pathExistsSync(tp)) {
+        fse.mkdirsSync(tp);
     }
-    fse.writeJsonSync(path.join(tp, 'metadata.json'), trans);
-    for (const bookOb of JSON.parse(responseJson)) {
-        const bookCode = bookOb.book.bookCode.toUpperCase();
-        fse.writeFileSync(path.join(usfmBooksPath, `${bookCode}.usfm`), bookOb.USFM);
+    try {
+        fse.writeJsonSync(path.join(tp, "lock.json"), {actor: "vachan2/translations", orgDir: org.translationDir, transId: trans.id, revision: trans.revision});
+        const http = require(`${appRoot}/src/lib/http.js`);
+        const downloadResponse = await http.getText(trans.downloadURL);
+        const responseJson = downloadResponse.data;
+        const usfmBooksPath = path.join(tp, 'original', 'usfmBooks');
+        if (!fse.pathExistsSync(usfmBooksPath)) {
+            fse.mkdirsSync(usfmBooksPath);
+        }
+        fse.writeJsonSync(path.join(tp, 'metadata.json'), trans);
+        for (const bookOb of JSON.parse(responseJson)) {
+            const bookCode = bookOb.book.bookCode.toUpperCase();
+            fse.writeFileSync(path.join(usfmBooksPath, `${bookCode}.usfm`), bookOb.USFM);
+        }
+        fse.remove(path.join(tp, "lock.json"));
+    } catch (err) {
+        console.log(err);
+        fse.remove(tp);
     }
-};
+}
 
-const fetchUsx = async (org) => {
+    const fetchUsx = async (org) => {
     throw new Error(`USX fetching is not supported for ${org.name}`)
 };
 

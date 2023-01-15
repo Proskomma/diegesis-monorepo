@@ -42,11 +42,12 @@ function App() {
                 })
                     .then((response) => response.json())
                     .then((data) => {
-                        if (!data.authenticated) {
+                        if (!data.authenticated || !data.roles.includes('admin')) {
                             setAuthed(false);
                         }
                     })
                     .catch((err) => {
+                        setAuthed(false);
                         console.log(err.message);
                     });
             }

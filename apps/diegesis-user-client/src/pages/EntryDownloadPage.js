@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useState} from "react";
 import {Container, Typography, Grid, Box, Button} from "@mui/material";
 import {useParams, Link as RouterLink} from "react-router-dom";
 import {ArrowBack, Download} from '@mui/icons-material';
@@ -8,10 +8,13 @@ import GqlError from "../components/GqlError";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import Spinner from "../components/Spinner";
+import BookSelector from "../components/BookSelector";
 
 export default function EntryDownloadPage() {
 
-    const {source, owner, entryId, revision} = useParams();
+    const {source, entryId, revision} = useParams();
+
+    const [selectedBook, setSelectedBook] = useState("");
 
     const client = useApolloClient();
 
@@ -21,7 +24,7 @@ export default function EntryDownloadPage() {
                 mime: "application/json",
                 suffix: "succinct.json"
             },
-            vrs: {
+            versification: {
                 mime: "text/plain",
                 suffix: "vrs.txt"
             }
@@ -31,27 +34,24 @@ export default function EntryDownloadPage() {
             return;
         }
         const queryString = `query {
-            org(name:"""%source%""") {
-              localTranslation(
-                owner: """%owner%"""
+              localEntry(
+                source: """%source%"""
                 id: """%entryId%"""
                 revision: """%revision%"""
               ) {
-                %downloadType%
+                canonResource(type: """%downloadType%""") {content}
               }
-            }
-          }`
+            }`
             .replace("%source%", source)
-            .replace("%owner%", owner)
             .replace("%entryId%", entryId)
             .replace("%revision%", revision)
             .replace("%downloadType%", downloadType);
         const query = gql`${queryString}`;
         const result = await client.query({query});
         const element = document.createElement("a");
-        const file = new Blob([result.data.org.localTranslation[downloadType]], {type: downloadTypes[downloadType].mime});
+        const file = new Blob([result.data.localEntry.canonResource.content], {type: downloadTypes[downloadType].mime});
         element.href = URL.createObjectURL(file);
-        element.download = `${source}_${owner}_${entryId}_${revision}_${downloadTypes[downloadType].suffix}`;
+        element.download = `${source}_${entryId}_${revision}_${downloadTypes[downloadType].suffix}`;
         document.body.appendChild(element);
         element.click();
     }
@@ -84,18 +84,15 @@ export default function EntryDownloadPage() {
             return;
         }
         const queryString = `query {
-            org(name:"""%source%""") {
-              localTranslation(
-                owner: """%owner%"""
+              localEntry(
+                source: """%source%"""
                 id: """%entryId%"""
                 revision: """%revision%"""
               ) {
-                download: %downloadType%ForBookCode(code: """%bookCode%""")
+                download: bookResource(bookCode: """%bookCode%""" type: """%downloadType%""") {content}
               }
-            }
-          }`
+            }`
             .replace("%source%", source)
-            .replace("%owner%", owner)
             .replace("%entryId%", entryId)
             .replace("%revision%", revision)
             .replace("%downloadType%", downloadType)
@@ -103,35 +100,33 @@ export default function EntryDownloadPage() {
         const query = gql`${queryString}`;
         const result = await client.query({query});
         const element = document.createElement("a");
-        const file = new Blob([result.data.org.localTranslation.download], {type: downloadTypes[downloadType].mime});
+        const file = new Blob([result.data.localEntry.download.content], {type: downloadTypes[downloadType].mime});
         element.href = URL.createObjectURL(file);
-        element.download = `${source}_${owner}_${entryId}_${revision}_${bookCode}_${downloadTypes[downloadType].suffix}`;
+        element.download = `${source}_${entryId}_${revision}_${bookCode}_${downloadTypes[downloadType].suffix}`;
         document.body.appendChild(element);
         element.click();
     }
 
     const queryString =
         `query {
-          org(name:"""%source%""") {
-            localTranslation(
-              owner: """%owner%"""
+            localEntry(
+              source: """%source%"""
               id: """%entryId%"""
               revision: """%revision%"""
             ) {
-              usfmBookCodes
-              usxBookCodes
-              hasSuccinct
-              hasUsfm
-              hasUsx
-              hasPerf
-              hasSofria
-              hasVrs
               title
+              usfmBookCodes: bookCodes(type:"usfm")
+              usxBookCodes: bookCodes(type: "usx")
+              perfBookCodes: bookCodes(type: "perf")
+              simplePerfBookCodes: bookCodes(type: "simplePerf")
+              sofriaBookCodes: bookCodes(type: "sofria")
+              succinctRecord: canonResource(type:"succinct") {type}
+              vrsRecord: canonResource(type:"versification") {type}
+              bookResourceTypes
+              canonResources {type}
             }
-          }
-        }`
+          }`
             .replace("%source%", source)
-            .replace("%owner%", owner)
             .replace("%entryId%", entryId)
             .replace("%revision%", revision);
 
@@ -146,13 +141,13 @@ export default function EntryDownloadPage() {
         return <GqlError error={error}/>
     }
 
-    const translationInfo = data.org.localTranslation;
+    const entryInfo = data.localEntry;
 
     let bookCodes;
-    if (translationInfo.usfmBookCodes.length > 0) {
-        bookCodes = [...translationInfo.usfmBookCodes];
+    if (entryInfo.usfmBookCodes.length > 0) {
+        bookCodes = [...entryInfo.usfmBookCodes];
     } else {
-        bookCodes = [...translationInfo.usxBookCodes];
+        bookCodes = [...entryInfo.usxBookCodes];
     }
 
     return <Container fixed className="homepage">
@@ -160,128 +155,61 @@ export default function EntryDownloadPage() {
         <Box style={{marginTop: "100px"}}>
             <Typography variant="h4" paragraph="true" sx={{mt: "20px"}}>
                 <Button>
-                    <RouterLink to={`/entry/browse/${source}/${owner}/${entryId}/${revision}`} relative="path"><ArrowBack/></RouterLink></Button>
-                {translationInfo.title}
+                    <RouterLink to={`/entry/details/${source}/${entryId}/${revision}`}
+                                relative="path"><ArrowBack/></RouterLink></Button>
+                {entryInfo.title}
             </Typography>
             <Grid container>
                 <Grid item xs={12}>
-                    <Typography variant="h5" paragraph="true">Download by Translation</Typography>
+                    <Typography variant="h5" paragraph="true">Canon-level Resources</Typography>
                 </Grid>
                 {
-                    translationInfo.hasSuccinct &&
-                    <>
-                        <Grid item xs={4}>
-                            <Typography variant="body1" paragraph="true">Proskomma Succinct</Typography>
-                        </Grid>
-                        <Grid item xs={8}>
-                            <Typography variant="body1" paragraph="true">
-                                <Button onClick={() => downloadTranslation("succinct")}>
-                                    <Download/>
-                                </Button>
-                            </Typography>
-                        </Grid>
-                    </>
-                }
-                {
-                    translationInfo.hasVrs &&
-                    <>
-                        <Grid item xs={4}>
-                            <Typography variant="body1" paragraph="true">Versification</Typography>
-                        </Grid>
-                        <Grid item xs={8}>
-                            <Typography variant="body1" paragraph="true">
-                                <Button onClick={() => downloadTranslation("vrs")}>
-                                    <Download/>
-                                </Button>
-                            </Typography>
-                        </Grid>
-                    </>
+                    entryInfo.canonResources
+                        .map(cro => cro.type)
+                        .map(
+                        cr => <>
+                            <Grid item xs={4}>
+                                <Typography variant="body1" paragraph="true">{cr}</Typography>
+                            </Grid>
+                            <Grid item xs={8}>
+                                    <Button onClick={() => downloadTranslation(cr)}>
+                                        <Download/>
+                                    </Button>
+                            </Grid>
+                        </>
+
+                    )
                 }
                 {
                     bookCodes.length > 0 &&
                     <>
-                        <Grid item xs={12}>
-                            <Typography variant="h5" paragraph="true">Download by Book</Typography>
+                        <Grid item xs={4} md={2}>
+                            <Typography variant="h5" paragraph="true">Book Resources</Typography>
                         </Grid>
-                        <Grid item xs={2}>
-                            <Typography variant="body1" paragraph="true">Book</Typography>
-                        </Grid>
-                        <Grid item xs={2}>
-                            <Typography variant="body1" paragraph="true">USFM</Typography>
-                        </Grid>
-                        <Grid item xs={2}>
-                            <Typography variant="body1" paragraph="true">USX</Typography>
-                        </Grid>
-                        <Grid item xs={2}>
-                            <Typography variant="body1" paragraph="true">PERF</Typography>
-                        </Grid>
-                        <Grid item xs={2}>
-                            <Typography variant="body1" paragraph="true">sPERF</Typography>
-                        </Grid>
-                        <Grid item xs={2}>
-                            <Typography variant="body1" paragraph="true">SOFRIA</Typography>
+                        <Grid item xs={8} md={10}>
+                            <BookSelector bookCodes={bookCodes} selectedBook={selectedBook}
+                                          setSelectedBook={setSelectedBook}/>
                         </Grid>
                         {
-                            bookCodes.map(b =>
-                                <>
-                                    <Grid item xs={2}>
-                                        <Typography variant="body1" paragraph="true">{b}</Typography>
+                            selectedBook !== "" &&
+                            entryInfo.bookResourceTypes
+                                .map(
+                                rt => <>
+                                    <Grid item xs={4}>
+                                        {rt}
                                     </Grid>
-                                    <Grid item xs={2}>
-                                        <Typography variant="body1" paragraph="true">
-                                            <Button
-                                                onClick={() => downloadBook("usfm", b)}
-                                                disabled={!translationInfo.hasUsfm}
-                                            >
-                                                <Download/>
-                                            </Button>
-                                        </Typography>
-                                    </Grid>
-                                    <Grid item xs={2}>
-                                        <Typography variant="body1" paragraph="true">
-                                            <Button
-                                                onClick={() => downloadBook("usx", b)}
-                                                disabled={!translationInfo.hasUsx}
-                                            >
-                                                <Download/>
-                                            </Button>
-                                        </Typography>
-                                    </Grid>
-                                    <Grid item xs={2}>
-                                        <Typography variant="body1" paragraph="true">
-                                            <Button
-                                                onClick={() => downloadBook("perf", b)}
-                                                disabled={!translationInfo.hasPerf}
-                                            >
-                                                <Download/>
-                                            </Button>
-                                        </Typography>
-                                    </Grid>
-                                    <Grid item xs={2}>
-                                        <Typography variant="body1" paragraph="true">
-                                            <Button
-                                                onClick={() => downloadBook("simplePerf", b)}
-                                                disabled={!translationInfo.hasPerf}
-                                            >
-                                                <Download/>
-                                            </Button>
-                                        </Typography>
-                                    </Grid>
-                                    <Grid item xs={2}>
-                                        <Typography variant="body1" paragraph="true">
-                                            <Button
-                                                onClick={() => downloadBook("sofria", b)}
-                                                disabled={!translationInfo.hasSofria}
-                                            >
-                                                <Download/>
-                                            </Button>
-                                        </Typography>
+                                    <Grid item xs={8}>
+                                        <Button
+                                            onClick={() => downloadBook(rt, selectedBook)}
+                                            disabled={!entryInfo[`${rt}BookCodes`].includes(selectedBook)}
+                                        >
+                                            <Download/>
+                                        </Button>
                                     </Grid>
                                 </>
                             )
                         }
                     </>
-
                 }
             </Grid>
             <Footer/>

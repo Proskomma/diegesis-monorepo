@@ -9,45 +9,41 @@ import Spinner from './Spinner';
 export default function ListView({searchTerms}) {
 
     const queryString = searchQuery(
-        `query localTranslations {
-        orgs {
-            id: name
-            localTranslations%searchClause% {
-                resourceTypes
+        `query {
+            localEntries%searchClause% {
+                source
+                types
                 id
-                languageCode
+                language
                 owner
                 revision
                 title
-                hasUsfm
-                hasUsx
-                hasSuccinct
+                bookResourceTypes
+                succinctRecord: canonResource(type:"succinct") {type}
+                vrsRecord: canonResource(type:"succinct") {type}
+                nOT: stat(field:"nOT")
+                nNT: stat(field:"nNT")
+                nDC: stat(field:"nDC")
+                nIntroductions: stat(field:"nIntroductions")
+                nHeadings: stat(field:"nHeadings")
+                nFootnotes: stat(field:"nFootnotes")
+                nXrefs: stat(field:"nXrefs")
+                nStrong: stat(field:"nStrong")
+                nLemma: stat(field:"nLemma")
+                nGloss: stat(field:"nGloss")
+                nContent: stat(field:"nContent")
+                nOccurrences: stat(field:"nOccurrences")
+                nChapters: stat(field:"nChapters")
+                nVerses: stat(field:"nVerses")
                 hasSuccinctError
-                hasVrs
-                nOT,
-                nNT,
-                nDC,
-                nIntroductions,
-                nHeadings,
-                nFootnotes,
-                nXrefs,
-                nStrong,
-                nLemma,
-                nGloss,
-                nContent,
-                nOccurrences,
-                nChapters,
-                nVerses
             }
-        }
-    }`,
+        }`,
         searchTerms
     );
 
     const {loading, error, data} = useQuery(
         gql`${queryString}`,
     );
-
 
     function rowData(localTranslation) {
         const canonStrings = [];
@@ -91,19 +87,26 @@ export default function ListView({searchTerms}) {
         return <Grid container xs={12} sx={{borderTop: "solid 1px #ccc", padding: "2px", marginBottom: "2px"}}>
             <Grid item xs={12} md={2}>
                 <Typography variant="body2"
-                            sx={{fontWeight: "bold", fontSize: "x-small"}}>{localTranslation.resourceTypes?.join(', ') || "?"}</Typography>
+                            sx={{
+                                fontWeight: "bold",
+                                fontSize: "x-small"
+                            }}>{localTranslation.types?.join(', ') || "?"}</Typography>
                 <Typography variant="body2"
-                            sx={{fontWeight: "bold", fontSize: "x-small"}}>{localTranslation.owner}@{localTranslation.org}</Typography>
+                            sx={{
+                                fontWeight: "bold",
+                                fontSize: "x-small"
+                            }}>{localTranslation.owner}@{localTranslation.source}</Typography>
                 <Typography variant="body2"
-                            sx={{fontWeight: "bold", fontSize: "x-small"}}>{localTranslation.languageCode}</Typography>
+                            sx={{fontWeight: "bold", fontSize: "x-small"}}>{localTranslation.language}</Typography>
             </Grid>
             <Grid item xs={10} md={6}>
                 <RouterLink
-                    to={`/entry/browse/${localTranslation.org}/${localTranslation.owner.replace(/\s/g, "__")}/${localTranslation.id}/${localTranslation.revision.replace(/\s/g, "__")}`}
-                    style={{textDecoration: "none"}}> <Typography sx={{fontWeight: 'bold', textAlign: "center"}}
-                                                                  variant="body1">
-                    {localTranslation.title}
-                </Typography>
+                    to={`/entry/details/${localTranslation.source}/${localTranslation.id}/${localTranslation.revision.replace(/\s/g, "__")}`}
+                    style={{textDecoration: "none"}}>
+                    <Typography sx={{fontWeight: 'bold', textAlign: "center"}}
+                                variant="body1">
+                        {localTranslation.title}
+                    </Typography>
                 </RouterLink>
             </Grid>
             <Grid item xs={2}>
@@ -135,23 +138,8 @@ export default function ListView({searchTerms}) {
     if (error) {
         return <GqlError error={error}/>
     }
-    let translations = [];
-    const so = searchTerms.org.trim().toLowerCase();
-    for (const orgData of data.orgs) {
-        orgData.localTranslations.forEach(
-            lt => {
-                if (so === 'all' || so === orgData.id.toLowerCase()) {
-                    translations.push({...lt, org: orgData.id});
-                }
-            }
-        );
-    }
-    translations.sort((a, b) => a[searchTerms.sortField || 'title'].toLowerCase().localeCompare(b[searchTerms.sortField || 'title'].toLowerCase()));
-    if (searchTerms.sortDirection === 'z-a') {
-        translations.reverse();
-    }
     let displayRows = [];
-    translations.forEach(
+    data.localEntries.forEach(
         lt => {
             displayRows.push(rowData(lt));
         }

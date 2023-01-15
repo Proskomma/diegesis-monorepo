@@ -1,7 +1,7 @@
 import {Paper, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow} from "@mui/material";
 import React, {useState} from "react";
 
-export default function TranslationsTable({columns, rows})
+export default function EntriesTable({columns, rows})
 {
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -18,7 +18,7 @@ export default function TranslationsTable({columns, rows})
 
     return (
         <Paper sx={{width: '100%', overflow: 'hidden'}}>
-            <TableContainer sx={{maxHeight: 440}}>
+            <TableContainer sx={{maxHeight: 600}}>
                 <Table stickyHeader size="small" aria-label="sticky table">
                     <TableHead>
                         <TableRow>

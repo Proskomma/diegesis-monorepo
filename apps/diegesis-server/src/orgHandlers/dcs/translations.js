@@ -14,6 +14,7 @@ async function getTranslationsCatalog() {
     const jsonData = JSON.parse(catalogResponse.data);
     const catalogData = jsonData.data;
     const catalog = catalogData.map(t => ({
+        source: "DCS",
         resourceTypes: ["bible"],
         id: `${t.id}`,
         languageCode: t.language,
@@ -32,15 +33,17 @@ async function getTranslationsCatalog() {
 
 const fetchUsfm = async (org, trans, config) => {
     const http = require(`${appRoot}/src/lib/http.js`);
-    const tp = transPath(config.dataPath, org.translationDir, trans.owner, trans.id, trans.revision);
     const repoDetailsResponse = await http.getText(trans.downloadURL);
     const responseJson = JSON.parse(repoDetailsResponse.data);
     const zipUrl = responseJson.catalog.latest.zipball_url;
     const downloadResponse = await http.getBuffer(zipUrl);
-    const usfmBooksPath = path.join(tp, 'usfmBooks');
+    const tp = transPath(config.dataPath, org.translationDir, trans.id, trans.revision);
+try {
+    const usfmBooksPath = path.join(tp, 'original', 'usfmBooks');
     if (!fse.pathExistsSync(usfmBooksPath)) {
         fse.mkdirsSync(usfmBooksPath);
     }
+    fse.writeJsonSync(path.join(tp, "lock.json"), {actor: "dcs/translations", orgDir: org.translationDir, transId: trans.id, revision: trans.revision});
     fse.writeJsonSync(path.join(tp, 'metadata.json'), trans);
     const zip = new jszip();
     await zip.loadAsync(downloadResponse.data);
@@ -52,7 +55,12 @@ const fetchUsfm = async (org, trans, config) => {
         }
     }
     const vrsResponse = await http.getText('https://git.door43.org/Door43-Catalog/versification/raw/branch/master/bible/ufw/ufw.vrs');
-    fse.writeFileSync(vrsPath(config.dataPath, org.translationDir, trans.owner, trans.id, trans.revision), vrsResponse.data);
+    fse.writeFileSync(vrsPath(config.dataPath, org.translationDir, trans.id, trans.revision), vrsResponse.data);
+    fse.remove(path.join(tp, "lock.json"));
+} catch (err) {
+    console.log(err);
+    fse.remove(tp);
+}
 };
 
 const fetchUsx = async (org) => {throw new Error(`USX fetching is not supported for ${org.name}`)};
