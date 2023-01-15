@@ -1,6 +1,6 @@
 function searchClause(selectedOrg, searchLang, searchText) {
 
-    const listifyTerms = ts => ts.trim().split(/\s+/).map(t => `"${t}"`).join(' ')
+    const listifyTerms = ts => ts.trim().split(/\s+/).map(t => `"""${t.replace(/"/g, "")}"""`).join(' ')
 
     const searchString = `(
         ${searchLang.trim().length > 0 ? `withLanguageCode: [${listifyTerms(searchLang)}]` : ''}

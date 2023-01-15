@@ -1,6 +1,6 @@
 function searchClause(searchTerms) {
 
-    const listifyTerms = ts => ts.trim().split(/\s+/).map(t => `"""${t.replace('"""', "")}"""`).join(' ');
+    const listifyTerms = ts => ts.trim().split(/\s+/).map(t => `"""${t}"""`).join(' ');
 
     const featuresString = f => Object.entries(searchTerms.features)
         .filter(kv => kv[1])
@@ -9,7 +9,7 @@ function searchClause(searchTerms) {
 
     const checkedFeatures = featuresString();
 
-    const tidyField = str => str.trim().toLocaleLowerCase().replace('"""', "");
+    const tidyField = str => str.toLocaleLowerCase().replace(/"/g, "").trim();
 
     return `(
         ${searchTerms.org !== "all" ? `sources: [${listifyTerms(searchTerms.org)}]`: ""}
