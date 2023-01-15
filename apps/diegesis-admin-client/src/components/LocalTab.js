@@ -1,5 +1,5 @@
 import React from 'react';
-import { searchQuery } from '../lib/search';
+import { searchQuery } from '../lib/localSearch';
 import EntriesTable from "./EntriesTable";
 import {gql, useQuery,useApolloClient,} from "@apollo/client";
 import GqlLoading from "./GqlLoading";
@@ -14,22 +14,20 @@ export default function LocalTab({selectedOrg, searchLang, searchText}) {
 
     const queryString = searchQuery(
         `query {
-        org(name: "%org%") {
-            id: name
             localEntries%searchClause% {
+                source
                 id
                 revision
-                languageCode
+                language
                 owner
                 title
-                hasUsfm
-                hasUsx
-                hasSuccinct
+                usfmBookCodes: bookCodes(type:"usfm")
+                usxBookCodes: bookCodes(type: "usx")
+                succinctRecord: canonResource(type:"succinct") {type}
                 hasSuccinctError
-                hasVrs
+                vrsRecord: canonResource(type:"succinct") {type}
             }
-        }
-    }`,
+        }`,
         selectedOrg,
         searchLang,
         searchText
@@ -73,18 +71,18 @@ export default function LocalTab({selectedOrg, searchLang, searchText}) {
     ];
 
     const createData = localEntry => {
-        let succinctState = localEntry.hasSuccinct ? 'yes' : 'no';
+        let succinctState = localEntry.succinctRecord ? 'yes' : 'no';
         if (localEntry.hasSuccinctError) {
             succinctState = 'FAIL';
         }
         return {
             id: localEntry.id,
-            languageCode: localEntry.languageCode,
+            languageCode: localEntry.language,
             title: localEntry.title,
             owner: localEntry.owner,
             revision: localEntry.revision,
             hasSuccinct: succinctState,
-            hasVrs: localEntry.hasVrs,
+            hasVrs: localEntry.vrsRecord,
             actions: <Button
                 onClick={
                     () => deleteEntry(
@@ -106,7 +104,7 @@ export default function LocalTab({selectedOrg, searchLang, searchText}) {
     if (error) {
         return <GqlError error={error} />
     }
-    const rows = data.org.localEntries.map(lt => createData(lt));
+    const rows = data.localEntries.map(lt => createData(lt));
     return <EntriesTable columns={columns} rows={rows}/>
 
 }

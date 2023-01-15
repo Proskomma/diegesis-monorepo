@@ -9,7 +9,7 @@ import { Button } from '@mui/material';
 import {Download} from '@mui/icons-material';
 
 import EntriesTable from "./EntriesTable";
-import { searchQuery } from '../lib/search';
+import { searchQuery } from '../lib/remoteSearch';
 import { fetchEntry } from '../lib/tableCallbacks';
 import GqlLoading from "./GqlLoading";
 import GqlError from "./GqlError";
