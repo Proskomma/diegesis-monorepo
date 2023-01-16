@@ -6,7 +6,7 @@ import Footer from "../components/Footer";
 import i18n from "../i18n";
 import { useContext } from "react";
 import AppLangContext from "../contexts/AppLangContext";
-import directionText from "../i18n/languageDirection";
+import {directionText} from "../i18n/languageDirection";
 
 export default function HomePage({setAppLanguage}) {
   
@@ -20,7 +20,7 @@ export default function HomePage({setAppLanguage}) {
   return (
     <Container fixed className="homepage">
         <Header setAppLanguage={setAppLanguage} selected="home" />
-        <Box dir={directionText(appLang)}style={{ marginTop: "100px" }}>
+        <Box dir={directionText(appLang)} style={{ marginTop: "100px" }}>
           <Typography variant="h4" paragraph="true" sx={{ mt: "20px" }}>
             {bigTitle}
           </Typography>

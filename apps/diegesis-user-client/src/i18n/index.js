@@ -10,7 +10,7 @@ const substituteArgs = function (str , args) {
   return ret;
 }
 
-export default function i18n(lang, key,args) {
+export default function i18n(lang, key, args) {
   if(!i18nTables[lang]){
     throw new Error(`NOLANG ${lang}`)
   }

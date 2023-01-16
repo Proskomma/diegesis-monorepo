@@ -20,5 +20,15 @@
     "HOW_PHRASE":"Diegesis est un projet open source. Le code source est hébergé sur ",
     "HOW_SUITE_PHRASE":" En interne, Diegesis utilise largement " ,
     "HOW_ENGINE": "le moteur d'exécution Proskomma Scripture ",
-    "HOW_END_PHRASE": "pour analyser et traiter le contenu des Écritures."
+    "HOW_END_PHRASE": "pour analyser et traiter le contenu des Écritures.",
+    "ADMIN_DETAILS":"Détails",
+    "ADMIN_DETAILS_ABBREVIATION":"Abréviation",
+    "ADMIN_DETAILS_COPYRIGHT":"Droits d'auteur",
+    "ADMIN_DETAILS_LANGUAGE":"Langue",
+    "ADMIN_DETAILS_DATA_SOURCE":"La source de données",
+    "ADMIN_DETAILS_OWNER":"Propriétaire",
+    "ADMIN_DETAILS_ENTRY_ID":"ID d'entrée",
+    "ADMIN_DETAILS_REVISION":"Révision",
+    "ADMIN_TEXT_DIRECTION":"De droite à gauche",
+    "ADMIN_LANGUAGE_SCRIPT":"Script \"{0}\""
 }

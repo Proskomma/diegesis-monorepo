@@ -5,7 +5,7 @@ import Footer from "../components/Footer";
 import AppLangContext from "../contexts/AppLangContext";
 import { useContext } from "react";
 import i18n from "../i18n";
-import directionText from "../i18n/languageDirection";
+import {directionText} from "../i18n/languageDirection";
 
 export default function WhoPage({setAppLanguage}) {
 

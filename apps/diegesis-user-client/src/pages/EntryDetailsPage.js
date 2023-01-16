@@ -1,19 +1,33 @@
-import {Container, Typography, Grid, Box, Button} from "@mui/material";
-import {useParams, Link as RouterLink} from "react-router-dom";
-import {ArrowBack, AutoStories, Download} from '@mui/icons-material';
-import {gql, useQuery} from "@apollo/client";
+import {
+  Container,
+  Typography,
+  TableRow,
+  Box,
+  Button,
+  Table,
+  TableBody,
+  TableCell,
+  Paper,
+} from "@mui/material";
+import { useParams, Link as RouterLink } from "react-router-dom";
+import { ArrowBack, AutoStories, Download } from "@mui/icons-material";
+import { gql, useQuery } from "@apollo/client";
 import GqlError from "../components/GqlError";
 
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import Spinner from "../components/Spinner";
 
-export default function EntryDetailsPage() {
+import AppLangContext from "../contexts/AppLangContext";
+import { directionText, alignmentText } from "../i18n/languageDirection";
+import { useContext } from "react";
+import i18n from "../i18n";
 
-    const {source, entryId, revision} = useParams();
+export default function EntryDetailsPage({ setAppLanguage }) {
+  const appLang = useContext(AppLangContext);
+  const { source, entryId, revision } = useParams();
 
-    const queryString =
-        `query {
+  const queryString = `query {
             localEntry(
               source:"""%source%"""
               id: """%entryId%"""
@@ -28,89 +42,220 @@ export default function EntryDetailsPage() {
               owner
             }
           }`
-            .replace("%source%", source)
-            .replace("%entryId%", entryId)
-            .replace("%revision%", revision);
+    .replace("%source%", source)
+    .replace("%entryId%", entryId)
+    .replace("%revision%", revision);
 
-    const {loading, error, data} = useQuery(
-        gql`${queryString}`,
-    );
+  const { loading, error, data } = useQuery(
+    gql`
+      ${queryString}
+    `
+  );
 
-    if (loading) {
-        return <Spinner/>
-    }
-    if (error) {
-        return <GqlError error={error}/>
-    }
+  if (loading) {
+    return <Spinner />;
+  }
+  if (error) {
+    return <GqlError error={error} />;
+  }
 
-    const entryInfo = data.localEntry;
+  const entryInfo = data.localEntry;
 
-    return <Container fixed className="homepage">
-        <Header selected="list"/>
-        <Box style={{marginTop: "100px"}}>
-            <Typography variant="h4" paragraph="true" sx={{mt: "20px"}}>
-                <Button>
-                    <RouterLink to="/list" relative="path"><ArrowBack/></RouterLink></Button>
-                {entryInfo.title}
-                <Button>
-                    <RouterLink to={`/entry/browse/${source}/${entryId}/${revision}`}><AutoStories/></RouterLink>
-                </Button>
-                <Button>
-                    <RouterLink
-                        to={`/entry/download/${source}/${entryId}/${revision}`}><Download/></RouterLink>
-                </Button>
-            </Typography>
-            <Typography variant="h5" paragraph="true">Details</Typography>
-            <Grid container>
-                <Grid item xs={3}>
-                    <Typography variant="body1" paragraph="true">Abbreviation</Typography>
-                </Grid>
-                <Grid item xs={9}>
-                    <Typography variant="body1" paragraph="true">{entryInfo.abbreviation}</Typography>
-                </Grid>
-                <Grid item xs={3}>
-                    <Typography variant="body1" paragraph="true">Copyright</Typography>
-                </Grid>
-                <Grid item xs={9}>
-                    <Typography variant="body1" paragraph="true">{entryInfo.copyright}</Typography>
-                </Grid>
-                <Grid item xs={3}>
-                    <Typography variant="body1" paragraph="true">Language</Typography>
-                </Grid>
-                <Grid item xs={9}>
-                    <Typography variant="body1" paragraph="true">
-                        {entryInfo.language}
-                        {entryInfo.textDirection ? `, ${entryInfo.textDirection === 'ltr' ? "Left to Right" : "Right to Left"}` : ""}
-                        {entryInfo.script ? `, ${entryInfo.script} Script` : ""}
-                    </Typography>
-                </Grid>
-                <Grid item xs={3}>
-                    <Typography variant="body1" paragraph="true">Data Source</Typography>
-                </Grid>
-                <Grid item xs={9}>
-                    <Typography variant="body1" paragraph="true">{source}</Typography>
-                </Grid>
-                <Grid item xs={3}>
-                    <Typography variant="body1" paragraph="true">Owner</Typography>
-                </Grid>
-                <Grid item xs={9}>
-                    <Typography variant="body1" paragraph="true">{entryInfo.owner}</Typography>
-                </Grid>
-                <Grid item xs={3}>
-                    <Typography variant="body1" paragraph="true">Entry ID</Typography>
-                </Grid>
-                <Grid item xs={9}>
-                    <Typography variant="body1" paragraph="true">{entryId}</Typography>
-                </Grid>
-                <Grid item xs={3}>
-                    <Typography variant="body1" paragraph="true">Revision</Typography>
-                </Grid>
-                <Grid item xs={9}>
-                    <Typography variant="body1" paragraph="true">{revision}</Typography>
-                </Grid>
-            </Grid>
-            <Footer/>
-        </Box>
-    </Container>;
+  const details = i18n(appLang, "ADMIN_DETAILS");
+  const abbreviation = i18n(appLang, "ADMIN_DETAILS_ABBREVIATION");
+  const copyright = i18n(appLang, "ADMIN_DETAILS_COPYRIGHT");
+  const language = i18n(appLang, "ADMIN_DETAILS_LANGUAGE");
+  const dataSource = i18n(appLang, "ADMIN_DETAILS_DATA_SOURCE");
+  const owner = i18n(appLang, "ADMIN_DETAILS_OWNER");
+  const detailsEntryId = i18n(appLang, "ADMIN_DETAILS_ENTRY_ID");
+  const detailsRevision = i18n(appLang, "ADMIN_DETAILS_REVISION");
+  const directionDuText = i18n(appLang, "ADMIN_TEXT_DIRECTION");
+  const script = i18n(appLang, "ADMIN_LANGUAGE_SCRIPT");
+  const finalScript = i18n(appLang,"ADMIN_LANGUAGE_SCRIPT",[entryInfo.script])
 
+  return (
+    <Container fixed className="homepage">
+      <Header setAppLanguage={setAppLanguage} selected="list" />
+      <Box dir={directionText(appLang)} style={{ marginTop: "100px" }}>
+        <Typography variant="h4" paragraph="true" sx={{ mt: "20px" }}>
+          <Button>
+            <RouterLink to="/list" relative="path">
+              <ArrowBack />
+            </RouterLink>
+          </Button>
+          {entryInfo.title}
+          <Button>
+            <RouterLink to={`/entry/browse/${source}/${entryId}/${revision}`}>
+              <AutoStories />
+            </RouterLink>
+          </Button>
+          <Button>
+            <RouterLink to={`/entry/download/${source}/${entryId}/${revision}`}>
+              <Download />
+            </RouterLink>
+          </Button>
+        </Typography>
+        <Paper className="container">
+          <Typography variant="h4" paragraph="true">
+            {details}
+          </Typography>
+          <Table aria-label="custom pagination table" container>
+            <TableBody>
+              <TableRow>
+                <TableCell
+                  item
+                  xs={4}
+                  style={{
+                    fontWeight: "bold",
+                    textAlign: alignmentText(appLang),
+                  }}
+                >
+                  <span dir={directionText(appLang)}>{abbreviation}</span>
+                </TableCell>
+                <TableCell
+                  item
+                  xs={8}
+                  style={{ textAlign: alignmentText(appLang) }}
+                >
+                  <Typography variant="body1" paragraph="true">
+                    {entryInfo.abbreviation}
+                  </Typography>
+                </TableCell>
+              </TableRow>
+
+              <TableRow>
+                <TableCell
+                  item
+                  xs={4}
+                  style={{
+                    fontWeight: "bold",
+                    textAlign: alignmentText(appLang),
+                  }}
+                >
+                  <span dir={directionText(appLang)}>{copyright}</span>
+                </TableCell>
+                <TableCell
+                  item
+                  xs={8}
+                  style={{ textAlign: alignmentText(appLang) }}
+                >
+                  <Typography variant="body1" paragraph="true">
+                    {entryInfo.copyright}
+                  </Typography>
+                </TableCell>
+              </TableRow>
+
+              <TableRow>
+                <TableCell
+                  item
+                  xs={4}
+                  style={{
+                    fontWeight: "bold",
+                    textAlign: alignmentText(appLang),
+                  }}
+                >
+                  <span dir={directionText(appLang)}>{language}</span>
+                </TableCell>
+                <TableCell
+                  item
+                  xs={8}
+                  style={{ textAlign: alignmentText(appLang) }}
+                >
+                  <Typography variant="body1" paragraph="true">
+                    {entryInfo.language}
+                    {`, ${directionDuText}`}
+                    {entryInfo.script ? `, ${finalScript}` : ""}
+                  </Typography>
+                </TableCell>
+              </TableRow>
+
+              <TableRow>
+                <TableCell
+                  item
+                  xs={4}
+                  style={{
+                    fontWeight: "bold",
+                    textAlign: alignmentText(appLang),
+                  }}
+                >
+                  <span dir={directionText(appLang)}>{dataSource}</span>
+                </TableCell>
+                <TableCell
+                  item
+                  xs={8}
+                  style={{ textAlign: alignmentText(appLang) }}
+                >
+                  <Typography variant="body1" paragraph="true">
+                    {source}
+                  </Typography>
+                </TableCell>
+              </TableRow>
+
+              <TableRow>
+                <TableCell
+                  item
+                  xs={4}
+                  style={{
+                    fontWeight: "bold",
+                    textAlign: alignmentText(appLang),
+                  }}
+                >
+                  <span dir={directionText(appLang)}>{owner}</span>
+                </TableCell>
+                <TableCell
+                  item
+                  xs={8}
+                  style={{ textAlign: alignmentText(appLang) }}
+                >
+                  <Typography variant="body1" paragraph="true">
+                    {entryInfo.owner}
+                  </Typography>
+                </TableCell>
+              </TableRow>
+
+              <TableRow>
+                <TableCell
+                  item
+                  xs={4}
+                  style={{
+                    fontWeight: "bold",
+                    textAlign: alignmentText(appLang),
+                  }}
+                >
+                  <span dir={directionText(appLang)}>{detailsEntryId}</span>
+                </TableCell>
+                <TableCell
+                  item
+                  xs={8}
+                  style={{ textAlign: alignmentText(appLang) }}
+                >
+                  <Typography variant="body1" paragraph="true">
+                    {entryId}
+                  </Typography>
+                </TableCell>
+              </TableRow>
+
+              <TableRow>
+                <TableCell
+                  xs={4}
+                  style={{
+                    fontWeight: "bold",
+                    textAlign: alignmentText(appLang),
+                  }}
+                >
+                  <span dir={directionText(appLang)}>{detailsRevision}</span>
+                </TableCell>
+                <TableCell xs={8} style={{ textAlign: alignmentText(appLang) }}>
+                  <Typography variant="body1" paragraph="true">
+                    {revision}
+                  </Typography>
+                </TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
+        </Paper>
+        <Footer />
+      </Box>
+    </Container>
+  );
 }

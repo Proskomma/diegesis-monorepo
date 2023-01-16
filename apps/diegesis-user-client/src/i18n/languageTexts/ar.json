@@ -20,5 +20,15 @@
     "HOW_PHRASE":" ديجييسيس هو مشروع مفتوح المصدر. يتم استضافة شفرة المصدر على ",
     "HOW_SUITE_PHRASE":" داخليا ، يستخدم ديجييسيس على نطاق واسع " ,
     "HOW_ENGINE": " محرك برسكومة وقت التشغيل ",
-    "HOW_END_PHRASE": " .لتحليل محتوى الكتاب المقدس ومعالجته "
+    "HOW_END_PHRASE": " .لتحليل محتوى الكتاب المقدس ومعالجته ",
+    "ADMIN_DETAILS":"التفاصيل",
+    "ADMIN_DETAILS_ABBREVIATION":"اختصار",
+    "ADMIN_DETAILS_COPYRIGHT":"حقوق النشر",
+    "ADMIN_DETAILS_LANGUAGE":"اللغة",
+    "ADMIN_DETAILS_DATA_SOURCE":"مصدر البيانات",
+    "ADMIN_DETAILS_OWNER":"المالك",
+    "ADMIN_DETAILS_ENTRY_ID":"معرف الدخول",
+    "ADMIN_DETAILS_REVISION":"المراجعة",
+    "ADMIN_TEXT_DIRECTION":" من اليمين الى اليسار ",
+    "ADMIN_LANGUAGE_SCRIPT":"كتابة \"{0}\""
  }

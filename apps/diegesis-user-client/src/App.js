@@ -54,27 +54,27 @@ function App() {
         },
         {
             path: "/list",
-            element: <ListPage/>,
+            element: <ListPage setAppLanguage={setAppLanguage}/>,
             errorElement: <ErrorBoundary/>
         },
         {
             path: "/blend",
-            element: <BlendPage />,
+            element: <BlendPage setAppLanguage={setAppLanguage} />,
             errorElement: <ErrorBoundary/>
         },
         {
             path: "/entry/details/:source/:entryId/:revision",
-            element: <EntryDetailsPage/>,
+            element: <EntryDetailsPage setAppLanguage={setAppLanguage}/>,
             errorElement: <ErrorBoundary/>
         },
         {
             path: "/entry/browse/:source/:entryId/:revision",
-            element: <EntryBrowsePage/>,
+            element: <EntryBrowsePage setAppLanguage={setAppLanguage}/>,
             errorElement: <ErrorBoundary/>
         },
         {
             path: "/entry/download/:source/:entryId/:revision",
-            element: <EntryDownloadPage/>,
+            element: <EntryDownloadPage setAppLanguage={setAppLanguage}/>,
             errorElement: <ErrorBoundary/>
         }
     ]);
