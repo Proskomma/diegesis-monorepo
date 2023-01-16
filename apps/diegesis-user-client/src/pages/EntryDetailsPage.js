@@ -40,6 +40,9 @@ export default function EntryDetailsPage({ setAppLanguage }) {
               copyright
               abbreviation
               owner
+              nOT : stat(field :"nOT")
+              nNT : stat(field :"nNT")
+              nDC : stat(field :"nDC")
             }
           }`
     .replace("%source%", source)
@@ -117,9 +120,7 @@ export default function EntryDetailsPage({ setAppLanguage }) {
                   xs={8}
                   style={{ textAlign: alignmentText(appLang) }}
                 >
-                  <Typography variant="body1" paragraph="true">
                     {entryInfo.abbreviation}
-                  </Typography>
                 </TableCell>
               </TableRow>
 
@@ -139,9 +140,7 @@ export default function EntryDetailsPage({ setAppLanguage }) {
                   xs={8}
                   style={{ textAlign: alignmentText(appLang) }}
                 >
-                  <Typography variant="body1" paragraph="true">
                     {entryInfo.copyright}
-                  </Typography>
                 </TableCell>
               </TableRow>
 
@@ -161,11 +160,9 @@ export default function EntryDetailsPage({ setAppLanguage }) {
                   xs={8}
                   style={{ textAlign: alignmentText(appLang) }}
                 >
-                  <Typography variant="body1" paragraph="true">
                     {entryInfo.language}
                     {`, ${directionDuText}`}
                     {entryInfo.script ? `, ${finalScript}` : ""}
-                  </Typography>
                 </TableCell>
               </TableRow>
 
@@ -185,9 +182,7 @@ export default function EntryDetailsPage({ setAppLanguage }) {
                   xs={8}
                   style={{ textAlign: alignmentText(appLang) }}
                 >
-                  <Typography variant="body1" paragraph="true">
                     {source}
-                  </Typography>
                 </TableCell>
               </TableRow>
 
@@ -207,9 +202,7 @@ export default function EntryDetailsPage({ setAppLanguage }) {
                   xs={8}
                   style={{ textAlign: alignmentText(appLang) }}
                 >
-                  <Typography variant="body1" paragraph="true">
                     {entryInfo.owner}
-                  </Typography>
                 </TableCell>
               </TableRow>
 
@@ -229,9 +222,7 @@ export default function EntryDetailsPage({ setAppLanguage }) {
                   xs={8}
                   style={{ textAlign: alignmentText(appLang) }}
                 >
-                  <Typography variant="body1" paragraph="true">
                     {entryId}
-                  </Typography>
                 </TableCell>
               </TableRow>
 
@@ -246,9 +237,22 @@ export default function EntryDetailsPage({ setAppLanguage }) {
                   <span dir={directionText(appLang)}>{detailsRevision}</span>
                 </TableCell>
                 <TableCell xs={8} style={{ textAlign: alignmentText(appLang) }}>
-                  <Typography variant="body1" paragraph="true">
                     {revision}
-                  </Typography>
+                </TableCell>
+              </TableRow>
+
+              <TableRow>
+                <TableCell
+                  xs={4}
+                  style={{
+                    fontWeight: "bold",
+                    textAlign: alignmentText(appLang),
+                  }}
+                >
+                  <span dir={directionText(appLang)}>Content</span>
+                </TableCell>
+                <TableCell xs={8} style={{ textAlign: alignmentText(appLang) }}>
+                    {`${entryInfo.nOT} OT, ${entryInfo.nNT} NT, ${entryInfo.nDC} DC`}
                 </TableCell>
               </TableRow>
             </TableBody>
