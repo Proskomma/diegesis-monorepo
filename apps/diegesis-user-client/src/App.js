@@ -36,50 +36,48 @@ function App() {
   }
 
   const [appLanguage, setAppLanguage] = useState("en");
-
-  const router = createBrowserRouter([
-    {
-      path: "/",
-      element: <HomePage setAppLanguage={setAppLanguage}/>,
-      errorElement: <ErrorBoundary />,
-    },
-    {
-      path: "/who",
-      element: <WhoPage setAppLanguage={setAppLanguage}/>,
-      errorElement: <ErrorBoundary />,
-    },
-    {
-      path: "/how",
-      element: <HowPage setAppLanguage={setAppLanguage}/>,
-      errorElement: <ErrorBoundary />,
-    },
-    {
-      path: "/list",
-      element: <ListPage />,
-      errorElement: <ErrorBoundary />,
-    },
-    {
-      path: "/blend",
-      element: <BlendPage />,
-      errorElement: <ErrorBoundary />,
-    },
-    {
-      path: "/entry/details/:source/:owner/:entryId/:revision",
-      element: <EntryDetailsPage />,
-      errorElement: <ErrorBoundary />,
-    },
-    {
-      path: "/entry/browse/:source/:owner/:entryId/:revision",
-      element: <EntryBrowsePage />,
-      errorElement: <ErrorBoundary />,
-    },
-    {
-      path: "/entry/download/:source/:owner/:entryId/:revision",
-      element: <EntryDownloadPage />,
-      errorElement: <ErrorBoundary />,
-    },
-  ]);
-
+    const router = createBrowserRouter([
+        {
+            path: "/",
+            element: <HomePage setAppLanguage={setAppLanguage}/>,
+            errorElement: <ErrorBoundary/>
+        },
+        {
+            path: "/who",
+            element: <WhoPage setAppLanguage={setAppLanguage}/>,
+            errorElement: <ErrorBoundary/>
+        },
+        {
+            path: "/how",
+            element: <HowPage setAppLanguage={setAppLanguage}/>,
+            errorElement: <ErrorBoundary/>
+        },
+        {
+            path: "/list",
+            element: <ListPage/>,
+            errorElement: <ErrorBoundary/>
+        },
+        {
+            path: "/blend",
+            element: <BlendPage />,
+            errorElement: <ErrorBoundary/>
+        },
+        {
+            path: "/entry/details/:source/:entryId/:revision",
+            element: <EntryDetailsPage/>,
+            errorElement: <ErrorBoundary/>
+        },
+        {
+            path: "/entry/browse/:source/:entryId/:revision",
+            element: <EntryBrowsePage/>,
+            errorElement: <ErrorBoundary/>
+        },
+        {
+            path: "/entry/download/:source/:entryId/:revision",
+            element: <EntryDownloadPage/>,
+            errorElement: <ErrorBoundary/>
+        }
+    ]);
   return (
     <ApolloProvider client={client}>
       <ThemeProvider theme={theme}>

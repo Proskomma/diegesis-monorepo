@@ -18,7 +18,7 @@
     "WHO_PARAGRAPHE2":"The Diegesis project is led by Mark Howe from",
     "HOW_TITLE":"Diegesis Technology",
     "HOW_PHRASE":"Diegesis is an open-source project. The source code is hosted on ",
-    "HOW_SUITE_PHRASE":"Internally, Diegesis makes extensive use of the " ,
-    "HOW_ENGINE": "Proskomma Scripture Runtime Engine",
+    "HOW_SUITE_PHRASE":" Internally, Diegesis makes extensive use of the " ,
+    "HOW_ENGINE": "Proskomma Scripture Runtime Engine ",
     "HOW_END_PHRASE": "to parse and process Scripture content."
  }

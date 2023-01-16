@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "repository": "https://github.com/Proskomma/diegesis-monorepo.git",
-  "author": "Proskomma",
+  "author": "Mark Howe",
   "license": "MIT",
   "private": true,
   "workspaces":["./apps/*","./libs/*"],

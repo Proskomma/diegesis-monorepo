@@ -1,7 +1,7 @@
 import React from 'react';
 import {Container, Typography, Box, Button} from "@mui/material";
+import {ArrowBack} from "@mui/icons-material";
 import {useParams, Link as RouterLink} from "react-router-dom";
-import {ArrowBack, Info, Download} from '@mui/icons-material';
 import {gql, useQuery} from "@apollo/client";
 import {Proskomma} from 'proskomma-core';
 import GqlError from "../components/GqlError";
@@ -13,24 +13,21 @@ import BrowseScripture from "../components/BrowseScripture";
 
 export default function EntryBrowsePage() {
 
-    const {source, owner, entryId, revision} = useParams();
+    const {source, entryId, revision} = useParams();
 
     const queryString =
         `query {
-          org(name:"""%source%""") {
-            localTranslation(
-              owner: """%owner%"""
+            localEntry(
+              source: """%source%"""
               id: """%entryId%"""
               revision: """%revision%"""
             ) {
-              languageCode
+              language
               title
-              succinct
+              canonResource(type:"succinct") {content}
             }
-          }
         }`
             .replace("%source%", source)
-            .replace("%owner%", owner)
             .replace("%entryId%", entryId)
             .replace("%revision%", revision);
 
@@ -46,16 +43,11 @@ export default function EntryBrowsePage() {
         return <GqlError error={error}/>;
     }
 
-    const translationInfo = data.org.localTranslation;
+    const entryInfo = data.localEntry;
 
     const pk = new Proskomma([
         {
             name: "source",
-            type: "string",
-            regex: "^[^\\s]+$"
-        },
-        {
-            name: "owner",
             type: "string",
             regex: "^[^\\s]+$"
         },
@@ -71,8 +63,8 @@ export default function EntryBrowsePage() {
         },
     ]);
 
-    if (translationInfo.succinct) {
-        pk.loadSuccinctDocSet(JSON.parse(translationInfo.succinct));
+    if (entryInfo.canonResource.content) {
+        pk.loadSuccinctDocSet(JSON.parse(entryInfo.canonResource.content));
     }
 
     return <Container fixed className="homepage">
@@ -80,20 +72,18 @@ export default function EntryBrowsePage() {
         <Box style={{marginTop: "100px"}}>
             <Typography variant="h4" paragraph="true" sx={{mt: "20px"}}>
                 <Button>
-                    <RouterLink to="/list"><ArrowBack/></RouterLink>
+                    <RouterLink to={`/entry/details/${source}/${entryId}/${revision}`}><ArrowBack/></RouterLink>
                 </Button>
-                {translationInfo.title}
-                <Button>
-                    <RouterLink to={`/entry/details/${source}/${owner}/${entryId}/${revision}`}><Info/></RouterLink>
-                </Button>
-                <Button>
-                    <RouterLink
-                        to={`/entry/download/${source}/${owner}/${entryId}/${revision}`}><Download/></RouterLink>
-                </Button>
+                {entryInfo.title}
             </Typography>
-            {translationInfo.succinct && <BrowseScripture pk={pk}/>}
-            {!translationInfo.succinct &&
-            <Typography paragraph="true">Unable to render this translation at present: please try later</Typography>}
+            {
+                entryInfo.canonResource &&
+                entryInfo.canonResource.content && <BrowseScripture pk={pk}/>
+            }
+            {
+                (!entryInfo.canonResource || !entryInfo.canonResource.content) &&
+                <Typography paragraph="true">Unable to render this translation at present: please try later</Typography>
+            }
             <Footer/>
         </Box>
     </Container>;

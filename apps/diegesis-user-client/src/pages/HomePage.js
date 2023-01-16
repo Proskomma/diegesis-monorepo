@@ -7,8 +7,6 @@ import i18n from "../i18n";
 import { useContext } from "react";
 import AppLangContext from "../contexts/AppLangContext";
 import directionText from "../i18n/languageDirection";
-import langTable from "../i18n/languages.json"
-
 
 export default function HomePage({setAppLanguage}) {
   

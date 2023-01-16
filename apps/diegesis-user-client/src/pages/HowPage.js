@@ -5,6 +5,7 @@ import Footer from "../components/Footer";
 import { useContext } from "react";
 import AppLangContext from "../contexts/AppLangContext";
 import i18n from "../i18n";
+import directionText from "../i18n/languageDirection";
 
 export default function HowPage({setAppLanguage}) {
 
@@ -17,7 +18,7 @@ export default function HowPage({setAppLanguage}) {
 
     return <Container fixed className="homepage">
         <Header setAppLanguage={setAppLanguage} selected="how"/>
-        <Box style={{marginTop: "100px"}}>
+        <Box dir={directionText(appLang)} style={{marginTop: "100px"}}>
             <Typography variant="h4" paragraph="true" sx={{mt: "20px"}}>{title}</Typography>
             <Typography variant="body1" paragraph="true">{phrase} <a href="https://github.com/Proskomma/diegesis-monorepo">Github</a>.
                     {suitePhrase} <a href="http://doc.proskomma.bible" target="_blank" rel="noreferrer">{engine}</a> 

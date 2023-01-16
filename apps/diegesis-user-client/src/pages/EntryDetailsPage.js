@@ -1,6 +1,6 @@
 import {Container, Typography, Grid, Box, Button} from "@mui/material";
 import {useParams, Link as RouterLink} from "react-router-dom";
-import {ArrowBack} from '@mui/icons-material';
+import {ArrowBack, AutoStories, Download} from '@mui/icons-material';
 import {gql, useQuery} from "@apollo/client";
 import GqlError from "../components/GqlError";
 
@@ -10,27 +10,25 @@ import Spinner from "../components/Spinner";
 
 export default function EntryDetailsPage() {
 
-    const {source, owner, entryId, revision} = useParams();
+    const {source, entryId, revision} = useParams();
 
     const queryString =
         `query {
-          org(name:"""%source%""") {
-            localTranslation(
-              owner: """%owner%"""
+            localEntry(
+              source:"""%source%"""
               id: """%entryId%"""
               revision: """%revision%"""
             ) {
-              languageCode
+              language
               title
               textDirection
               script
               copyright
               abbreviation
+              owner
             }
-          }
-        }`
+          }`
             .replace("%source%", source)
-            .replace("%owner%", owner)
             .replace("%entryId%", entryId)
             .replace("%revision%", revision);
 
@@ -45,15 +43,22 @@ export default function EntryDetailsPage() {
         return <GqlError error={error}/>
     }
 
-    const translationInfo = data.org.localTranslation;
+    const entryInfo = data.localEntry;
 
     return <Container fixed className="homepage">
         <Header selected="list"/>
         <Box style={{marginTop: "100px"}}>
             <Typography variant="h4" paragraph="true" sx={{mt: "20px"}}>
                 <Button>
-                    <RouterLink to={`/entry/browse/${source}/${owner}/${entryId}/${revision}`} relative="path"><ArrowBack/></RouterLink></Button>
-                {translationInfo.title}
+                    <RouterLink to="/list" relative="path"><ArrowBack/></RouterLink></Button>
+                {entryInfo.title}
+                <Button>
+                    <RouterLink to={`/entry/browse/${source}/${entryId}/${revision}`}><AutoStories/></RouterLink>
+                </Button>
+                <Button>
+                    <RouterLink
+                        to={`/entry/download/${source}/${entryId}/${revision}`}><Download/></RouterLink>
+                </Button>
             </Typography>
             <Typography variant="h5" paragraph="true">Details</Typography>
             <Grid container>
@@ -61,30 +66,22 @@ export default function EntryDetailsPage() {
                     <Typography variant="body1" paragraph="true">Abbreviation</Typography>
                 </Grid>
                 <Grid item xs={9}>
-                    <Typography variant="body1" paragraph="true">{translationInfo.abbreviation}</Typography>
+                    <Typography variant="body1" paragraph="true">{entryInfo.abbreviation}</Typography>
                 </Grid>
                 <Grid item xs={3}>
                     <Typography variant="body1" paragraph="true">Copyright</Typography>
                 </Grid>
                 <Grid item xs={9}>
-                    <Typography variant="body1" paragraph="true">{translationInfo.copyright}</Typography>
+                    <Typography variant="body1" paragraph="true">{entryInfo.copyright}</Typography>
                 </Grid>
                 <Grid item xs={3}>
                     <Typography variant="body1" paragraph="true">Language</Typography>
                 </Grid>
-                <Grid item xs={3}>
+                <Grid item xs={9}>
                     <Typography variant="body1" paragraph="true">
-                        {translationInfo.languageCode}
-                    </Typography>
-                </Grid>
-                <Grid item xs={3}>
-                    <Typography variant="body1" paragraph="true">
-                        {translationInfo.textDirection ? translationInfo.textDirection : ""}
-                    </Typography>
-                </Grid>
-                <Grid item xs={3}>
-                    <Typography variant="body1" paragraph="true">
-                        {translationInfo.script ? translationInfo.script : ""}
+                        {entryInfo.language}
+                        {entryInfo.textDirection ? `, ${entryInfo.textDirection === 'ltr' ? "Left to Right" : "Right to Left"}` : ""}
+                        {entryInfo.script ? `, ${entryInfo.script} Script` : ""}
                     </Typography>
                 </Grid>
                 <Grid item xs={3}>
@@ -97,7 +94,7 @@ export default function EntryDetailsPage() {
                     <Typography variant="body1" paragraph="true">Owner</Typography>
                 </Grid>
                 <Grid item xs={9}>
-                    <Typography variant="body1" paragraph="true">{owner}</Typography>
+                    <Typography variant="body1" paragraph="true">{entryInfo.owner}</Typography>
                 </Grid>
                 <Grid item xs={3}>
                     <Typography variant="body1" paragraph="true">Entry ID</Typography>

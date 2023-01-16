@@ -1,10 +1,10 @@
 import {gql} from "@apollo/client";
 
-async function fetchTranslation(client, org, transId, contentType) {
+async function fetchEntry(client, org, transId, contentType) {
     const mutationString = `mutation Fetch {
                 fetch%contentType%(
                   org: """%org%""",
-                  translationId: """%transId%"""
+                  entryId: """%transId%"""
                 )
         }`.replace('%org%', org)
         .replace('%transId%', transId)
@@ -12,19 +12,17 @@ async function fetchTranslation(client, org, transId, contentType) {
     client.mutate({mutation: gql`${mutationString}`});
 }
 
-async function deleteTranslation(client, org, owner, transId, revision) {
-    const mutationString = `mutation DeleteLocalTranslation {
-    deleteLocalTranslation(
+async function deleteEntry(client, org, transId, revision) {
+    const mutationString = `mutation DeleteLocalEntry {
+    deleteLocalEntry(
       org: """%org%""",
-      owner: """%owner%"""
       id: """%transId%"""
       revision: """%revision%"""
     )
 }`.replace('%org%', org)
-        .replace('%owner%', owner)
         .replace('%transId%', transId)
         .replace('%revision%', revision);
     client.mutate({mutation: gql`${mutationString}`});
 }
 
-export {fetchTranslation, deleteTranslation};
+export {fetchEntry, deleteEntry};
