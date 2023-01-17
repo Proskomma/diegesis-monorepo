@@ -30,5 +30,8 @@
     "ADMIN_DETAILS_ENTRY_ID":"معرف الدخول",
     "ADMIN_DETAILS_REVISION":"المراجعة",
     "ADMIN_TEXT_DIRECTION":" من اليمين الى اليسار ",
-    "ADMIN_LANGUAGE_SCRIPT":"كتابة \"{0}\""
+    "ADMIN_LANGUAGE_SCRIPT":"كتابة \"{0}\"",
+    "ADMIN_DETAILS_CONTENT":"المحتوى",
+    "ADMIN_DETAILS_CHAPTERS":"عدد الفصول",
+    "ADMIN_DETAILS_VERSES":"عدد الآيات"
  }

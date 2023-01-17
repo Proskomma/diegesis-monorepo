@@ -43,6 +43,8 @@ export default function EntryDetailsPage({ setAppLanguage }) {
               nOT : stat(field :"nOT")
               nNT : stat(field :"nNT")
               nDC : stat(field :"nDC")
+              nChapters : stat(field :"nChapters")
+              nVerses : stat(field :"nVerses")
             }
           }`
     .replace("%source%", source)
@@ -73,8 +75,10 @@ export default function EntryDetailsPage({ setAppLanguage }) {
   const detailsEntryId = i18n(appLang, "ADMIN_DETAILS_ENTRY_ID");
   const detailsRevision = i18n(appLang, "ADMIN_DETAILS_REVISION");
   const directionDuText = i18n(appLang, "ADMIN_TEXT_DIRECTION");
-  const script = i18n(appLang, "ADMIN_LANGUAGE_SCRIPT");
   const finalScript = i18n(appLang,"ADMIN_LANGUAGE_SCRIPT",[entryInfo.script])
+  const content = i18n(appLang,"ADMIN_DETAILS_CONTENT")
+  const chapters = i18n(appLang,"ADMIN_DETAILS_CHAPTERS")
+  const verses = i18n(appLang,"ADMIN_DETAILS_VERSES")
 
   return (
     <Container fixed className="homepage">
@@ -249,12 +253,43 @@ export default function EntryDetailsPage({ setAppLanguage }) {
                     textAlign: alignmentText(appLang),
                   }}
                 >
-                  <span dir={directionText(appLang)}>Content</span>
+                  <span dir={directionText(appLang)}>{content}</span>
                 </TableCell>
                 <TableCell xs={8} style={{ textAlign: alignmentText(appLang) }}>
                     {`${entryInfo.nOT} OT, ${entryInfo.nNT} NT, ${entryInfo.nDC} DC`}
                 </TableCell>
               </TableRow>
+
+              <TableRow>
+                <TableCell
+                  xs={4}
+                  style={{
+                    fontWeight: "bold",
+                    textAlign: alignmentText(appLang),
+                  }}
+                >
+                  <span dir={directionText(appLang)}>{chapters}</span>
+                </TableCell>
+                <TableCell xs={8} style={{ textAlign: alignmentText(appLang) }}>
+                    {`${entryInfo.nChapters}`}
+                </TableCell>
+              </TableRow>
+
+              <TableRow>
+                <TableCell
+                  xs={4}
+                  style={{
+                    fontWeight: "bold",
+                    textAlign: alignmentText(appLang),
+                  }}
+                >
+                  <span dir={directionText(appLang)}>{verses}</span>
+                </TableCell>
+                <TableCell xs={8} style={{ textAlign: alignmentText(appLang) }}>
+                    {`${entryInfo.nVerses}`}
+                </TableCell>
+              </TableRow>
+
             </TableBody>
           </Table>
         </Paper>

@@ -30,5 +30,8 @@
     "ADMIN_DETAILS_ENTRY_ID":"ID d'entrée",
     "ADMIN_DETAILS_REVISION":"Révision",
     "ADMIN_TEXT_DIRECTION":"De droite à gauche",
-    "ADMIN_LANGUAGE_SCRIPT":"Script \"{0}\""
+    "ADMIN_LANGUAGE_SCRIPT":"Script \"{0}\"",
+    "ADMIN_DETAILS_CONTENT":"Contenu",
+    "ADMIN_DETAILS_CHAPTERS":"Nombre de Chapitres",
+    "ADMIN_DETAILS_VERSES":"Nombre de Vers"
 }
