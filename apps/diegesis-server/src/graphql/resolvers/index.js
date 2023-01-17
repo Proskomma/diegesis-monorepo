@@ -345,8 +345,19 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                 }
                 return Object.entries(documentStats).map(kv => ({
                     bookCode: kv[0],
+                    field : args.field,
                     stat: typeof kv[1][args.field] === "number" ? kv[1][args.field] : null
                 }));
+            },
+            bookStats: (root, args) => {
+                let ret =[]
+                if (root.stats && root.stats.documents && root.stats.documents[args.bookCode]){
+                    const bookCodeStats = root.stats.documents[args.bookCode]
+                    for (const [field,stat] of Object.entries(bookCodeStats) ){
+                        ret.push({bookCode:args.bookCode , field , stat})
+                    }
+                }
+                return ret ; 
             },
             canonResources: root => {
                 let ret = [];

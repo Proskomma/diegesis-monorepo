@@ -33,5 +33,18 @@
     "ADMIN_LANGUAGE_SCRIPT":"Script \"{0}\"",
     "ADMIN_DETAILS_CONTENT":"Contenu",
     "ADMIN_DETAILS_CHAPTERS":"Nombre de Chapitres",
-    "ADMIN_DETAILS_VERSES":"Nombre de Vers"
+    "ADMIN_DETAILS_VERSES":"Nombre de Vers",
+    "ADMIN_DETAILS_TITLE":"Ressources du livre",
+    "ADMIN_DETAILS_ALERT":"Selectionner un livre",
+    "STATS_nChapters":"Chapitres",
+    "STATS_nVerses":"Vers",
+    "STATS_nMorph":"Morph",
+    "STATS_nOccurrences":"Occurrences",
+    "STATS_nContent":"Contenu",
+    "STATS_nLemma":"Lemme",
+    "STATS_nStrong":"Gras",
+    "STATS_nHeadings":"Headings",
+    "STATS_nFootnotes":"Notes de bas de page",
+    "STATS_nXrefs":"Xréfs",
+    "STATS_nIntroductions":"Intorductions"
 }

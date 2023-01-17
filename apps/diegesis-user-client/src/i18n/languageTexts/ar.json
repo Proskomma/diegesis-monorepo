@@ -33,5 +33,18 @@
     "ADMIN_LANGUAGE_SCRIPT":"كتابة \"{0}\"",
     "ADMIN_DETAILS_CONTENT":"المحتوى",
     "ADMIN_DETAILS_CHAPTERS":"عدد الفصول",
-    "ADMIN_DETAILS_VERSES":"عدد الآيات"
+    "ADMIN_DETAILS_VERSES":"عدد الآيات",
+    "ADMIN_DETAILS_TITLE":"موارد الكتاب",
+    "ADMIN_DETAILS_ALERT":"إختر كتابا",
+    "STATS_nChapters":"الفصول",
+    "STATS_nVerses":"آيات",
+    "STATS_nMorph":"Morph",
+    "STATS_nOccurrences":"التكرار",
+    "STATS_nContent":"محتوى",
+    "STATS_nLemma":"Lemme",
+    "STATS_nStrong":"عريض",
+    "STATS_nHeadings":"العناوين",
+    "STATS_nFootnotes":"الحواشي",
+    "STATS_nXrefs":"المراجع",
+    "STATS_nIntroductions":"مقدمات"
  }

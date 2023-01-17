@@ -167,6 +167,12 @@ const querySchema = gql`
             field: String!
         ): [ResourceStat!]
 
+        """Book-level stats"""
+        bookStats(
+          """The bookCode"""
+          bookCode: String!
+        ): [ResourceStat!]!
+
         """Canon-level resources for the entry"""
         canonResources: [CanonResource!]!
 
@@ -212,6 +218,9 @@ const querySchema = gql`
 
         """The bookCode"""
         bookCode: String!
+
+        """The field"""
+        field: String!
 
         """The stat"""
         stat: Int
