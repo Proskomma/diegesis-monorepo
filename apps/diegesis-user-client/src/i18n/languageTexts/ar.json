@@ -41,10 +41,25 @@
     "STATS_nMorph":"Morph",
     "STATS_nOccurrences":"التكرار",
     "STATS_nContent":"محتوى",
-    "STATS_nLemma":"Lemme",
+    "STATS_nLemma":"جذر",
     "STATS_nStrong":"عريض",
     "STATS_nHeadings":"العناوين",
     "STATS_nFootnotes":"الحواشي",
     "STATS_nXrefs":"المراجع",
-    "STATS_nIntroductions":"مقدمات"
+    "STATS_nIntroductions":"مقدمات",
+    "LIST_PAGE_ENTRIES":"إدخالات",
+    "CONTROLS_TITLE":"عنوان",
+    "CONTROLS_TYPE":"نوع",
+    "CONTROLS_OWNER":"المالك",
+    "CONTROLS_LANGUAGE":"لغة",
+    "CONTROLS_ALL":"الكل",
+    "CONTROLS_SOURCE":"مصدر",
+    "CONTROLS_ID":"معرف الدخول",
+    "CONTROLS_SORT_BY":"حسب",
+    "CONTROLS_GLOSS":"المصطلح الأصلي",
+    "CONTROLS_LEMME":"جذر",
+    "CONTROLS_OT":"العهد القديم",
+    "CONTROLS_NT":"العهد الجديد",
+    "CONTROLS_DC":"الأسفار القانونية الثانية"
+    
  }

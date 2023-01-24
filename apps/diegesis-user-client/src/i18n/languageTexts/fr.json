@@ -46,5 +46,20 @@
     "STATS_nHeadings":"Headings",
     "STATS_nFootnotes":"Notes de bas de page",
     "STATS_nXrefs":"Xréfs",
-    "STATS_nIntroductions":"Intorductions"
+    "STATS_nIntroductions":"Intorductions",
+    "LIST_PAGE_ENTRIES":"Entrées",
+    "CONTROLS_TITLE":"Titre",
+    "CONTROLS_TYPE":"Type",
+    "CONTROLS_OWNER":"Propriétaire",
+    "CONTROLS_LANGUAGE":"Langue",
+    "CONTROLS_ALL":"Tout",
+    "CONTROLS_SOURCE":"Source",
+    "CONTROLS_ID":"ID",
+    "CONTROLS_SORT_BY":"Par",
+    "CONTROLS_GLOSS":"Infinitif",
+    "CONTROLS_LEMME":"Lemme",
+    "CONTROLS_OT":"AT",
+    "CONTROLS_NT":"NT",
+    "CONTROLS_DC":"DC"
+    
 }
