@@ -498,7 +498,7 @@ const orgsConfigDescription = configs => {
                     lines.push(`        ${Object.keys(cf.etc).length} item${Object.keys(cf.etc).length === 1 ? "" : "s"} in etc`);
                 }
                 return lines.join('\n');
-            })
+            }).join("\n");
 }
 
 const configSummary = config => `  Server ${config.name} is listening on ${config.hostName}:${config.port}

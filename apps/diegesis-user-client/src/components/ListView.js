@@ -76,6 +76,18 @@ export default function ListView({searchTerms}) {
         }
     );
     return <Grid container xs={12}>
+        <Grid item xs={6} sm={4} md={2}>
+            <Typography variant="body1" sx={{fontWeight: "bold"}}>Resource Types</Typography>
+        </Grid>
+        <Grid item xs={6} sm={4} md={2}>
+            <Typography variant="body1" sx={{fontWeight: "bold"}}>Source</Typography>
+        </Grid>
+        <Grid item xs={12} sm={4} md={2}>
+            <Typography variant="body1" sx={{fontWeight: "bold"}}>Language</Typography>
+        </Grid>
+        <Grid item xs={12} md={6}>
+                <Typography variant="body1" sx={{fontWeight: "bold"}}>Title</Typography>
+        </Grid>
         {displayRows}
     </Grid>
 
