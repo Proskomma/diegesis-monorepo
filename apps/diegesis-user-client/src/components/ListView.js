@@ -19,8 +19,6 @@ export default function ListView({searchTerms}) {
                 revision
                 title
                 bookResourceTypes
-                succinctRecord: canonResource(type:"succinct") {type}
-                vrsRecord: canonResource(type:"succinct") {type}
                 nOT: stat(field:"nOT")
                 nNT: stat(field:"nNT")
                 nDC: stat(field:"nDC")
@@ -35,7 +33,6 @@ export default function ListView({searchTerms}) {
                 nOccurrences: stat(field:"nOccurrences")
                 nChapters: stat(field:"nChapters")
                 nVerses: stat(field:"nVerses")
-                hasSuccinctError
             }
         }`,
         searchTerms
