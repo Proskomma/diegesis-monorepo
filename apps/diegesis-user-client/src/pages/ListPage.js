@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useMemo} from 'react';
+import React, {useState, useEffect, useMemo, useContext} from 'react';
 import {
     ApolloClient,
     gql,
@@ -11,8 +11,11 @@ import ListView from "../components/ListView";
 import ListViewControls from "../components/ListViewControls";
 import Spinner from "../components/Spinner";
 import Footer from "../components/Footer";
+import AppLangContext from "../contexts/AppLangContext";
 
-export default function ListPage() {
+export default function ListPage({ setAppLanguage }) {
+    const appLang = useContext(AppLangContext);
+
     const [showSettings, setShowSettings] = useState(false);
     const [searchOrg, setSearchOrg] = useState('all');
     const [searchOwner, setSearchOwner] = useState('');
@@ -56,7 +59,7 @@ export default function ListPage() {
     );
 
     return <Container fixed className="listpage">
-        <Header selected="list" />
+        <Header  setAppLanguage={setAppLanguage} selected="list" />
         <Box style={{marginTop: "100px"}}>
             <Typography variant="h4" paragraph="true" sx={{mt: "20px"}}>
                 Entries
