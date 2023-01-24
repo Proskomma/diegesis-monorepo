@@ -1,6 +1,6 @@
 import React, {useContext} from "react";
 import {Link as RouterLink} from "react-router-dom";
-import {AppBar, Toolbar, Box, Select, MenuItem, Container} from "@mui/material";
+import {AppBar, Toolbar, Box, Select, MenuItem} from "@mui/material";
 import {
     Home,
     Engineering,
@@ -8,8 +8,10 @@ import {
     Diversity3,
     Blender,
 } from "@mui/icons-material";
-import AppLangContext from "../contexts/AppLangContext";
 import langTable from "../i18n/languages.json"
+import AppLangContext from "../contexts/AppLangContext";
+import { alignmentText } from "../i18n/languageDirection";
+
 
 
 export default function Header({selected, children, setAppLanguage}) {
@@ -28,11 +30,10 @@ export default function Header({selected, children, setAppLanguage}) {
     const appLang = useContext(AppLangContext);
 
     const handleLanguageChange = e => setAppLanguage(e.target.value)
-
-
+    
     return (
         <AppBar position="fixed">
-            <Toolbar>
+            <Toolbar dir={alignmentText(appLang) === 'right' ? 'rtl' : 'ltr'}>
                 <Box sx={{display: "flex", flexDirection: "row", flexGrow: 1}}>
                     <RouterLink to="/">
                         <Box sx={linkBoxStyles}>
