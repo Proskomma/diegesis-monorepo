@@ -153,6 +153,9 @@ const querySchema = gql`
             field: String!
         ): Int
 
+        """Entry-level stats"""
+        stats: [EntryStat!]!
+
         """A named resource stat, if the resource and the stat exist"""
         resourceStat(
             """The bookCode of the resource"""
@@ -218,6 +221,16 @@ const querySchema = gql`
 
         """The bookCode"""
         bookCode: String!
+
+        """The field"""
+        field: String!
+
+        """The stat"""
+        stat: Int
+    }
+
+    """An Entry stat"""
+    type EntryStat {
 
         """The field"""
         field: String!

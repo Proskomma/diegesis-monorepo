@@ -196,20 +196,6 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
         return ret;
     }
 
-    const localEntries = orgData => {
-        const ret = [];
-        const td = path.resolve(config.dataPath, orgData.translationDir);
-        for (const entryId of fse.readdirSync(td)) {
-            for (const revision of fse.readdirSync(path.join(td, entryId))) {
-                const transDir = path.join(td, entryId, revision);
-                const metadata = fse.readJsonSync(path.join(transDir, 'metadata.json'));
-                metadata.dir = transDir;
-                ret.push(metadata);
-            }
-        }
-        return ret;
-    }
-
     const localEntry = (org, entryId, revision) => {
         const translationPath = transPath(config.dataPath, org, entryId, revision);
         if (fse.pathExistsSync(translationPath)) {
@@ -326,6 +312,18 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                     return null;
                 }
                 return stats[args.field];
+            },
+            stats: (root) => {
+                let ret =[]
+                if (root.stats){
+                    for (const [field,stat] of Object.entries(root.stats) ){
+                        if (field === "documents"){
+                            continue
+                        }
+                        ret.push({field , stat})
+                    }
+                }
+                return ret ; 
             },
             resourceStat: (root, args) => {
                 const stats = root.stats;

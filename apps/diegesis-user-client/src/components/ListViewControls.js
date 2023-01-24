@@ -1,8 +1,18 @@
 import {Grid, TextField, Checkbox, FormGroup, FormControlLabel, Button} from "@mui/material";
+import { useContext } from "react";
+import i18n from "../i18n";
 import OrgSelector from "./OrgSelector";
 import SortSelector from "./SortSelector";
+import AppLangContext from "../contexts/AppLangContext";
+import { directionText } from "../i18n/languageDirection";
 
 export default function ListViewController({searchTerms}) {
+   
+    const appLang = useContext(AppLangContext);
+    const title = i18n(appLang, "CONTROLS_TITLE");
+    const owner = i18n(appLang, "CONTROLS_OWNER");
+    const type = i18n(appLang, "CONTROLS_TYPE");
+    const lang = i18n(appLang, "CONTROLS_LANGUAGE");
     return <Grid container>
         <Grid item xs={12} sm={12} md={2} sx={{paddingBottom: "15px"}}>
             <OrgSelector
@@ -11,11 +21,11 @@ export default function ListViewController({searchTerms}) {
                 setSearchOrg={searchTerms.setSearchOrg}
             />
         </Grid>
-        <Grid item xs={12} sm={6} md={1}>
+        <Grid dir={directionText(appLang)} item xs={12} sm={6} md={1}>
             <TextField
                 value={searchTerms.searchOwner}
                 onChange={e => searchTerms.setSearchOwner(e.target.value)}
-                label="Owner"
+                label={owner}
                 size="small"
                 id="searchOwner"
                 variant="filled"
@@ -27,7 +37,7 @@ export default function ListViewController({searchTerms}) {
             <TextField
                 value={searchTerms.searchType}
                 onChange={e => searchTerms.setSearchType(e.target.value)}
-                label="Type"
+                label={type}
                 size="small"
                 id="searchType"
                 variant="filled"
@@ -39,7 +49,7 @@ export default function ListViewController({searchTerms}) {
             <TextField
                 value={searchTerms.searchLang}
                 onChange={e => searchTerms.setSearchLang(e.target.value)}
-                label="Lang"
+                label={lang}
                 size="small"
                 id="searchLanguage"
                 variant="filled"
@@ -51,7 +61,7 @@ export default function ListViewController({searchTerms}) {
             <TextField
                 value={searchTerms.searchText}
                 onChange={e => searchTerms.setSearchText(e.target.value)}
-                label="Title"
+                label={title}
                 size="small"
                 id="searchTitle"
                 variant="filled"
@@ -80,18 +90,18 @@ export default function ListViewController({searchTerms}) {
         </Grid>
         {
             [
-                ["OT", "OT"],
-                ["NT", "NT"],
-                ["DC", "DC"],
-                ["Intro", "introductions"],
-                ["Heading", "headings"],
-                ["Footnote", "footnotes"],
-                ["Xref", "xrefs"],
-                ["Strong", "strong"],
-                ["Lemma", "lemma"],
-                ["Gloss", "gloss"],
-                ["Content", "content"],
-                ["Occurrence", "occurrences"],
+                [i18n(appLang, "CONTROLS_OT"), "OT"],
+                [i18n(appLang, "CONTROLS_NT"), "NT"],
+                [i18n(appLang, "CONTROLS_DC"), "DC"],
+                [i18n(appLang, "STATS_nIntroductions"), "introductions"],
+                [i18n(appLang, "STATS_nHeadings"), "headings"],
+                [i18n(appLang, "STATS_nFootnotes"), "footnotes"],
+                [i18n(appLang, "STATS_nXrefs"), "xrefs"],
+                [i18n(appLang, "STATS_nStrong"), "strong"],
+                [i18n(appLang, "CONTROLS_LEMME"), "lemma"],
+                [i18n(appLang, "CONTROLS_GLOSS"), "gloss"],
+                [i18n(appLang, "STATS_nContent"), "content"],
+                [i18n(appLang, "STATS_nOccurrences") ,"occurrences"],
             ].map(
                 i =>
                     <Grid item xs={6} sm={4} md={1}>
