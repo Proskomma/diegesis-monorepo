@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useMemo, useContext} from 'react';
+import React, {useState, useEffect, useMemo} from 'react';
 import {
     ApolloClient,
     gql,
@@ -11,10 +11,8 @@ import ListView from "../components/ListView";
 import ListViewControls from "../components/ListViewControls";
 import Spinner from "../components/Spinner";
 import Footer from "../components/Footer";
-import AppLangContext from "../contexts/AppLangContext";
 
 export default function ListPage({ setAppLanguage }) {
-    const appLang = useContext(AppLangContext);
 
     const [showSettings, setShowSettings] = useState(false);
     const [searchOrg, setSearchOrg] = useState('all');
