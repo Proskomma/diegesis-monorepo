@@ -1,6 +1,7 @@
 const fse = require('fs-extra');
 const path = require("path");
 const {orgPath} = require("../dataPaths");
+const translations = require("../peerTranslations");
 
 const appRoot = path.resolve(".");
 
@@ -47,7 +48,27 @@ async function setupPeerOrg(config, orgRecord) {
         fullName: orgRecord.fullName,
         contentType: orgRecord.contentType,
         translationDir: orgRecord.translationDir,
-        translations: await orgHandler.getTranslationsCatalog(),
+        entries: await orgHandler.getTranslationsCatalog(),
+    };
+    return [orgHandler, orgData];
+}
+
+async function setupLocalOrg(config) {
+    const orgDir = "_local";
+    maybeMakeOrgDir(orgDir, config);
+    const translations = require('../localTranslations');
+    const orgHandler = {
+        getTranslationsCatalog: translations.getTranslationsCatalog,
+        fetchUsfm: translations.fetchUsfm,
+        fetchUsx: translations.fetchUsx,
+    };
+    const orgData = {
+        orgDir: orgDir,
+        name: config.name,
+        fullName: config.name,
+        contentType: "usfm",
+        translationDir: orgDir,
+        entries: await orgHandler.getTranslationsCatalog(),
     };
     return [orgHandler, orgData];
 }
@@ -71,6 +92,9 @@ async function makeServerOrgs(config) {
         if (peerOrgs[orgConfigRecord.name]) {
             throw new Error(`Duplicate peer org name '${orgConfigRecord.name}'`);
         }
+        if (orgConfigRecord.name === config.name) {
+            throw new Error(`Peer org name '${orgConfigRecord.name}' is same as this server name`);
+        }
         peerOrgs[orgConfigRecord.name] = {
             "translationDir": orgConfigRecord.name.toLowerCase(),
             "name": orgConfigRecord.name,
@@ -83,23 +107,35 @@ async function makeServerOrgs(config) {
     for (const orgConfig of config.orgsConfig) {
         if (nonPeerOrgs[orgConfig.name]) {
             nonPeerOrgs[orgConfig.name].config = orgConfig;
+        } else if (orgConfig.name === config.name) {
         } else {
             peerOrgs[orgConfig.name].config = orgConfig;
         }
     }
     // Set up orgs
-    const orgs = config.orgs.length > 0 ? config.orgs : Object.keys(nonPeerOrgs);
+    let orgs = config.orgs.length > 0 ? config.orgs : Object.keys(nonPeerOrgs);
+    if (config.localContent) {
+        orgs.push(config.name);
+    }
     for (const org of orgs) {
         config.verbose && console.log(`    ${org}`);
+        let orgName;
         if (nonPeerOrgs[org]) {
             const orgRecord = nonPeerOrgs[org];
-            [orgHandlers[orgRecord.name], orgsData[orgRecord.name]] = await setupNonPeerOrg(config, orgRecord);
+            orgName = orgRecord.name;
+            [orgHandlers[orgName], orgsData[orgName]] = await setupNonPeerOrg(config, orgRecord);
         } else if (peerOrgs[org]) {
             const orgRecord = peerOrgs[org];
-            [orgHandlers[orgRecord.name], orgsData[orgRecord.name]] = await setupPeerOrg(config, orgRecord);
+            orgName = orgRecord.name;
+            [orgHandlers[orgName], orgsData[orgName]] = await setupPeerOrg(config, orgRecord);
+        } else if (org === config.name) {
+            orgName = config.name;
+            [orgHandlers[orgName], orgsData[orgName]] = await setupLocalOrg(config);
         } else {
             throw new Error(`No org called '${org}'`);
         }
+        const nLocal = fse.readdirSync(path.join(orgPath(config.dataPath, orgsData[orgName].translationDir))).length;
+        config.verbose && console.log(`      ${nLocal}/${orgsData[orgName].entries.length} entr${nLocal === 1 ? "y" : "ies"} local`);
     }
     return {orgsData, orgHandlers};
 }

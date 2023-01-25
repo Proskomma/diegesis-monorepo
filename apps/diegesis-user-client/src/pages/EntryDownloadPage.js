@@ -149,7 +149,7 @@ export default function EntryDownloadPage() {
     } else {
         bookCodes = [...entryInfo.usxBookCodes];
     }
-
+    
     return <Container fixed className="homepage">
         <Header selected="list"/>
         <Box style={{marginTop: "100px"}}>

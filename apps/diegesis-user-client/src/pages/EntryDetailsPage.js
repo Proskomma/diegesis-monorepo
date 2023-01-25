@@ -1,19 +1,32 @@
-import {Container, Typography, Grid, Box, Button} from "@mui/material";
-import {useParams, Link as RouterLink} from "react-router-dom";
-import {ArrowBack, AutoStories, Download} from '@mui/icons-material';
-import {gql, useQuery} from "@apollo/client";
+import {
+  Container,
+  Typography,
+  Box,
+  Button,
+  Paper,
+  Grid,
+} from "@mui/material";
+import { useParams, Link as RouterLink } from "react-router-dom";
+import { ArrowBack, AutoStories, Download } from "@mui/icons-material";
+import { gql, useQuery } from "@apollo/client";
 import GqlError from "../components/GqlError";
 
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import Spinner from "../components/Spinner";
+import BookSelector from "../components/BookSelector";
 
-export default function EntryDetailsPage() {
+import AppLangContext from "../contexts/AppLangContext";
+import { directionText, alignmentText } from "../i18n/languageDirection";
+import { useContext, useState } from "react";
+import i18n from "../i18n";
 
-    const {source, entryId, revision} = useParams();
+export default function EntryDetailsPage({ setAppLanguage }) {
+  const appLang = useContext(AppLangContext);
+  const { source, entryId, revision } = useParams();
+  const [selectedBook, setSelectedBook] = useState("");
 
-    const queryString =
-        `query {
+  const queryString = `query {
             localEntry(
               source:"""%source%"""
               id: """%entryId%"""
@@ -26,91 +39,250 @@ export default function EntryDetailsPage() {
               copyright
               abbreviation
               owner
+              nOT : stat(field :"nOT")
+              nNT : stat(field :"nNT")
+              nDC : stat(field :"nDC")
+              nChapters : stat(field :"nChapters")
+              nVerses : stat(field :"nVerses")
+              bookStats(bookCode: "%bookCode%"){
+                stat
+                field
+              }
+              bookCodes
             }
           }`
-            .replace("%source%", source)
-            .replace("%entryId%", entryId)
-            .replace("%revision%", revision);
+    .replace("%source%", source)
+    .replace("%entryId%", entryId)
+    .replace("%revision%", revision)
+    .replace("%bookCode%", selectedBook);
 
-    const {loading, error, data} = useQuery(
-        gql`${queryString}`,
-    );
+  const { loading, error, data } = useQuery(
+    gql`
+      ${queryString}
+    `
+  );
 
-    if (loading) {
-        return <Spinner/>
+  if (loading) {
+    return <Spinner />;
+  }
+  if (error) {
+    return <GqlError error={error} />;
+  }
+
+  const entryInfo = data.localEntry;
+  const finalScript = i18n(appLang, "ADMIN_LANGUAGE_SCRIPT", [
+    entryInfo.script,
+  ]);
+  let bookCodes;
+  if (entryInfo.bookCodes.length > 0) {
+    bookCodes = [...entryInfo.bookCodes];
+  }
+
+  const filteredStatsTab = entryInfo.bookStats.filter((bo) => bo.stat > 0);
+
+  let contentTab = [];
+  for (const stat of ['OT','NT','DC']){
+    if (entryInfo[`n${stat}`]>0){
+      contentTab.push(`${entryInfo[`n${stat}`]} ${stat}`)
     }
-    if (error) {
-        return <GqlError error={error}/>
-    }
+  }
+  const contentString = contentTab.join(', ')
 
-    const entryInfo = data.localEntry;
-
-    return <Container fixed className="homepage">
-        <Header selected="list"/>
-        <Box style={{marginTop: "100px"}}>
-            <Typography variant="h4" paragraph="true" sx={{mt: "20px"}}>
-                <Button>
-                    <RouterLink to="/list" relative="path"><ArrowBack/></RouterLink></Button>
-                {entryInfo.title}
-                <Button>
-                    <RouterLink to={`/entry/browse/${source}/${entryId}/${revision}`}><AutoStories/></RouterLink>
-                </Button>
-                <Button>
-                    <RouterLink
-                        to={`/entry/download/${source}/${entryId}/${revision}`}><Download/></RouterLink>
-                </Button>
-            </Typography>
-            <Typography variant="h5" paragraph="true">Details</Typography>
-            <Grid container>
-                <Grid item xs={3}>
-                    <Typography variant="body1" paragraph="true">Abbreviation</Typography>
-                </Grid>
-                <Grid item xs={9}>
-                    <Typography variant="body1" paragraph="true">{entryInfo.abbreviation}</Typography>
-                </Grid>
-                <Grid item xs={3}>
-                    <Typography variant="body1" paragraph="true">Copyright</Typography>
-                </Grid>
-                <Grid item xs={9}>
-                    <Typography variant="body1" paragraph="true">{entryInfo.copyright}</Typography>
-                </Grid>
-                <Grid item xs={3}>
-                    <Typography variant="body1" paragraph="true">Language</Typography>
-                </Grid>
-                <Grid item xs={9}>
-                    <Typography variant="body1" paragraph="true">
-                        {entryInfo.language}
-                        {entryInfo.textDirection ? `, ${entryInfo.textDirection === 'ltr' ? "Left to Right" : "Right to Left"}` : ""}
-                        {entryInfo.script ? `, ${entryInfo.script} Script` : ""}
-                    </Typography>
-                </Grid>
-                <Grid item xs={3}>
-                    <Typography variant="body1" paragraph="true">Data Source</Typography>
-                </Grid>
-                <Grid item xs={9}>
-                    <Typography variant="body1" paragraph="true">{source}</Typography>
-                </Grid>
-                <Grid item xs={3}>
-                    <Typography variant="body1" paragraph="true">Owner</Typography>
-                </Grid>
-                <Grid item xs={9}>
-                    <Typography variant="body1" paragraph="true">{entryInfo.owner}</Typography>
-                </Grid>
-                <Grid item xs={3}>
-                    <Typography variant="body1" paragraph="true">Entry ID</Typography>
-                </Grid>
-                <Grid item xs={9}>
-                    <Typography variant="body1" paragraph="true">{entryId}</Typography>
-                </Grid>
-                <Grid item xs={3}>
-                    <Typography variant="body1" paragraph="true">Revision</Typography>
-                </Grid>
-                <Grid item xs={9}>
-                    <Typography variant="body1" paragraph="true">{revision}</Typography>
-                </Grid>
+  return (
+    <Container fixed className="homepage">
+      <Header setAppLanguage={setAppLanguage} selected="list" />
+      <Box dir={directionText(appLang)} style={{ marginTop: "100px" }}>
+        <Typography variant="h4" paragraph="true" sx={{ mt: "20px" }}>
+          <Button>
+            <RouterLink to="/list" relative="path">
+              <ArrowBack />
+            </RouterLink>
+          </Button>
+          {entryInfo.title}
+          <Button>
+            <RouterLink to={`/entry/browse/${source}/${entryId}/${revision}`}>
+              <AutoStories />
+            </RouterLink>
+          </Button>
+          <Button>
+            <RouterLink to={`/entry/download/${source}/${entryId}/${revision}`}>
+              <Download />
+            </RouterLink>
+          </Button>
+        </Typography>
+        <Paper className="container">
+          <Typography variant="h4" paragraph="true">
+            {i18n(appLang, "ADMIN_DETAILS")}
+          </Typography>
+          
+          <Grid container spacing={2}>
+            <Grid
+              item
+              xs={4}
+              style={{ fontWeight: "bold", textAlign: alignmentText(appLang) }}
+            >
+              <Grid item>
+                <span dir={directionText(appLang)}>{i18n(appLang, "ADMIN_DETAILS_ABBREVIATION")}</span>
+              </Grid >
             </Grid>
-            <Footer/>
-        </Box>
-    </Container>;
-
+            <Grid item xs={8} style={{ textAlign: alignmentText(appLang) }}>
+              <Grid item>{entryInfo.abbreviation}</Grid >
+            </Grid>
+            <Grid
+              item
+              xs={4}
+              style={{ fontWeight: "bold", textAlign: alignmentText(appLang) }}
+            >
+              <Grid item>
+                <span dir={directionText(appLang)}>{i18n(appLang, "ADMIN_DETAILS_COPYRIGHT")}</span>
+              </Grid >
+            </Grid>
+            <Grid item xs={8} style={{ textAlign: alignmentText(appLang) }}>
+              <Grid item>{entryInfo.copyright}</Grid >
+            </Grid>
+            <Grid
+              item
+              xs={4}
+              style={{ fontWeight: "bold", textAlign: alignmentText(appLang) }}
+            >
+              <Grid item>
+                <span dir={directionText(appLang)}>{i18n(appLang, "ADMIN_DETAILS_LANGUAGE")}</span>
+              </Grid >
+            </Grid>
+            <Grid item xs={8} style={{ textAlign: alignmentText(appLang) }}>
+              <Grid item>
+                {entryInfo.language}
+                {`, ${i18n(appLang, "ADMIN_TEXT_DIRECTION")}`}
+                {entryInfo.script ? `, ${finalScript}` : ""}
+              </Grid >
+            </Grid>
+            <Grid
+              item
+              xs={4}
+              style={{ fontWeight: "bold", textAlign: alignmentText(appLang) }}
+            >
+              <Grid item>
+                <span dir={directionText(appLang)}>{i18n(appLang, "ADMIN_DETAILS_DATA_SOURCE")}</span>
+              </Grid >
+            </Grid>
+            <Grid item xs={8} style={{ textAlign: alignmentText(appLang) }}>
+              <Grid item>{source}</Grid >
+            </Grid>
+            <Grid
+              item
+              xs={4}
+              style={{ fontWeight: "bold", textAlign: alignmentText(appLang) }}
+            >
+              <Grid item>
+                <span dir={directionText(appLang)}>{i18n(appLang, "ADMIN_DETAILS_OWNER")}</span>
+              </Grid >
+            </Grid>
+            <Grid item xs={8} style={{ textAlign: alignmentText(appLang) }}>
+              <Grid item>{entryInfo.owner}</Grid >
+            </Grid>
+            <Grid
+              item
+              xs={4}
+              style={{ fontWeight: "bold", textAlign: alignmentText(appLang) }}
+            >
+              <Grid item>
+                <span dir={directionText(appLang)}>{i18n(appLang, "ADMIN_DETAILS_ENTRY_ID")}</span>
+              </Grid >
+            </Grid>
+            <Grid item xs={8} style={{ textAlign: alignmentText(appLang) }}>
+              <Grid item>{entryId}</Grid >
+            </Grid>
+            <Grid
+              item
+              xs={4}
+              style={{ fontWeight: "bold", textAlign: alignmentText(appLang) }}
+            >
+              <Grid item>
+                {" "}
+                <span dir={directionText(appLang)}>{i18n(appLang, "ADMIN_DETAILS_REVISION")}</span>
+              </Grid >
+            </Grid>
+            <Grid item xs={8} style={{ textAlign: alignmentText(appLang) }}>
+              <Grid item>{revision}</Grid >
+            </Grid>
+            <Grid
+              item
+              xs={4}
+              style={{ fontWeight: "bold", textAlign: alignmentText(appLang) }}
+            >
+              <Grid item>
+                <span dir={directionText(appLang)}>{i18n(appLang, "ADMIN_DETAILS_CONTENT")}</span>
+              </Grid>
+            </Grid>
+            <Grid item xs={8} style={{ textAlign: alignmentText(appLang) }}>
+              <Grid item>{contentString}</Grid>
+            </Grid>
+            <Grid
+              item
+              xs={4}
+              style={{ fontWeight: "bold", textAlign: alignmentText(appLang) }}
+            >
+              <Grid item>
+                {" "}
+                <span dir={directionText(appLang)}>{i18n(appLang, "ADMIN_DETAILS_CHAPTERS")}</span>
+              </Grid >
+            </Grid>
+            <Grid item xs={8} style={{ textAlign: alignmentText(appLang) }}>
+              <Grid item>{`${entryInfo.nChapters}`}</Grid >
+            </Grid>
+            <Grid
+              item
+              xs={4}
+              style={{ fontWeight: "bold", textAlign: alignmentText(appLang) }}
+            >
+              <Grid item>
+                <span dir={directionText(appLang)}>{i18n(appLang, "ADMIN_DETAILS_VERSES")}</span>
+              </Grid >
+            </Grid>
+            <Grid item xs={8} style={{ textAlign: alignmentText(appLang) }}>
+              <Grid item>{`${entryInfo.nVerses}`}</Grid >
+            </Grid>
+          </Grid>
+          <Grid container>
+            {bookCodes.length > 0 && (
+              <>
+                <Grid item xs={12}>
+                  <Typography variant="h4" paragraph="true" sx={{ mt: "20px" }}>
+                    {i18n(appLang, "ADMIN_DETAILS_TITLE")}
+                  </Typography>
+                </Grid>
+                <Grid item xs={12}>
+                  <BookSelector
+                    bookCodes={bookCodes}
+                    selectedBook={selectedBook}
+                    setSelectedBook={setSelectedBook}
+                  />
+                </Grid>
+              </>
+            )}
+            <>
+              {selectedBook !== "" && (
+                filteredStatsTab.map((bo) => (
+                  <>
+                    <Grid item xs={4} md={2}>
+                      {i18n(appLang,`STATS_${bo.field}`)}
+                    </Grid>
+                    <Grid item xs={8} md={10}>
+                      {bo.stat}
+                    </Grid>
+                  </>
+                ))
+              )}
+              {selectedBook === "" && (
+                <Typography style={{ textAlign: alignmentText(appLang) }}>
+                  {i18n(appLang, "ADMIN_DETAILS_ALERT")}
+                </Typography>
+              )}
+            </>
+          </Grid>
+        </Paper>
+        <Footer />
+      </Box>
+    </Container>
+  );
 }
