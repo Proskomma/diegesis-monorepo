@@ -14,7 +14,7 @@ import { fetchEntry } from '../lib/tableCallbacks';
 import GqlLoading from "./GqlLoading";
 import GqlError from "./GqlError";
 
-export default function RemoteTab({selectedOrg, searchLang, searchText}) {
+export default function SyncTab({selectedOrg, searchLang, searchText}) {
 
     const client = useApolloClient();
 
@@ -34,7 +34,8 @@ export default function RemoteTab({selectedOrg, searchLang, searchText}) {
         }`,
         selectedOrg,
         searchLang,
-        searchText);
+        searchText,
+        true);
 
     const {loading, error, data} = useQuery(
         gql`${queryString}`,

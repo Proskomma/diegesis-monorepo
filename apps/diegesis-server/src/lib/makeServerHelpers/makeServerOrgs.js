@@ -66,7 +66,7 @@ async function setupLocalOrg(config) {
         orgDir: orgDir,
         name: config.name,
         fullName: config.name,
-        contentType: "usfm",
+        contentType: "USFM",
         translationDir: orgDir,
         entries: await orgHandler.getTranslationsCatalog(),
     };

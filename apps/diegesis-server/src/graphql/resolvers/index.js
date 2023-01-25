@@ -126,12 +126,20 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
         },
     });
 
+    const entryCanSync = (org, entry) => {
+        const parentPath = transParentPath(config.dataPath, org.translationDir, entry.id);
+        return !fse.pathExistsSync(parentPath);
+    }
+
     const filteredCatalog = (org, args, context, entries) => {
         context.orgData = org;
         context.orgHandler = orgHandlers[org.name];
         let ret = [...entries];
         if (args.withId) {
             ret = ret.filter(t => args.withId.includes(t.id));
+        }
+        if (args.syncOnly) {
+            ret = ret.filter(e => entryCanSync(org, e));
         }
         if (args.withOwner) {
             ret = ret.filter(
@@ -203,18 +211,6 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
         } else {
             return null;
         }
-    }
-
-    const hasAllFeatures = (trans, features) => {
-        let ret = true;
-        for (const f of features) {
-            const fField = `n${f.substring(0, 1).toUpperCase()}${f.substring(1)}`;
-            if (!trans.stats || !trans.stats[fField]) {
-                ret = false;
-                break;
-            }
-        }
-        return ret;
     }
 
     const scalarResolvers = {
@@ -323,7 +319,7 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                         ret.push({field , stat})
                     }
                 }
-                return ret ; 
+                return ret ;
             },
             resourceStat: (root, args) => {
                 const stats = root.stats;
@@ -355,7 +351,7 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                         ret.push({bookCode:args.bookCode , field , stat})
                     }
                 }
-                return ret ; 
+                return ret ;
             },
             canonResources: root => {
                 let ret = [];

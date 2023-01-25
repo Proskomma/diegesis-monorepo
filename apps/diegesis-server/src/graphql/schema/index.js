@@ -76,6 +76,8 @@ const querySchema = gql`
             withLanguageCode: [String!]
             """Filter by text matches in title"""
             withMatchingMetadata: [String!]
+            """Include entries for synching only"""
+            syncOnly: Boolean
             """Sort field"""
             sortedBy: String
             """Sort in reverse order"""
