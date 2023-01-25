@@ -5,10 +5,12 @@ import {Typography, Grid} from "@mui/material";
 import {searchQuery} from '../lib/search';
 import GqlError from "./GqlError";
 import Spinner from './Spinner';
+import i18n from '../i18n';
+import AppLangContext from '../contexts/AppLangContext';
 
 export default function ListView({searchTerms}) {
 
-    // const appLang = useContext(AppLangContext);
+    const appLang = useContext(AppLangContext);
     const queryString = searchQuery(
         `query {
             localEntries%searchClause% {
@@ -23,10 +25,19 @@ export default function ListView({searchTerms}) {
         }`,
         searchTerms
     );
-        
+    
     const {loading, error, data} = useQuery(
         gql`${queryString}`,
     );
+
+    const languageCodeFormat = function languageCodeFormat(lang){
+        let ret = i18n(appLang , `${lang}_LANG`);
+        if(ret.includes('??') === true ){
+            return lang
+        }else{
+            return ret
+        }
+    }
     
     function rowData(localTranslation) {
         return <Grid container xs={12} sx={{borderTop: "solid 1px #ccc", padding: "2px", marginBottom: "2px"}}>
@@ -37,7 +48,7 @@ export default function ListView({searchTerms}) {
                 <Typography variant="body2">{localTranslation.owner}@{localTranslation.source}</Typography>
             </Grid>
             <Grid item xs={12} sm={4} md={2}>
-                <Typography variant="body2">{localTranslation.language}</Typography>
+                <Typography variant="body2">{languageCodeFormat(localTranslation.language)}</Typography>
             </Grid>
             <Grid item xs={12} md={6}>
                 <RouterLink
@@ -65,16 +76,16 @@ export default function ListView({searchTerms}) {
     );
     return <Grid container xs={12}>
         <Grid item xs={6} sm={4} md={2}>
-            <Typography variant="body1" sx={{fontWeight: "bold"}}>Resource Types</Typography>
+            <Typography variant="body1" sx={{fontWeight: "bold"}}>{i18n(appLang,"RESOURCE_TYPES")}</Typography>
         </Grid>
         <Grid item xs={6} sm={4} md={2}>
-            <Typography variant="body1" sx={{fontWeight: "bold"}}>Source</Typography>
+            <Typography variant="body1" sx={{fontWeight: "bold"}}>{i18n(appLang,"CONTROLS_SOURCE")}</Typography>
         </Grid>
         <Grid item xs={12} sm={4} md={2}>
-            <Typography variant="body1" sx={{fontWeight: "bold"}}>Language</Typography>
+            <Typography variant="body1" sx={{fontWeight: "bold"}}>{i18n(appLang,"CONTROLS_LANGUAGE")}</Typography>
         </Grid>
         <Grid item xs={12} md={6}>
-                <Typography variant="body1" sx={{fontWeight: "bold"}}>Title</Typography>
+                <Typography variant="body1" sx={{fontWeight: "bold"}}>{i18n(appLang,"CONTROLS_TITLE")}</Typography>
         </Grid>
         {displayRows}
     </Grid>

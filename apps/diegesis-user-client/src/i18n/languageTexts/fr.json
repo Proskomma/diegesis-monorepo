@@ -60,6 +60,16 @@
     "CONTROLS_LEMME":"Lemme",
     "CONTROLS_OT":"AT",
     "CONTROLS_NT":"NT",
-    "CONTROLS_DC":"DC"
-    
+    "CONTROLS_DC":"DC",
+    "RESOURCE_TYPES":"Types de ressources",
+    "en_LANG":"Anglais",
+    "ar_LANG":"Arabe",
+    "fr_LANG":"Français",
+    "hi_LANG":"Hindou",
+    "id_LANG":"indonésien",
+    "zh_LANG":"Mandarin",
+    "pt_LANG":"Portugais",
+    "ru_LANG":"Russe",
+    "es_LANG":"Espagnol",
+    "sw_LANG":"Swahili"
 }
