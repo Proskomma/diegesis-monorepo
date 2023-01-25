@@ -60,5 +60,16 @@
     "CONTROLS_LEMME":"Lemma",
     "CONTROLS_OT":"OT",
     "CONTROLS_NT":"NT",
-    "CONTROLS_DC":"DC"
+    "CONTROLS_DC":"DC",
+    "RESOURCE_TYPES":"Resource Types",
+    "en_LANG":"English",
+    "ar_LANG":"Arabic",
+    "fr_LANG":"French",
+    "hi_LANG":"Hindi",
+    "id_LANG":"Indonesian",
+    "zh_LANG":"Mandarin",
+    "pt_LANG":"Portuguese",
+    "ru_LANG":"Russian",
+    "es_LANG":"Spanish",
+    "sw_LANG":"Swahili"
 }
