@@ -41,10 +41,10 @@ export default function ListView({searchTerms}) {
 
     function rowData(localTranslation) {
         return <Grid container xs={12} sx={{borderTop: "solid 1px #ccc", padding: "2px", marginBottom: "2px"}}>
-            <Grid item xs={6} sm={4} md={2}>
+            <Grid item xs={6} sm={4} md={1}>
                 <Typography variant="body2">{localTranslation.types?.join(', ') || "?"}</Typography>
             </Grid>
-            <Grid item xs={6} sm={4} md={2}>
+            <Grid item xs={6} sm={4} md={3}>
                 <Typography variant="body2">{localTranslation.owner}@{localTranslation.source}</Typography>
             </Grid>
             <Grid item xs={12} sm={4} md={2}>
@@ -84,7 +84,7 @@ export default function ListView({searchTerms}) {
             <Typography variant="body1" sx={{fontWeight: "bold"}}>{i18n(appLang,"CONTROLS_LANGUAGE")}</Typography>
         </Grid>
         <Grid item xs={12} md={6}>
-                <Typography variant="body1" sx={{fontWeight: "bold"}}>{i18n(appLang,"CONTROLS_TITLE")}</Typography>
+            <Typography variant="body1" sx={{fontWeight: "bold"}}>{i18n(appLang,"CONTROLS_TITLE")}</Typography>
         </Grid>
         {displayRows}
     </Grid>
