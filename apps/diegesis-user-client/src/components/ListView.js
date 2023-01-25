@@ -25,7 +25,7 @@ export default function ListView({searchTerms}) {
         }`,
         searchTerms
     );
-    
+
     const {loading, error, data} = useQuery(
         gql`${queryString}`,
     );
@@ -38,7 +38,7 @@ export default function ListView({searchTerms}) {
             return ret
         }
     }
-    
+
     function rowData(localTranslation) {
         return <Grid container xs={12} sx={{borderTop: "solid 1px #ccc", padding: "2px", marginBottom: "2px"}}>
             <Grid item xs={6} sm={4} md={2}>
@@ -62,12 +62,11 @@ export default function ListView({searchTerms}) {
 
     if (loading) {
         return <Spinner/>
-        
+
     }
     if (error) {
         return <GqlError error={error}/>
     }
-    console.log(data.localEntries.map(e=> e.stats))
     let displayRows = [];
     data.localEntries.forEach(
         lt => {
