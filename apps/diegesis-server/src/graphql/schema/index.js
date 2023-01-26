@@ -101,7 +101,7 @@ const querySchema = gql`
     type CatalogEntry {
 
         """An id for the entry which is unique within the organization"""
-        id: EntryId!
+        transId: EntryId!
 
         """The revision of the entry"""
         revision: String

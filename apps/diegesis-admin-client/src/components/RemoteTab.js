@@ -25,7 +25,7 @@ export default function RemoteTab({selectedOrg, searchLang, searchText}) {
                 fullName,
                 contentType
                 catalogEntries%searchClause% {
-                    id
+                    transId
                     languageCode
                     title
                     isLocal
@@ -59,7 +59,7 @@ export default function RemoteTab({selectedOrg, searchLang, searchText}) {
 
     function createData(catalogEntry, contentType) {
         return {
-            id: catalogEntry.id,
+            id: catalogEntry.transId,
             languageCode: catalogEntry.languageCode,
             title: catalogEntry.title,
             actions: <Button
@@ -69,7 +69,7 @@ export default function RemoteTab({selectedOrg, searchLang, searchText}) {
                             fetchEntry(
                                 client,
                                 selectedOrg,
-                                catalogEntry.id,
+                                catalogEntry.transId,
                                 contentType
                             );
                         } catch (err) {

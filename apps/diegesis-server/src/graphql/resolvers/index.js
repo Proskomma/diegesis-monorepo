@@ -546,6 +546,7 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
             },
         },
         CatalogEntry: {
+            transId: root => root.id,
             isLocal: (trans, args, context) => fse.pathExists(transParentPath(config.dataPath, context.orgData.translationDir, trans.id)),
             isRevisionLocal: (trans, args, context) =>
                 context.orgData.catalogHasRevisions ?

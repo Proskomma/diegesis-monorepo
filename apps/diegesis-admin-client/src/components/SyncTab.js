@@ -27,7 +27,7 @@ export default function SyncTab({selectedOrgRecord, searchLang, searchText}) {
                 catalogHasRevisions
                 canSync
                 catalogEntries%searchClause% {
-                    id
+                    transId
                     languageCode
                     title
                     isLocal
@@ -65,7 +65,7 @@ export default function SyncTab({selectedOrgRecord, searchLang, searchText}) {
 
     function createData(catalogEntry, contentType) {
         return {
-            id: catalogEntry.id,
+            id: catalogEntry.transId,
             languageCode: catalogEntry.languageCode,
             revision: selectedOrgRecord.catalogHasRevisions ? catalogEntry.revision : "unknown",
             title: catalogEntry.title,
@@ -76,7 +76,7 @@ export default function SyncTab({selectedOrgRecord, searchLang, searchText}) {
                             fetchEntry(
                                 client,
                                 selectedOrgRecord.id,
-                                catalogEntry.id,
+                                catalogEntry.transId,
                                 contentType
                             );
                         } catch (err) {
