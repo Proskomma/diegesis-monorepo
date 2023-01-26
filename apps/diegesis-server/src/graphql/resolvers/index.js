@@ -127,8 +127,13 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
     });
 
     const entryCanSync = (org, entry) => {
-        const parentPath = transParentPath(config.dataPath, org.translationDir, entry.id);
-        return !fse.pathExistsSync(parentPath);
+        let path;
+        if (org.catalogHasRevisions) {
+            path = transPath(config.dataPath, org.translationDir, entry.id, entry.revision);
+        } else {
+            path = transParentPath(config.dataPath, org.translationDir, entry.id);
+        }
+        return !fse.pathExistsSync(path);
     }
 
     const filteredCatalog = (org, args, context, entries) => {
@@ -250,8 +255,8 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                     }
                 }
                 ret = ret.filter(e =>
-                        !args.sources ||
-                        lowerCaseArray(args.sources).includes(e.source.toLocaleLowerCase()))
+                    !args.sources ||
+                    lowerCaseArray(args.sources).includes(e.source.toLocaleLowerCase()))
                     .filter(e =>
                         !args.owners ||
                         lowerCaseArray(args.owners).includes(e.owner.toLocaleLowerCase()))
@@ -310,16 +315,16 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                 return stats[args.field];
             },
             stats: (root) => {
-                let ret =[]
-                if (root.stats){
-                    for (const [field,stat] of Object.entries(root.stats) ){
-                        if (field === "documents"){
+                let ret = []
+                if (root.stats) {
+                    for (const [field, stat] of Object.entries(root.stats)) {
+                        if (field === "documents") {
                             continue
                         }
-                        ret.push({field , stat})
+                        ret.push({field, stat})
                     }
                 }
-                return ret ;
+                return ret;
             },
             resourceStat: (root, args) => {
                 const stats = root.stats;
@@ -339,19 +344,19 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                 }
                 return Object.entries(documentStats).map(kv => ({
                     bookCode: kv[0],
-                    field : args.field,
+                    field: args.field,
                     stat: typeof kv[1][args.field] === "number" ? kv[1][args.field] : null
                 }));
             },
             bookStats: (root, args) => {
-                let ret =[]
-                if (root.stats && root.stats.documents && root.stats.documents[args.bookCode]){
+                let ret = []
+                if (root.stats && root.stats.documents && root.stats.documents[args.bookCode]) {
                     const bookCodeStats = root.stats.documents[args.bookCode]
-                    for (const [field,stat] of Object.entries(bookCodeStats) ){
-                        ret.push({bookCode:args.bookCode , field , stat})
+                    for (const [field, stat] of Object.entries(bookCodeStats)) {
+                        ret.push({bookCode: args.bookCode, field, stat})
                     }
                 }
-                return ret ;
+                return ret;
             },
             canonResources: root => {
                 let ret = [];
@@ -540,6 +545,10 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
         },
         CatalogEntry: {
             isLocal: (trans, args, context) => fse.pathExists(transParentPath(config.dataPath, context.orgData.translationDir, trans.id)),
+            isRevisionLocal: (trans, args, context) =>
+                context.orgData.catalogHasRevisions ?
+                    fse.pathExists(transPath(config.dataPath, context.orgData.translationDir, trans.id, trans.revision)) :
+                    null,
         },
     };
     const mutationResolver = {

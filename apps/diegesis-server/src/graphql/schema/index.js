@@ -64,6 +64,12 @@ const querySchema = gql`
         """The content type received from this organization"""
         contentType: ContentType!
 
+        """Does the catalog endpoint include revisions?"""
+        catalogHasRevisions: Boolean!
+
+        """Is there an external source to sync with??"""
+        canSync: Boolean!
+
         """The catalog entries that are available from this organization"""
         catalogEntries(
             """The ids of the catalogEntries"""
@@ -98,7 +104,7 @@ const querySchema = gql`
         id: EntryId!
 
         """The revision of the entry"""
-        revision: String!
+        revision: String
 
         """The language code"""
         languageCode: String!
@@ -111,6 +117,9 @@ const querySchema = gql`
 
         """is this org/id local?"""
         isLocal: Boolean!
+
+        """is this org/id/revision local?"""
+        isRevisionLocal: Boolean
     }
     
     """A local entry"""
