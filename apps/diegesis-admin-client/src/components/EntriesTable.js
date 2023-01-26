@@ -22,9 +22,9 @@ export default function EntriesTable({columns, rows})
                 <Table stickyHeader size="small" aria-label="sticky table">
                     <TableHead>
                         <TableRow>
-                            {columns.map((column) => (
+                            {columns.map((column, n) => (
                                 <TableCell
-                                    key={column.id}
+                                    key={n}
                                     align={column.align}
                                     style={{minWidth: column.minWidth}}
                                 >
@@ -36,13 +36,13 @@ export default function EntriesTable({columns, rows})
                     <TableBody>
                         {rows
                             .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                            .map((row) => {
+                            .map((row, n) => {
                                 return (
-                                    <TableRow hover role="checkbox" tabIndex={-1} key={row.id}>
-                                        {columns.map((column) => {
+                                    <TableRow hover role="checkbox" tabIndex={-1} key={n}>
+                                        {columns.map((column, n2) => {
                                             const value = row[column.id];
                                             return (
-                                                <TableCell key={column.id} align={column.align}>
+                                                <TableCell key={`${n}_${n2}`} align={column.align}>
                                                     {
                                                         column.format &&
                                                         typeof value === 'boolean' &&
@@ -61,7 +61,7 @@ export default function EntriesTable({columns, rows})
                 </Table>
             </TableContainer>
             <TablePagination
-                siez="small"
+                size="small"
                 rowsPerPageOptions={[10, 25, 100]}
                 component="div"
                 count={rows.length}

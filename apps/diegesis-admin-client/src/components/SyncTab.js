@@ -6,7 +6,7 @@ import {
 } from "@apollo/client";
 
 import { Button} from '@mui/material';
-import {Add, Upgrade} from '@mui/icons-material';
+import {Add, Update} from '@mui/icons-material';
 
 import EntriesTable from "./EntriesTable";
 import { searchQuery } from '../lib/remoteSearch';
@@ -86,7 +86,7 @@ export default function SyncTab({selectedOrgRecord, searchLang, searchText}) {
                 }
                 disabled={catalogEntry.isRevisionLocal}
             >
-                {catalogEntry.isLocal ? <Upgrade/> : <Add/>}
+                {catalogEntry.isLocal ? <Update/> : <Add/>}
             </Button>
         };
     }

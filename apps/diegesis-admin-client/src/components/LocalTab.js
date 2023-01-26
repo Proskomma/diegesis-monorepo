@@ -1,11 +1,11 @@
 import React from 'react';
-import { searchQuery } from '../lib/localSearch';
+import {searchQuery} from '../lib/localSearch';
 import EntriesTable from "./EntriesTable";
-import {gql, useQuery,useApolloClient,} from "@apollo/client";
+import {gql, useQuery, useApolloClient, InMemoryCache} from "@apollo/client";
 import GqlLoading from "./GqlLoading";
 import GqlError from "./GqlError";
-import { deleteEntry } from '../lib/tableCallbacks';
-import { Button } from '@mui/material';
+import {deleteEntry} from '../lib/tableCallbacks';
+import {Button} from '@mui/material';
 import {Delete} from '@mui/icons-material';
 
 export default function LocalTab({selectedOrg, searchLang, searchText}) {
@@ -16,7 +16,7 @@ export default function LocalTab({selectedOrg, searchLang, searchText}) {
         `query {
             localEntries%searchClause% {
                 source
-                id
+                transId
                 revision
                 language
                 owner
@@ -25,7 +25,7 @@ export default function LocalTab({selectedOrg, searchLang, searchText}) {
                 usxBookCodes: bookCodes(type: "usx")
                 succinctRecord: canonResource(type:"succinct") {type}
                 hasSuccinctError
-                vrsRecord: canonResource(type:"succinct") {type}
+                vrsRecord: canonResource(type:"versification") {type}
             }
         }`,
         selectedOrg,
@@ -76,7 +76,7 @@ export default function LocalTab({selectedOrg, searchLang, searchText}) {
             succinctState = 'FAIL';
         }
         return {
-            id: localEntry.id,
+            id: localEntry.transId,
             languageCode: localEntry.language,
             title: localEntry.title,
             owner: localEntry.owner,
@@ -88,7 +88,7 @@ export default function LocalTab({selectedOrg, searchLang, searchText}) {
                     () => deleteEntry(
                         client,
                         selectedOrg,
-                        localEntry.id,
+                        localEntry.transId,
                         localEntry.revision,
                     )
                 }
@@ -99,10 +99,10 @@ export default function LocalTab({selectedOrg, searchLang, searchText}) {
     }
 
     if (loading) {
-        return <GqlLoading />
+        return <GqlLoading/>
     }
     if (error) {
-        return <GqlError error={error} />
+        return <GqlError error={error}/>
     }
     const rows = data.localEntries.map(lt => createData(lt));
     return <EntriesTable columns={columns} rows={rows}/>

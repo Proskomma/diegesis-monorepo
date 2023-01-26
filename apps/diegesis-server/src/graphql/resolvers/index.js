@@ -287,12 +287,13 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                                 })
                                 .length === args.withStatsFeatures.length)
                         )
-                    ).sort(
+                    );
+                ret = [...ret].sort(
                         (a, b) =>
                             a[args.sortedBy || 'title'].toLowerCase().localeCompare(b[args.sortedBy || 'title'].toLowerCase())
                     );
                 if (args.reverse) {
-                    ret.reverse();
+                    ret = [...ret].reverse();
                 }
                 return ret;
             },
@@ -305,6 +306,7 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
             }
         },
         LocalEntry: {
+            transId: root => root.id,
             types: root => root.resourceTypes,
             language: root => root.languageCode,
             stat: (root, args) => {

@@ -135,7 +135,7 @@ const querySchema = gql`
         owner: String!
 
         """The id of the entry"""
-        id: String!
+        transId: String!
 
         """The revision of the entry"""
         revision: String!
