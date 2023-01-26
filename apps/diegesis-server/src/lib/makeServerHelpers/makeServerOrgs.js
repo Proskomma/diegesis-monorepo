@@ -30,7 +30,8 @@ async function setupNonPeerOrg(config, orgRecord) {
         translationDir: orgRecord.translationDir,
         catalogHasRevisions: orgRecord.catalogHasRevisions,
         canSync: true,
-        entries: await orgHandler.getTranslationsCatalog(config),
+        entries: await orgHandler.getTranslationsCatalog(config, orgRecord),
+        config: orgRecord.config || {}
     };
     return [orgHandler, orgData];
 }
@@ -53,6 +54,7 @@ async function setupPeerOrg(config, orgRecord) {
         catalogHasRevisions: orgRecord.catalogHasRevisions,
         canSync: true,
         entries: await orgHandler.getTranslationsCatalog(),
+        config: orgRecord.config || {}
     };
     return [orgHandler, orgData];
 }
@@ -75,6 +77,7 @@ async function setupLocalOrg(config) {
         catalogHasRevisions: false,
         canSync: false,
         entries: await orgHandler.getTranslationsCatalog(),
+        config: {}
     };
     return [orgHandler, orgData];
 }

@@ -126,6 +126,15 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
         },
     });
 
+    const entryInColorList = (colorList, entry) => {
+        for (const colorItem of colorList) {
+            if (colorItem.id === entry.id) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     const entryCanSync = (org, entry) => {
         let path;
         if (org.catalogHasRevisions) {
@@ -133,7 +142,21 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
         } else {
             path = transParentPath(config.dataPath, org.translationDir, entry.id);
         }
-        return !fse.pathExistsSync(path);
+        if (fse.pathExistsSync(path)) {
+            return false;
+        }
+        if (org.config) {
+            if (org.config.blacklist && entryInColorList(org.config.blacklist, entry)) {
+                return false;
+            }
+            if (org.config.whitelist && entryInColorList(org.config.whitelist, entry)) {
+                return true;
+            }
+            if (org.config.languages && !org.config.languages.includes(entry.languageCode.split('-')[0])) {
+                return false;
+            }
+        }
+        return true;
     }
 
     const filteredCatalog = (org, args, context, entries) => {
