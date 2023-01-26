@@ -1,0 +1,22 @@
+{
+    "fr" : {
+        "englishName":"French",
+        "autonym":"Français",
+        "textDirection":"ltr"
+    },
+    "en" : {
+        "englishName":"English",
+        "autonym":"English",
+        "textDirection":"ltr"
+    },
+    "ar" : {
+        "englishName":"Arabic",
+        "autonym":"العربية",
+        "textDirection":"rtl"
+    },
+    "es" : {
+        "englishName":"Spanish",
+        "autonym":"español",
+        "textDirection":"ltr"
+    }
+}
