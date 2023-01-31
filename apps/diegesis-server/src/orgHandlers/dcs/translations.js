@@ -2,8 +2,8 @@ const path = require("path");
 const fse = require("fs-extra");
 const jszip = require("jszip");
 const {ptBookArray} = require("proskomma-utils");
-const appRootPath = require("app-root-path");
 const {transPath, vrsPath} = require('../../lib/dataPaths.js');
+const languageCodes = require("../../lib/languageCodes.json");
 const appRoot = path.resolve(".");
 
 async function getTranslationsCatalog(config, orgRecord) {
@@ -20,7 +20,7 @@ async function getTranslationsCatalog(config, orgRecord) {
         source: "DCS",
         resourceTypes: ["bible"],
         id: `${t.id}`,
-        languageCode: t.language,
+        languageCode: languageCodes[t[2]] || t.language,
         title: t.title.trim(),
         downloadURL: ` https://git.door43.org/api/v1/repos/${t.full_name}`,
         textDirection: t.language_direction,

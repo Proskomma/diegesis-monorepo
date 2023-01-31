@@ -1,7 +1,7 @@
 const fse = require('fs-extra');
 const path = require("path");
 const {orgPath} = require("../dataPaths");
-const translations = require("../peerTranslations");
+const peerTranslation = require("../peerTranslation");
 
 const appRoot = path.resolve(".");
 
@@ -39,11 +39,10 @@ async function setupNonPeerOrg(config, orgRecord) {
 async function setupPeerOrg(config, orgRecord) {
     const orgDir = orgRecord.translationDir;
     maybeMakeOrgDir(orgDir, config);
-    const translations = require('../peerTranslations');
     const orgHandler = {
-        getTranslationsCatalog: translations.getTranslationsCatalog,
-        fetchUsfm: translations.fetchUsfm,
-        fetchUsx: translations.fetchUsx,
+        getTranslationsCatalog: peerTranslation.getTranslationsCatalog,
+        fetchUsfm: peerTranslation.fetchUsfm,
+        fetchUsx: peerTranslation.fetchUsx,
     };
     const orgData = {
         orgDir: orgDir,
@@ -51,7 +50,7 @@ async function setupPeerOrg(config, orgRecord) {
         fullName: orgRecord.fullName,
         contentType: orgRecord.contentType,
         translationDir: orgRecord.translationDir,
-        catalogHasRevisions: orgRecord.catalogHasRevisions,
+        catalogHasRevisions: true,
         canSync: true,
         entries: await orgHandler.getTranslationsCatalog(),
         config: orgRecord.config || {}
@@ -144,7 +143,7 @@ async function makeServerOrgs(config) {
             throw new Error(`No org called '${org}'`);
         }
         const nLocal = fse.readdirSync(path.join(orgPath(config.dataPath, orgsData[orgName].translationDir))).length;
-        config.verbose && console.log(`      ${nLocal}/${orgsData[orgName].entries.length} entr${nLocal === 1 ? "y" : "ies"} local`);
+        config.verbose && console.log(`      ${nLocal} local entr${nLocal === 1 ? "y" : "ies"}`);
     }
     return {orgsData, orgHandlers};
 }
