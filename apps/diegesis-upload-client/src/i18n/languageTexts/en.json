@@ -81,5 +81,6 @@
     "SUBMIT":"Submit",
     "RTL":"Right To Left",
     "LTR":"Left To Right",
-    "FIELD_REQUIRED":"This field is required !"
+    "FIELD_REQUIRED":"This field is required !",
+    "Upload_documents":"Upload Documents"
 }

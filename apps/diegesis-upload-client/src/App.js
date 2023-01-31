@@ -15,6 +15,7 @@ import EntryBrowsePage from "./pages/EntryBrowsePage";
 import EntryDownloadPage from "./pages/EntryDownloadPage";
 import i18n from "./i18n";
 import UploadPage from "./pages/UploadPage";
+import TestFile from "./pages/TestFile";
 
 function App() {
   const [authed, setAuthed] = useState(true);

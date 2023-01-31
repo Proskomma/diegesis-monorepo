@@ -81,5 +81,6 @@
     "SUBMIT":"Soumettre",
     "RTL":"De droite à gauche",
     "LTR":"De gauche à droite",
-    "FIELD_REQUIRED":"Ce champ est obligatoire !"
+    "FIELD_REQUIRED":"Ce champ est obligatoire !",
+    "Upload_documents":"Télécharger des documents"
 }

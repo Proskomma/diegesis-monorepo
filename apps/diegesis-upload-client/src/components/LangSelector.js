@@ -12,7 +12,14 @@ export default function LangSelector({langCode, setlangCode}) {
             value={langCode}
             label="Language Code"
             onChange={setlangCode}
+            defaultValue={"pleaseChoose"}
           >
+             <MenuItem
+                key={-1}
+                value={"pleaseChoose"}
+            >
+                Please Select a language  
+            </MenuItem>
             {Object.entries(languagesList).map((kv, n) => (
               <MenuItem key={n} value={kv[1]}>
                 {kv[0]}
