@@ -64,6 +64,12 @@ const querySchema = gql`
         """The content type received from this organization"""
         contentType: ContentType!
 
+        """Does the catalog endpoint include revisions?"""
+        catalogHasRevisions: Boolean!
+
+        """Is there an external source to sync with??"""
+        canSync: Boolean!
+
         """The catalog entries that are available from this organization"""
         catalogEntries(
             """The ids of the catalogEntries"""
@@ -76,6 +82,8 @@ const querySchema = gql`
             withLanguageCode: [String!]
             """Filter by text matches in title"""
             withMatchingMetadata: [String!]
+            """Include entries for synching only"""
+            syncOnly: Boolean
             """Sort field"""
             sortedBy: String
             """Sort in reverse order"""
@@ -93,10 +101,10 @@ const querySchema = gql`
     type CatalogEntry {
 
         """An id for the entry which is unique within the organization"""
-        id: EntryId!
+        transId: EntryId!
 
         """The revision of the entry"""
-        revision: String!
+        revision: String
 
         """The language code"""
         languageCode: String!
@@ -109,6 +117,9 @@ const querySchema = gql`
 
         """is this org/id local?"""
         isLocal: Boolean!
+
+        """is this org/id/revision local?"""
+        isRevisionLocal: Boolean
     }
     
     """A local entry"""
@@ -124,7 +135,7 @@ const querySchema = gql`
         owner: String!
 
         """The id of the entry"""
-        id: String!
+        transId: String!
 
         """The revision of the entry"""
         revision: String!

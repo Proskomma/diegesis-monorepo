@@ -28,7 +28,10 @@ async function setupNonPeerOrg(config, orgRecord) {
         fullName: orgRecord.fullName,
         contentType: orgRecord.contentType,
         translationDir: orgRecord.translationDir,
-        entries: await orgHandler.getTranslationsCatalog(config),
+        catalogHasRevisions: orgRecord.catalogHasRevisions,
+        canSync: true,
+        entries: await orgHandler.getTranslationsCatalog(config, orgRecord),
+        config: orgRecord.config || {}
     };
     return [orgHandler, orgData];
 }
@@ -48,7 +51,10 @@ async function setupPeerOrg(config, orgRecord) {
         fullName: orgRecord.fullName,
         contentType: orgRecord.contentType,
         translationDir: orgRecord.translationDir,
+        catalogHasRevisions: orgRecord.catalogHasRevisions,
+        canSync: true,
         entries: await orgHandler.getTranslationsCatalog(),
+        config: orgRecord.config || {}
     };
     return [orgHandler, orgData];
 }
@@ -66,9 +72,12 @@ async function setupLocalOrg(config) {
         orgDir: orgDir,
         name: config.name,
         fullName: config.name,
-        contentType: "usfm",
+        contentType: "USFM",
         translationDir: orgDir,
+        catalogHasRevisions: false,
+        canSync: false,
         entries: await orgHandler.getTranslationsCatalog(),
+        config: {}
     };
     return [orgHandler, orgData];
 }

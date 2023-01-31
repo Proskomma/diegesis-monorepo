@@ -6,11 +6,14 @@ const appRootPath = require("app-root-path");
 const {transPath, vrsPath} = require('../../lib/dataPaths.js');
 const appRoot = path.resolve(".");
 
-async function getTranslationsCatalog() {
+async function getTranslationsCatalog(config, orgRecord) {
 
     const http = require(`${appRoot}/src/lib/http.js`);
-
-    const catalogResponse = await http.getText('https://git.door43.org/api/v1/repos/search?owner=unfoldingWord,mvhs&subject=Aligned%20Bible,Bible,Hebrew%20Old%20Testament,Greek%20New%20Testament');
+    let configOwners = "unfoldingWord";
+    if (orgRecord.config && orgRecord.config.owners) {
+        configOwners = orgRecord.config.owners.join(',');
+    }
+    const catalogResponse = await http.getText(`https://git.door43.org/api/v1/repos/search?owner=${configOwners}&subject=Aligned%20Bible,Bible,Hebrew%20Old%20Testament,Greek%20New%20Testament`);
     const jsonData = JSON.parse(catalogResponse.data);
     const catalogData = jsonData.data;
     const catalog = catalogData.map(t => ({
