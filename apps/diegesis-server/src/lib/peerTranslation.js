@@ -1,6 +1,8 @@
 const path = require("path");
+const fse = require('fs-extra');
 const languageCodes = require("../lib/languageCodes.json");
 const { ApolloClient, gql, InMemoryCache} = require("@apollo/client");
+const {transPath} = require("../lib/dataPaths");
 
 async function getTranslationsCatalog(orgRecord) {
 
@@ -66,9 +68,9 @@ const fetchSuccinct = async (org, entryOrg, trans, config) => {
         script
         copyright
         abbreviation
+        succinct: canonResource(type: "succinct") {content}
       }
     }`;
-    // succinct: canonResource(type: "succinct") {content}
     let fetchResult;
     try {
         fetchResult = await client.query({query: gql`${fetchQuery}`});
@@ -90,7 +92,20 @@ const fetchSuccinct = async (org, entryOrg, trans, config) => {
         owner: remoteLocalEntry.owner,
         revision: remoteLocalEntry.revision,
     }
-    console.log(metadata);
+    const tp = transPath(config.dataPath, entryOrg.translationDir, metadata.id, metadata.revision);
+    if (!fse.pathExistsSync(tp)) {
+        fse.mkdirsSync(tp);
+    }
+    try {
+        fse.writeJsonSync(path.join(tp, "lock.json"), {actor: `peer/${org.config.name}/translations`, orgDir: org.translationDir, transId: metadata.id, revision: metadata.revision});
+        fse.writeJsonSync(path.join(tp, 'metadata.json'), metadata);
+        fse.remove(path.join(tp, "lock.json"));
+        fse.mkdirsSync(path.join(tp, 'original'));
+        fse.writeFileSync(path.join(tp, 'original', "succinct.json"), remoteLocalEntry.succinct.content);
+    } catch (err) {
+        console.log(err);
+        fse.remove(tp);
+    }
 };
 
 module.exports = {getTranslationsCatalog, fetchUsfm, fetchUsx, fetchSuccinct}
