@@ -43,6 +43,7 @@ async function setupPeerOrg(config, orgRecord) {
         getTranslationsCatalog: peerTranslation.getTranslationsCatalog,
         fetchUsfm: peerTranslation.fetchUsfm,
         fetchUsx: peerTranslation.fetchUsx,
+        fetchSuccinct: peerTranslation.fetchSuccinct,
     };
     const orgData = {
         orgDir: orgDir,
@@ -52,7 +53,7 @@ async function setupPeerOrg(config, orgRecord) {
         translationDir: orgRecord.translationDir,
         catalogHasRevisions: true,
         canSync: true,
-        entries: await orgHandler.getTranslationsCatalog(),
+        entries: await orgHandler.getTranslationsCatalog(orgRecord),
         config: orgRecord.config || {}
     };
     return [orgHandler, orgData];
@@ -107,7 +108,7 @@ async function makeServerOrgs(config) {
             "translationDir": orgConfigRecord.name.toLowerCase(),
             "name": orgConfigRecord.name,
             "fullName": `Peer ${orgConfigRecord.name}`,
-            "contentType": "USFM",
+            "contentType": "succinct",
             "config": {}
         }
     }

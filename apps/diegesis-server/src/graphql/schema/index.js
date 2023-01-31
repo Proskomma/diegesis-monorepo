@@ -99,6 +99,9 @@ const querySchema = gql`
 
     """A Catalog Entry"""
     type CatalogEntry {
+    
+        """The source of the entry"""
+        source: String
 
         """An id for the entry which is unique within the organization"""
         transId: EntryId!
@@ -303,6 +306,15 @@ const mutationSchema = gql`
         fetchUsx(
             """The name of the organization"""
             org: OrgName!
+            """The id of the entry"""
+            entryId: EntryId!
+        ) : Boolean!
+        """Fetches and processes the specified Succinct content from a remote server"""
+        fetchSuccinct(
+            """The name of the peer organization"""
+            org: OrgName!
+            """The name of the organization of the entry"""
+            entryOrg: OrgName!
             """The id of the entry"""
             entryId: EntryId!
         ) : Boolean!

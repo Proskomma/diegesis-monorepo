@@ -19,7 +19,7 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
         OrgName: new RegExp(/^[A-Za-z0-9]{2,64}$/),
         EntryId: new RegExp(/^[A-Za-z0-9_-]{1,64}$/),
         BookCode: new RegExp(/^[A-Z0-9]{3}$/),
-        ContentType: new RegExp(/^(USFM|USX)$/),
+        ContentType: new RegExp(/^(USFM|USX|succinct)$/),
     }
 
     const orgNameScalar = new GraphQLScalarType({
@@ -630,6 +630,33 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                     if (fse.pathExistsSync(succinctP)) {
                         fse.unlinkSync(succinctP);
                     }
+                    return true;
+                } catch (err) {
+                    console.log(err);
+                    return false;
+                }
+            },
+            fetchSuccinct: async (root, args, context) => {
+                if (!context.auth || !context.auth.authenticated) {
+                    throw new Error(`No auth found for fetchSuccinct mutation`);
+                }
+                if (!context.auth.roles || !context.auth.roles.includes("admin")) {
+                    throw new Error(`Required auth role 'admin' not found for fetchSuccinct`);
+                }
+                const orgOb = orgsData[args.org];
+                if (!orgOb) {
+                    return false;
+                }
+                const entryOrgOb = orgsData[args.entryOrg];
+                if (!entryOrgOb) {
+                    return false;
+                }
+                const transOb = orgOb.entries.filter(t => t.id === args.entryId)[0];
+                if (!transOb) {
+                    return false;
+                }
+                try {
+                    await orgHandlers[args.org].fetchSuccinct(orgOb, entryOrgOb, transOb, config); // Adds owner and revision to transOb
                     return true;
                 } catch (err) {
                     console.log(err);
