@@ -73,7 +73,7 @@ export default function EntryDetailsPage({ setAppLanguage }) {
   const finalScript = i18n(appLang, "ADMIN_LANGUAGE_SCRIPT", [
     entryInfo.script,
   ]);
-  let bookCodes;
+  let bookCodes = [];
   if (entryInfo.bookCodes.length > 0) {
     bookCodes = [...entryInfo.bookCodes];
   }
@@ -114,7 +114,7 @@ export default function EntryDetailsPage({ setAppLanguage }) {
           <Typography variant="h4" paragraph="true">
             {i18n(appLang, "ADMIN_DETAILS")}
           </Typography>
-          
+
           <Grid container spacing={2}>
             <Grid
               item
@@ -228,7 +228,7 @@ export default function EntryDetailsPage({ setAppLanguage }) {
               </Grid >
             </Grid>
             <Grid item xs={8} style={{ textAlign: alignmentText(appLang) }}>
-              <Grid item>{`${entryInfo.nChapters}`}</Grid >
+              <Grid item>{`${entryInfo.nChapters || "?"}`}</Grid >
             </Grid>
             <Grid
               item
@@ -240,7 +240,7 @@ export default function EntryDetailsPage({ setAppLanguage }) {
               </Grid >
             </Grid>
             <Grid item xs={8} style={{ textAlign: alignmentText(appLang) }}>
-              <Grid item>{`${entryInfo.nVerses}`}</Grid >
+              <Grid item>{`${entryInfo.nVerses || "?"}`}</Grid >
             </Grid>
           </Grid>
           <Grid container>
@@ -273,11 +273,11 @@ export default function EntryDetailsPage({ setAppLanguage }) {
                   </>
                 ))
               )}
-              {selectedBook === "" && (
+              {selectedBook === "" && bookCodes.length > 0 &&
                 <Typography style={{ textAlign: alignmentText(appLang) }}>
                   {i18n(appLang, "ADMIN_DETAILS_ALERT")}
                 </Typography>
-              )}
+              }
             </>
           </Grid>
         </Paper>

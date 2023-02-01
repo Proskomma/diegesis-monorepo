@@ -143,13 +143,13 @@ export default function EntryDownloadPage() {
 
     const entryInfo = data.localEntry;
 
-    let bookCodes;
+    let bookCodes = [];
     if (entryInfo.usfmBookCodes.length > 0) {
         bookCodes = [...entryInfo.usfmBookCodes];
-    } else {
+    } else if (entryInfo.usxBookCodes.length > 0) {
         bookCodes = [...entryInfo.usxBookCodes];
     }
-    
+
     return <Container fixed className="homepage">
         <Header selected="list"/>
         <Box style={{marginTop: "100px"}}>
