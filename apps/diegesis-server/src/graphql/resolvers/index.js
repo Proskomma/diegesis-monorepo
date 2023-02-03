@@ -167,7 +167,12 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
             ret = ret.filter(t => args.withId.includes(t.id));
         }
         if (args.syncOnly) {
-            ret = ret.filter(e => entryCanSync(org, e));
+            ret = ret.filter(
+                e => entryCanSync(
+                    orgsData[e.source],
+                    e
+                )
+            );
         }
         if (args.withOwner) {
             ret = ret.filter(
@@ -510,11 +515,10 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                         }
                         typeBooks = new Set(typeBooksArray);
                     }
-                    const ret = Object.keys(root.stats.documents)
+                    return Object.keys(root.stats.documents)
                         .filter(b => !typeBooks || typeBooks.has(b))
                         .sort((a, b) =>
                             ptBooks[a].position - ptBooks[b].position);
-                    return ret;
                 } else {
                     return [];
                 }

@@ -99,9 +99,9 @@ const fetchSuccinct = async (org, entryOrg, trans, config) => {
     try {
         fse.writeJsonSync(path.join(tp, "lock.json"), {actor: `peer/${org.config.name}/translations`, orgDir: org.translationDir, transId: metadata.id, revision: metadata.revision});
         fse.writeJsonSync(path.join(tp, 'metadata.json'), metadata);
-        fse.remove(path.join(tp, "lock.json"));
         fse.mkdirsSync(path.join(tp, 'original'));
         fse.writeFileSync(path.join(tp, 'original', "succinct.json"), remoteLocalEntry.succinct.content);
+        fse.remove(path.join(tp, "lock.json"));
     } catch (err) {
         console.log(err);
         fse.remove(tp);
