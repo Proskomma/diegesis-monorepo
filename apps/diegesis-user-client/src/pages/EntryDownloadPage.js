@@ -143,11 +143,9 @@ export default function EntryDownloadPage() {
 
     const entryInfo = data.localEntry;
 
-    let bookCodes = [];
-    if (entryInfo.usfmBookCodes.length > 0) {
-        bookCodes = [...entryInfo.usfmBookCodes];
-    } else if (entryInfo.usxBookCodes.length > 0) {
-        bookCodes = [...entryInfo.usxBookCodes];
+    let bookCodes = new Set([]);
+    for (const downloadType of ["usfm", "usx", "perf", "simplePerf", "sofria"]) {
+        entryInfo[`${downloadType}BookCodes`].forEach(b => bookCodes.add(b));
     }
 
     return <Container fixed className="homepage">
@@ -181,13 +179,13 @@ export default function EntryDownloadPage() {
                     )
                 }
                 {
-                    bookCodes.length > 0 &&
+                    bookCodes.size > 0 &&
                     <>
                         <Grid item xs={4} md={2}>
                             <Typography variant="h5" paragraph="true">Book Resources</Typography>
                         </Grid>
                         <Grid item xs={8} md={10}>
-                            <BookSelector bookCodes={bookCodes} selectedBook={selectedBook}
+                            <BookSelector bookCodes={Array.from(bookCodes)} selectedBook={selectedBook}
                                           setSelectedBook={setSelectedBook}/>
                         </Grid>
                         {

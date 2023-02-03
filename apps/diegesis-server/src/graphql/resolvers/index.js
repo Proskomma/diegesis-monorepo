@@ -312,9 +312,9 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                         )
                     );
                 ret = [...ret].sort(
-                        (a, b) =>
-                            a[args.sortedBy || 'title'].toLowerCase().localeCompare(b[args.sortedBy || 'title'].toLowerCase())
-                    );
+                    (a, b) =>
+                        a[args.sortedBy || 'title'].toLowerCase().localeCompare(b[args.sortedBy || 'title'].toLowerCase())
+                );
                 if (args.reverse) {
                     ret = [...ret].reverse();
                 }
@@ -489,11 +489,32 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                 }
                 return null;
             },
-            bookCodes: root => {
+            bookCodes: (root, args) => {
                 if (root.stats && root.stats.documents) {
-                    return Object.keys(root.stats.documents)
+                    let typeBooks = null;
+                    if (args.type) {
+                        let typeBooksArray = [];
+                        const generatedP = path.join(
+                            generatedResourcePath(config.dataPath, orgsData[root.source].translationDir, root.id, root.revision),
+                            `${args.type}Books`
+                        );
+                        if (fse.pathExistsSync(generatedP)) {
+                            fse.readdirSync(generatedP).map(fn => fn.split('.')[0]).forEach(fn => typeBooksArray.push(fn));
+                        }
+                        const originalP = path.join(
+                            originalResourcePath(config.dataPath, orgsData[root.source].translationDir, root.id, root.revision),
+                            `${args.type}Books`
+                        );
+                        if (fse.pathExistsSync(originalP)) {
+                            fse.readdirSync(originalP).map(fn => fn.split('.')[0]).forEach(fn => typeBooksArray.push(fn));
+                        }
+                        typeBooks = new Set(typeBooksArray);
+                    }
+                    const ret = Object.keys(root.stats.documents)
+                        .filter(b => !typeBooks || typeBooks.has(b))
                         .sort((a, b) =>
                             ptBooks[a].position - ptBooks[b].position);
+                    return ret;
                 } else {
                     return [];
                 }

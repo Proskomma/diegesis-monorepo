@@ -214,7 +214,10 @@ const querySchema = gql`
         ): BookResource
 
         """Book codes for book-level resources"""
-        bookCodes: [String!]!
+        bookCodes(
+           """The type of resource that must exist for this book code"""
+           type: String
+        ): [String!]!
 
         """Resource types that exist for this book"""
         bookResourceTypes: [String!]!

@@ -30,13 +30,21 @@ function doDownloads({dataPath, orgDir, transId, revision, contentType}) {
             transPath(dataPath, orgDir, transId, revision),
             'metadata.json'
         );
-        fse.writeJsonSync(lockPath(dataPath, orgDir, transId, revision), {actor: "makeDownloads", orgDir, transId, revision});
+        fse.writeJsonSync(lockPath(dataPath, orgDir, transId, revision), {
+            actor: "makeDownloads",
+            orgDir,
+            transId,
+            revision
+        });
         const metadata = fse.readJsonSync(metadataPath);
         let contentDir = (contentType === 'usfm') ?
             usfmDir(dataPath, orgDir, transId, revision) :
             usxDir(dataPath, orgDir, transId, revision);
         if (!fse.pathExistsSync(contentDir)) {
-            throw new Error(`${contentType} content directory for ${org}/${transId}/${revision} does not exist`);
+            if (contentType !== 'succinct') {
+                throw new Error(`${contentType} content directory for ${org}/${transId}/${revision} does not exist`);
+            }
+            contentDir = null;
         }
         let vrsContent = null;
         const vrsP = vrsPath(dataPath, orgDir, transId, revision);
@@ -49,7 +57,7 @@ function doDownloads({dataPath, orgDir, transId, revision, contentType}) {
             orgDir,
             metadata,
             contentType,
-            fse.readdirSync(contentDir).map(f => fse.readFileSync(path.join(contentDir, f)).toString()),
+            contentDir ? fse.readdirSync(contentDir).map(f => fse.readFileSync(path.join(contentDir, f)).toString()) : null,
             vrsContent,
         );
         if (downloads.succinctError) {
@@ -61,7 +69,9 @@ function doDownloads({dataPath, orgDir, transId, revision, contentType}) {
         if (!fse.pathExistsSync(genP)) {
             fse.mkdirsSync(genP);
         }
-        fse.writeJsonSync(succinctPath(dataPath, orgDir, transId, revision), downloads.succinct);
+        if (downloads.succinct) {
+            fse.writeJsonSync(succinctPath(dataPath, orgDir, transId, revision), downloads.succinct);
+        }
     } catch (err) {
         const succinctError = {
             generatedBy: 'cron',
@@ -123,15 +133,20 @@ function makeDownloads(dataPath, org, orgDir, metadata, docType, docs, vrsConten
     };
     let docSetId;
     try {
-        pk.importDocuments(
-            {
-                source: org,
-                project: metadata.id,
-                revision: metadata.revision,
-            },
-            docType,
-            docs,
-        );
+        const succinctP = succinctPath(dataPath, orgDir, metadata.id, metadata.revision);
+        if (fse.pathExistsSync(succinctP)) {
+            pk.loadSuccinctDocSet(fse.readJsonSync(succinctP));
+        } else {
+            pk.importDocuments(
+                {
+                    source: org,
+                    project: metadata.id,
+                    revision: metadata.revision,
+                },
+                docType,
+                docs,
+            );
+        }
         const docSet = pk.gqlQuerySync('{docSets { id documents { bookCode: header(id: "bookCode") sequences {type} } } }').data.docSets[0];
         docSetId = docSet.id;
         const docSetBookCodes = docSet.documents.map(d => d.bookCode);
@@ -325,7 +340,9 @@ function makeDownloads(dataPath, org, orgDir, metadata, docType, docs, vrsConten
             fse.writeFileSync(metadataPath, JSON.stringify(newMetadata, null, 2));
         }
         try {
-            ret.succinct = pk.serializeSuccinct(docSetId);
+            if (!fse.pathExistsSync(succinctPath(dataPath, orgDir, metadata.id, metadata.revision))) {
+                ret.succinct = pk.serializeSuccinct(docSetId);
+            }
         } catch (err) {
             ret.succinctError = {
                 generatedBy: 'cron',
