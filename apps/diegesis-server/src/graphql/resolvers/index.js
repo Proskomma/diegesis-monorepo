@@ -489,31 +489,14 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                 }
                 return null;
             },
-            bookCodes: (root, args) => {
-                let ret = new Set([]);
-                const searchPaths = [
-                    ['original', originalResourcePath(config.dataPath, orgsData[root.source].translationDir, root.id, root.revision)],
-                    ['generated', generatedResourcePath(config.dataPath, orgsData[root.source].translationDir, root.id, root.revision)],
-                ];
-                for (const [searchName, searchPath] of searchPaths) {
-                    if (!fse.existsSync(searchPath)) {
-                        continue;
-                    }
-                    for (const resourceDir of fse.readdirSync(searchPath)) {
-                        const resourceDirPath = path.join(searchPath, resourceDir);
-                        if (!fse.lstatSync(resourceDirPath).isDirectory()) {
-                            continue;
-                        }
-                        if (args.type && resourceDir !== `${args.type}Books`) {
-                            continue;
-                        }
-                        for (const bookResource of fse.readdirSync(resourceDirPath)) {
-                            const bookCode = bookResource.split('.')[0];
-                            ret.add(bookCode);
-                        }
-                    }
+            bookCodes: root => {
+                if (root.stats && root.stats.documents) {
+                    return Object.keys(root.stats.documents)
+                        .sort((a, b) =>
+                            ptBooks[a].position - ptBooks[b].position);
+                } else {
+                    return [];
                 }
-                return Array.from(ret).sort((a, b) => ptBooks[a].position - ptBooks[b].position);
             },
             bookResourceTypes: (root, args) => {
                 let ret = [];

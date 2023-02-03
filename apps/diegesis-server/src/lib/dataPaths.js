@@ -1,4 +1,5 @@
 const path = require("path");
+const fse = require("fs-extra");
 
 const orgPath =
     (dataPath, translationDir) => {
@@ -98,11 +99,22 @@ const succinctPath =
         if (!translationRevision || extra) {
             throw new Error("succinctPath requires 4 args");
         }
-        return path.join(
-            transPath(dataPath, translationDir, translationId, translationRevision),
+        const tp = transPath(dataPath, translationDir, translationId, translationRevision);
+        const originalPath = path.join(
+            tp,
+            'original',
+            'succinct.json'
+        );
+        const generatedPath = path.join(
+            tp,
             'generated',
             'succinct.json'
         );
+        if (fse.pathExistsSync(originalPath)) {
+            return originalPath;
+        } else {
+            return generatedPath;
+        }
     }
 
 const succinctErrorPath =
