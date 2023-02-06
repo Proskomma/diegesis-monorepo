@@ -16,7 +16,7 @@ export default function ListView({searchTerms}) {
             localEntries%searchClause% {
                 source
                 types
-                id
+                transId
                 language
                 owner
                 revision
@@ -25,7 +25,7 @@ export default function ListView({searchTerms}) {
         }`,
         searchTerms
     );
-    
+
     const {loading, error, data} = useQuery(
         gql`${queryString}`,
     );
@@ -38,7 +38,7 @@ export default function ListView({searchTerms}) {
             return ret
         }
     }
-    
+
     function rowData(localTranslation) {
         return <Grid container xs={12} sx={{borderTop: "solid 1px #ccc", padding: "2px", marginBottom: "2px"}}>
             <Grid item xs={6} sm={4} md={2}>
@@ -52,7 +52,7 @@ export default function ListView({searchTerms}) {
             </Grid>
             <Grid item xs={12} md={6}>
                 <RouterLink
-                    to={`/entry/details/${localTranslation.source}/${localTranslation.id}/${localTranslation.revision.replace(/\s/g, "__")}`}
+                    to={`/entry/details/${localTranslation.source}/${localTranslation.transId}/${localTranslation.revision.replace(/\s/g, "__")}`}
                     style={{textDecoration: "none"}}>
                     <Typography variant="body1">{localTranslation.title}</Typography>
                 </RouterLink>

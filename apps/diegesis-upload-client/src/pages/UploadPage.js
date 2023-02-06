@@ -443,7 +443,6 @@ export default function UploadPage({setAppLanguage}) {
                     <>
                         {
                             fileValues.map((uploadedFile, idx) => {
-                                console.log(uploadedFile)
                                 return <ul>
                                     <li>Document {idx + 1} :
                                         <ul>
