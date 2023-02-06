@@ -10,12 +10,8 @@ import { createTheme, CssBaseline, ThemeProvider } from "@mui/material";
 import "./App.css";
 import ListPage from "./pages/ListPage";
 import AppLangContext, { AppLangProvider } from "./contexts/AppLangContext";
-import EntryDetailsPage from "./pages/EntryDetailsPage";
-import EntryBrowsePage from "./pages/EntryBrowsePage";
-import EntryDownloadPage from "./pages/EntryDownloadPage";
 import i18n from "./i18n";
 import UploadPage from "./pages/UploadPage";
-import TestFile from "./pages/TestFile";
 
 function App() {
   const [authed, setAuthed] = useState(true);

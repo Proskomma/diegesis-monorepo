@@ -3,10 +3,11 @@ import * as fr from "./fr.json"
 import * as ar from "./ar.json"
 import * as es from "./es.json"
 
-export default {
-  en , fr , ar , es
-};
+const langs = {
+    ar,
+    en,
+    es,
+    fr
+}
 
-
-
-
+export default langs;
