@@ -7,7 +7,7 @@ import langTable from "../i18n/languages.json";
 import AppLangContext from "../contexts/AppLangContext";
 import {alignmentText} from "../i18n/languageDirection";
 
-export default function Header({selected, children, setAppLanguage}) {
+export default function Header({children, setAppLanguage}) {
 
     const appLang = useContext(AppLangContext);
 
