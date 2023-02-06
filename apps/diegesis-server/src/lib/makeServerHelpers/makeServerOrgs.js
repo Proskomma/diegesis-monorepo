@@ -1,7 +1,7 @@
 const fse = require('fs-extra');
 const path = require("path");
 const {orgPath} = require("../dataPaths");
-const translations = require("../peerTranslations");
+const peerTranslation = require("../peerTranslation");
 
 const appRoot = path.resolve(".");
 
@@ -28,7 +28,10 @@ async function setupNonPeerOrg(config, orgRecord) {
         fullName: orgRecord.fullName,
         contentType: orgRecord.contentType,
         translationDir: orgRecord.translationDir,
-        entries: await orgHandler.getTranslationsCatalog(config),
+        catalogHasRevisions: orgRecord.catalogHasRevisions,
+        canSync: true,
+        entries: await orgHandler.getTranslationsCatalog(config, orgRecord),
+        config: orgRecord.config || {}
     };
     return [orgHandler, orgData];
 }
@@ -36,11 +39,11 @@ async function setupNonPeerOrg(config, orgRecord) {
 async function setupPeerOrg(config, orgRecord) {
     const orgDir = orgRecord.translationDir;
     maybeMakeOrgDir(orgDir, config);
-    const translations = require('../peerTranslations');
     const orgHandler = {
-        getTranslationsCatalog: translations.getTranslationsCatalog,
-        fetchUsfm: translations.fetchUsfm,
-        fetchUsx: translations.fetchUsx,
+        getTranslationsCatalog: peerTranslation.getTranslationsCatalog,
+        fetchUsfm: peerTranslation.fetchUsfm,
+        fetchUsx: peerTranslation.fetchUsx,
+        fetchSuccinct: peerTranslation.fetchSuccinct,
     };
     const orgData = {
         orgDir: orgDir,
@@ -48,7 +51,10 @@ async function setupPeerOrg(config, orgRecord) {
         fullName: orgRecord.fullName,
         contentType: orgRecord.contentType,
         translationDir: orgRecord.translationDir,
-        entries: await orgHandler.getTranslationsCatalog(),
+        catalogHasRevisions: true,
+        canSync: true,
+        entries: await orgHandler.getTranslationsCatalog(orgRecord),
+        config: orgRecord.config || {}
     };
     return [orgHandler, orgData];
 }
@@ -66,9 +72,12 @@ async function setupLocalOrg(config) {
         orgDir: orgDir,
         name: config.name,
         fullName: config.name,
-        contentType: "usfm",
+        contentType: "USFM",
         translationDir: orgDir,
+        catalogHasRevisions: false,
+        canSync: false,
         entries: await orgHandler.getTranslationsCatalog(),
+        config: {}
     };
     return [orgHandler, orgData];
 }
@@ -99,7 +108,7 @@ async function makeServerOrgs(config) {
             "translationDir": orgConfigRecord.name.toLowerCase(),
             "name": orgConfigRecord.name,
             "fullName": `Peer ${orgConfigRecord.name}`,
-            "contentType": "USFM",
+            "contentType": "succinct",
             "config": {}
         }
     }
@@ -135,7 +144,7 @@ async function makeServerOrgs(config) {
             throw new Error(`No org called '${org}'`);
         }
         const nLocal = fse.readdirSync(path.join(orgPath(config.dataPath, orgsData[orgName].translationDir))).length;
-        config.verbose && console.log(`      ${nLocal}/${orgsData[orgName].entries.length} entr${nLocal === 1 ? "y" : "ies"} local`);
+        config.verbose && console.log(`      ${nLocal} local entr${nLocal === 1 ? "y" : "ies"}`);
     }
     return {orgsData, orgHandlers};
 }

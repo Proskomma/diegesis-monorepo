@@ -70,8 +70,16 @@ function App() {
     useEffect(
         () => {
             const doOrgs = async () => {
-                const result = await memoClient.query({query: gql`{ orgs { id: name } }`});
-                setOrgs(result.data.orgs.map(o => o.id));
+                const result = await memoClient.query({
+                    query: gql`{
+                      orgs {
+                        id: name
+                        canSync
+                        catalogHasRevisions
+                      }
+                    }`
+                });
+                setOrgs(result.data.orgs);
             };
             doOrgs();
         },
@@ -91,7 +99,7 @@ function App() {
                         authed &&
                         <>
                             <Header
-                                orgs={orgs}
+                                orgs={orgs.map(o => o.id)}
                                 selectedOrgIndex={selectedOrgIndex}
                                 setSelectedOrgIndex={setSelectedOrgIndex}
                                 searchLang={searchLang}
@@ -102,7 +110,7 @@ function App() {
                             <Box id="body">
                                 {orgs.length > 0 ?
                                     <TabbedBody
-                                        selectedOrg={orgs[selectedOrgIndex]}
+                                        selectedOrgRecord={orgs[selectedOrgIndex]}
                                         searchLang={searchLang}
                                         searchText={searchText}
                                     /> :

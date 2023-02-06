@@ -2,5 +2,6 @@
   "translationDir": "dcs",
   "name": "DCS",
   "fullName": "Door43.org",
-  "contentType": "USFM"
+  "contentType": "USFM",
+  "catalogHasRevisions": true
 }

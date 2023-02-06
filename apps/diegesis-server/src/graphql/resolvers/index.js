@@ -19,7 +19,7 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
         OrgName: new RegExp(/^[A-Za-z0-9]{2,64}$/),
         EntryId: new RegExp(/^[A-Za-z0-9_-]{1,64}$/),
         BookCode: new RegExp(/^[A-Z0-9]{3}$/),
-        ContentType: new RegExp(/^(USFM|USX)$/),
+        ContentType: new RegExp(/^(USFM|USX|succinct)$/),
     }
 
     const orgNameScalar = new GraphQLScalarType({
@@ -126,12 +126,53 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
         },
     });
 
+    const entryInColorList = (colorList, entry) => {
+        for (const colorItem of colorList) {
+            if (colorItem.id === entry.id) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    const entryCanSync = (org, entry) => {
+        let path;
+        if (org.catalogHasRevisions) {
+            path = transPath(config.dataPath, org.translationDir, entry.id, entry.revision);
+        } else {
+            path = transParentPath(config.dataPath, org.translationDir, entry.id);
+        }
+        if (fse.pathExistsSync(path)) {
+            return false;
+        }
+        if (org.config) {
+            if (org.config.blacklist && entryInColorList(org.config.blacklist, entry)) {
+                return false;
+            }
+            if (org.config.whitelist && entryInColorList(org.config.whitelist, entry)) {
+                return true;
+            }
+            if (org.config.languages && !org.config.languages.includes(entry.languageCode.split('-')[0])) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     const filteredCatalog = (org, args, context, entries) => {
         context.orgData = org;
         context.orgHandler = orgHandlers[org.name];
         let ret = [...entries];
         if (args.withId) {
             ret = ret.filter(t => args.withId.includes(t.id));
+        }
+        if (args.syncOnly) {
+            ret = ret.filter(
+                e => entryCanSync(
+                    orgsData[e.source],
+                    e
+                )
+            );
         }
         if (args.withOwner) {
             ret = ret.filter(
@@ -205,18 +246,6 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
         }
     }
 
-    const hasAllFeatures = (trans, features) => {
-        let ret = true;
-        for (const f of features) {
-            const fField = `n${f.substring(0, 1).toUpperCase()}${f.substring(1)}`;
-            if (!trans.stats || !trans.stats[fField]) {
-                ret = false;
-                break;
-            }
-        }
-        return ret;
-    }
-
     const scalarResolvers = {
         OrgName: orgNameScalar,
         EntryId: entryIdScalar,
@@ -254,8 +283,8 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                     }
                 }
                 ret = ret.filter(e =>
-                        !args.sources ||
-                        lowerCaseArray(args.sources).includes(e.source.toLocaleLowerCase()))
+                    !args.sources ||
+                    lowerCaseArray(args.sources).includes(e.source.toLocaleLowerCase()))
                     .filter(e =>
                         !args.owners ||
                         lowerCaseArray(args.owners).includes(e.owner.toLocaleLowerCase()))
@@ -286,12 +315,13 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                                 })
                                 .length === args.withStatsFeatures.length)
                         )
-                    ).sort(
-                        (a, b) =>
-                            a[args.sortedBy || 'title'].toLowerCase().localeCompare(b[args.sortedBy || 'title'].toLowerCase())
                     );
+                ret = [...ret].sort(
+                    (a, b) =>
+                        a[args.sortedBy || 'title'].toLowerCase().localeCompare(b[args.sortedBy || 'title'].toLowerCase())
+                );
                 if (args.reverse) {
-                    ret.reverse();
+                    ret = [...ret].reverse();
                 }
                 return ret;
             },
@@ -304,6 +334,7 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
             }
         },
         LocalEntry: {
+            transId: root => root.id,
             types: root => root.resourceTypes,
             language: root => root.languageCode,
             stat: (root, args) => {
@@ -314,16 +345,16 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                 return stats[args.field];
             },
             stats: (root) => {
-                let ret =[]
-                if (root.stats){
-                    for (const [field,stat] of Object.entries(root.stats) ){
-                        if (field === "documents"){
+                let ret = []
+                if (root.stats) {
+                    for (const [field, stat] of Object.entries(root.stats)) {
+                        if (field === "documents") {
                             continue
                         }
-                        ret.push({field , stat})
+                        ret.push({field, stat})
                     }
                 }
-                return ret ; 
+                return ret;
             },
             resourceStat: (root, args) => {
                 const stats = root.stats;
@@ -343,19 +374,19 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                 }
                 return Object.entries(documentStats).map(kv => ({
                     bookCode: kv[0],
-                    field : args.field,
+                    field: args.field,
                     stat: typeof kv[1][args.field] === "number" ? kv[1][args.field] : null
                 }));
             },
             bookStats: (root, args) => {
-                let ret =[]
-                if (root.stats && root.stats.documents && root.stats.documents[args.bookCode]){
+                let ret = []
+                if (root.stats && root.stats.documents && root.stats.documents[args.bookCode]) {
                     const bookCodeStats = root.stats.documents[args.bookCode]
-                    for (const [field,stat] of Object.entries(bookCodeStats) ){
-                        ret.push({bookCode:args.bookCode , field , stat})
+                    for (const [field, stat] of Object.entries(bookCodeStats)) {
+                        ret.push({bookCode: args.bookCode, field, stat})
                     }
                 }
-                return ret ; 
+                return ret;
             },
             canonResources: root => {
                 let ret = [];
@@ -464,30 +495,33 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                 return null;
             },
             bookCodes: (root, args) => {
-                let ret = new Set([]);
-                const searchPaths = [
-                    ['original', originalResourcePath(config.dataPath, orgsData[root.source].translationDir, root.id, root.revision)],
-                    ['generated', generatedResourcePath(config.dataPath, orgsData[root.source].translationDir, root.id, root.revision)],
-                ];
-                for (const [searchName, searchPath] of searchPaths) {
-                    if (!fse.existsSync(searchPath)) {
-                        continue;
+                if (root.stats && root.stats.documents) {
+                    let typeBooks = null;
+                    if (args.type) {
+                        let typeBooksArray = [];
+                        const generatedP = path.join(
+                            generatedResourcePath(config.dataPath, orgsData[root.source].translationDir, root.id, root.revision),
+                            `${args.type}Books`
+                        );
+                        if (fse.pathExistsSync(generatedP)) {
+                            fse.readdirSync(generatedP).map(fn => fn.split('.')[0]).forEach(fn => typeBooksArray.push(fn));
+                        }
+                        const originalP = path.join(
+                            originalResourcePath(config.dataPath, orgsData[root.source].translationDir, root.id, root.revision),
+                            `${args.type}Books`
+                        );
+                        if (fse.pathExistsSync(originalP)) {
+                            fse.readdirSync(originalP).map(fn => fn.split('.')[0]).forEach(fn => typeBooksArray.push(fn));
+                        }
+                        typeBooks = new Set(typeBooksArray);
                     }
-                    for (const resourceDir of fse.readdirSync(searchPath)) {
-                        const resourceDirPath = path.join(searchPath, resourceDir);
-                        if (!fse.lstatSync(resourceDirPath).isDirectory()) {
-                            continue;
-                        }
-                        if (args.type && resourceDir !== `${args.type}Books`) {
-                            continue;
-                        }
-                        for (const bookResource of fse.readdirSync(resourceDirPath)) {
-                            const bookCode = bookResource.split('.')[0];
-                            ret.add(bookCode);
-                        }
-                    }
+                    return Object.keys(root.stats.documents)
+                        .filter(b => !typeBooks || typeBooks.has(b))
+                        .sort((a, b) =>
+                            ptBooks[a].position - ptBooks[b].position);
+                } else {
+                    return [];
                 }
-                return Array.from(ret).sort((a, b) => ptBooks[a].position - ptBooks[b].position);
             },
             bookResourceTypes: (root, args) => {
                 let ret = [];
@@ -543,7 +577,12 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
             },
         },
         CatalogEntry: {
+            transId: root => root.id,
             isLocal: (trans, args, context) => fse.pathExists(transParentPath(config.dataPath, context.orgData.translationDir, trans.id)),
+            isRevisionLocal: (trans, args, context) =>
+                context.orgData.catalogHasRevisions ?
+                    fse.pathExists(transPath(config.dataPath, context.orgData.translationDir, trans.id, trans.revision)) :
+                    null,
         },
     };
     const mutationResolver = {
@@ -599,6 +638,33 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                     if (fse.pathExistsSync(succinctP)) {
                         fse.unlinkSync(succinctP);
                     }
+                    return true;
+                } catch (err) {
+                    console.log(err);
+                    return false;
+                }
+            },
+            fetchSuccinct: async (root, args, context) => {
+                if (!context.auth || !context.auth.authenticated) {
+                    throw new Error(`No auth found for fetchSuccinct mutation`);
+                }
+                if (!context.auth.roles || !context.auth.roles.includes("admin")) {
+                    throw new Error(`Required auth role 'admin' not found for fetchSuccinct`);
+                }
+                const orgOb = orgsData[args.org];
+                if (!orgOb) {
+                    return false;
+                }
+                const entryOrgOb = orgsData[args.entryOrg];
+                if (!entryOrgOb) {
+                    return false;
+                }
+                const transOb = orgOb.entries.filter(t => t.id === args.entryId)[0];
+                if (!transOb) {
+                    return false;
+                }
+                try {
+                    await orgHandlers[args.org].fetchSuccinct(orgOb, entryOrgOb, transOb, config); // Adds owner and revision to transOb
                     return true;
                 } catch (err) {
                     console.log(err);

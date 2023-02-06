@@ -64,6 +64,12 @@ const querySchema = gql`
         """The content type received from this organization"""
         contentType: ContentType!
 
+        """Does the catalog endpoint include revisions?"""
+        catalogHasRevisions: Boolean!
+
+        """Is there an external source to sync with??"""
+        canSync: Boolean!
+
         """The catalog entries that are available from this organization"""
         catalogEntries(
             """The ids of the catalogEntries"""
@@ -76,6 +82,8 @@ const querySchema = gql`
             withLanguageCode: [String!]
             """Filter by text matches in title"""
             withMatchingMetadata: [String!]
+            """Include entries for synching only"""
+            syncOnly: Boolean
             """Sort field"""
             sortedBy: String
             """Sort in reverse order"""
@@ -91,12 +99,15 @@ const querySchema = gql`
 
     """A Catalog Entry"""
     type CatalogEntry {
+    
+        """The source of the entry"""
+        source: String
 
         """An id for the entry which is unique within the organization"""
-        id: EntryId!
+        transId: EntryId!
 
         """The revision of the entry"""
-        revision: String!
+        revision: String
 
         """The language code"""
         languageCode: String!
@@ -109,6 +120,9 @@ const querySchema = gql`
 
         """is this org/id local?"""
         isLocal: Boolean!
+
+        """is this org/id/revision local?"""
+        isRevisionLocal: Boolean
     }
     
     """A local entry"""
@@ -124,7 +138,7 @@ const querySchema = gql`
         owner: String!
 
         """The id of the entry"""
-        id: String!
+        transId: String!
 
         """The revision of the entry"""
         revision: String!
@@ -199,11 +213,11 @@ const querySchema = gql`
           type: String!
         ): BookResource
 
-        """Book codes for book-level resources, optionally filtered by type"""
+        """Book codes for book-level resources"""
         bookCodes(
-            """The resource type"""
-            type: String
-        ) : [String!]!
+           """The type of resource that must exist for this book code"""
+           type: String
+        ): [String!]!
 
         """Resource types that exist for this book"""
         bookResourceTypes: [String!]!
@@ -292,6 +306,15 @@ const mutationSchema = gql`
         fetchUsx(
             """The name of the organization"""
             org: OrgName!
+            """The id of the entry"""
+            entryId: EntryId!
+        ) : Boolean!
+        """Fetches and processes the specified Succinct content from a remote server"""
+        fetchSuccinct(
+            """The name of the peer organization"""
+            org: OrgName!
+            """The name of the organization of the entry"""
+            entryOrg: OrgName!
             """The id of the entry"""
             entryId: EntryId!
         ) : Boolean!

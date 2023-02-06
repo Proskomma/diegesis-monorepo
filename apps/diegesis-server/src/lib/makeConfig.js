@@ -46,6 +46,7 @@ const orgConfigTemplate = {
     resourceTypes: true,
     resourceFormats: true,
     languages: true,
+    owners: true,
     whitelist: true,
     blacklist: true,
     syncFrequency: true,
@@ -375,6 +376,19 @@ function makeConfig(providedConfig) {
             } else {
                 orgOb.languages = [];
             }
+            if (orgConfig.owners) {
+                if (!Array.isArray(orgConfig.owners)) {
+                    croak(`ERROR: orgsConfig owners for ${orgConfig.name}, if present, must be an array, not '${orgConfig.owners}'`);
+                }
+                for (const owner of orgConfig.owners) {
+                    if (typeof owner !== "string") {
+                        croak(`ERROR: each orgsConfig owner element for ${orgConfig.name} should be a string, not '${JSON.stringify(owner)}'`);
+                    }
+                }
+                orgOb.owners = orgConfig.owners;
+            } else {
+                orgOb.owners = [];
+            }
             if (orgConfig.whitelist) {
                 if (!Array.isArray(orgConfig.whitelist)) {
                     croak(`ERROR: orgsConfig whitelist for ${orgConfig.name}, if present, must be an array, not '${orgConfig.whitelist}'`);
@@ -487,6 +501,9 @@ const orgsConfigDescription = configs => {
                 }
                 if (cf.languages.length > 0) {
                     lines.push(`        Pull resources with language ${cf.languages.join(', ')}`);
+                }
+                if (cf.owners.length > 0) {
+                    lines.push(`        Pull resources owned by ${cf.owners.join(', ')}`);
                 }
                 if (cf.whitelist.length > 0) {
                     lines.push(`        ${cf.whitelist.length} item${cf.whitelist.length === 1 ? "" : "s"} in whitelist`);

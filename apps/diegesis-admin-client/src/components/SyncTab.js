@@ -6,7 +6,7 @@ import {
 } from "@apollo/client";
 
 import { Button} from '@mui/material';
-import {Download} from '@mui/icons-material';
+import {Add, Update} from '@mui/icons-material';
 
 import EntriesTable from "./EntriesTable";
 import { searchQuery } from '../lib/remoteSearch';
@@ -14,7 +14,7 @@ import { fetchEntry } from '../lib/tableCallbacks';
 import GqlLoading from "./GqlLoading";
 import GqlError from "./GqlError";
 
-export default function RemoteTab({selectedOrg, searchLang, searchText}) {
+export default function SyncTab({selectedOrgRecord, searchLang, searchText}) {
 
     const client = useApolloClient();
 
@@ -22,19 +22,25 @@ export default function RemoteTab({selectedOrg, searchLang, searchText}) {
         `query catalogEntries {
             org(name: "%org%") {
                 id: name
-                fullName,
+                fullName
                 contentType
+                catalogHasRevisions
+                canSync
                 catalogEntries%searchClause% {
+                    source
                     transId
                     languageCode
                     title
                     isLocal
+                    isRevisionLocal
+                    revision
                 }
             }
         }`,
-        selectedOrg,
+        selectedOrgRecord.id,
         searchLang,
-        searchText);
+        searchText,
+        true);
 
     const {loading, error, data} = useQuery(
         gql`${queryString}`,
@@ -42,7 +48,9 @@ export default function RemoteTab({selectedOrg, searchLang, searchText}) {
     );
 
     const columns = [
+        {id: 'source', label: 'Source', minWidth: 100},
         {id: 'id', label: 'ID', minWidth: 100},
+        {id: 'revision', label: 'Revision', minWidth: 50},
         {id: 'languageCode', label: 'Language', minWidth: 50},
         {
             id: 'title',
@@ -59,8 +67,10 @@ export default function RemoteTab({selectedOrg, searchLang, searchText}) {
 
     function createData(catalogEntry, contentType) {
         return {
+            source: catalogEntry.source || "unknown",
             id: catalogEntry.transId,
             languageCode: catalogEntry.languageCode,
+            revision: selectedOrgRecord.catalogHasRevisions ? catalogEntry.revision : "unknown",
             title: catalogEntry.title,
             actions: <Button
                 onClick={
@@ -68,18 +78,19 @@ export default function RemoteTab({selectedOrg, searchLang, searchText}) {
                         try {
                             fetchEntry(
                                 client,
-                                selectedOrg,
+                                selectedOrgRecord.id,
                                 catalogEntry.transId,
-                                contentType
+                                contentType,
+                                catalogEntry.source
                             );
                         } catch (err) {
                             console.log("ERROR FROM FETCHENTRY", err.msg);
                         }
                     }
                 }
-                disabled={catalogEntry.isLocal}
+                disabled={catalogEntry.isRevisionLocal}
             >
-                <Download/>
+                {catalogEntry.isLocal ? <Update/> : <Add/>}
             </Button>
         };
     }
