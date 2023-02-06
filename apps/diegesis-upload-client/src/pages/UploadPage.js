@@ -21,7 +21,10 @@ import i18n from "../i18n";
 import LangSelector from "../components/LangSelector";
 import { directionText } from "../i18n/languageDirection";
 import UploadFormField from "../components/UploadFormField";
+import UploadedFileField from "../components/UploadedFileField";
+import { useSnackbar } from "notistack";
 
+// /text\/(txt|usfm|usm)/i
 const documentTypeRegex = /(text.*)/;
 const scriptRegex = /^[A-Za-z0-9]{1,16}$/;
 const abbreviationRegex = /^[A-Za-z][A-Za-z0-9]+$/;
@@ -29,6 +32,7 @@ const documentRegex = /^\\id ([A-Z1-6]{3})/;
 
 export default function UploadPage({ setAppLanguage }) {
   const appLang = useContext(AppLangContext);
+  const { enqueueSnackbar } = useSnackbar();
   const field_required = i18n(appLang, "FIELD_REQUIRED");
   const [uploads, setUploads] = useState([]);
   const [formValues, setFormValues] = useState({
@@ -55,8 +59,12 @@ export default function UploadPage({ setAppLanguage }) {
     const validFiles = [];
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
-      if (true || file.type.match(documentTypeRegex)) {
+      if (file.type.match(documentTypeRegex)) {
         validFiles.push(file);
+      } else {
+        enqueueSnackbar("Wrong File or Files !", {
+          autoHideDuration: 3000,
+        });
       }
     }
     setUploads(validFiles);
@@ -202,7 +210,7 @@ export default function UploadPage({ setAppLanguage }) {
             }}
           >
             <LangSelector
-            selectLanguageLabel={i18n(appLang, "LANGUAGE_CODE")}
+              selectLanguageLabel={i18n(appLang, "LANGUAGE_CODE")}
               name="langCode"
               langCode={formValues.langCode}
               setlangCode={(e) =>
@@ -244,10 +252,7 @@ export default function UploadPage({ setAppLanguage }) {
                 .join("; ")}
             ></UploadFormField>
             <UploadFormField
-              formTextFieldLabel={i18n(
-                appLang,
-                "ADMIN_DETAILS_ABBREVIATION"
-              )}
+              formTextFieldLabel={i18n(appLang, "ADMIN_DETAILS_ABBREVIATION")}
               name="abbreviation"
               inputValue={formValues.abbreviation}
               setInputValue={(e) =>
@@ -360,27 +365,9 @@ export default function UploadPage({ setAppLanguage }) {
           {i18n(appLang, "SUBMIT")}
         </Button>
       </form>
-      <Grid>
-        <Paper style={{ marginTop: "5%" }}>
-          <>
-            {fileValues.map((uploadedFile, idx) => {
-              return (
-                <ul>
-                  <li>
-                    Document {idx + 1} :
-                    <ul>
-                      <li>Name : {uploadedFile.name}</li>
-                      <li>Type : {uploadedFile.type}</li>
-                      <li>content : {uploadedFile.content}</li>
-                    </ul>
-                  </li>
-                </ul>
-              );
-            })}
-          </>
-        </Paper>
+      <Grid container>
+        <UploadedFileField files={fileValues}></UploadedFileField>
       </Grid>
-
       <Footer />
     </Container>
   );
