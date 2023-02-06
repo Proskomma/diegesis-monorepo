@@ -41,7 +41,7 @@ export default function UploadPage({ setAppLanguage }) {
     copyright: "",
     abbreviation: "",
     textDirection: "",
-    uploads: [],
+    uploadedFiles: [],
   });
   const [open, setOpen] = useState(false);
 
@@ -67,38 +67,34 @@ export default function UploadPage({ setAppLanguage }) {
   };
 
   useEffect(() => {
-    const newUploadContent = [],
-      fileReaders = [];
-    let isCancel = false;
-    uploads.forEach((file) => {
-      const fileReader = new FileReader();
-      fileReaders.push(fileReader);
-      fileReader.onload = (e) => {
-        const { result } = e.target;
-        if (result) {
-          if (!result.match(documentRegex)) {
-            setOpen(true);
-          } else {
-            setOpen(false);
-            newUploadContent.push({
-              content: result,
-              type: file.type,
-              name: file.name,
-            });
+    const doUploads = async () => {
+      const newUploadContent = []
+      let uploadError = false
+      for (const file of uploads ) {
+        const fileReader = new FileReader();
+        fileReader.onload = (e) => {
+          const { result } = e.target;
+          if (result) {
+            if (!result.match(documentRegex)) {
+              uploadError=true;
+              return;
+            } else {
+              newUploadContent.push({
+                content: result,
+                type: file.type,
+                name: file.name,
+              });
+              console.log("onLoad",result)
+            }
           }
-        }
+        };
+        fileReader.readAsText(file);
       };
-      fileReader.readAsText(file);
-    });
-    setformValues({ ...formValues, uploads: newUploadContent });
-    return () => {
-      isCancel = true;
-      fileReaders.forEach((fileReader) => {
-        if (fileReader.readyState === 1) {
-          fileReader.abort();
-        }
-      });
+      setOpen(uploadError)
+      console.log("uploadContent",newUploadContent)
+      return newUploadContent;
     };
+    doUploads().then(res => setformValues({ ...formValues, uploadedFiles: res }));
   }, [uploads]);
 
   const formValidators = {
@@ -165,8 +161,8 @@ export default function UploadPage({ setAppLanguage }) {
     }
     return true;
   };
-  console.log(formValues);
-  console.log(open);
+
+  console.log("formValues", formValues);
 
   return (
     <Container fixed className="uploadpage">
@@ -429,38 +425,6 @@ export default function UploadPage({ setAppLanguage }) {
               />
             </Box>
           </Box>
-          <Box>
-            <Paper style={{ marginTop: "5%" }}>
-              {uploads.map((upload, idx) => {
-                return (
-                  <>
-                    <Grid
-                      item
-                      xs={2}
-                      style={{
-                        fontWeight: "bold",
-                        marginLeft: "5%",
-                      }}
-                    >
-                      <Grid item>
-                        <span>Document {idx + 1} name :</span>
-                      </Grid>
-                    </Grid>
-                    <Grid
-                      item
-                      xs={4}
-                      style={{
-                        marginLeft: "5%",
-                      }}
-                    >
-                      <Grid item>{upload.name}</Grid>
-                      {/* <Grid item>{upload.content}</Grid> */}
-                    </Grid>
-                  </>
-                );
-              })}
-            </Paper>
-          </Box>
           <Stack spacing={2} sx={{ width: "100%" }}>
             <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
               <Alert
@@ -487,6 +451,21 @@ export default function UploadPage({ setAppLanguage }) {
           {i18n(appLang, "SUBMIT")}
         </Button>
       </form>
+      <Box>
+        <Paper style={{ marginTop: "5%" }}>
+          <>
+            {JSON.stringify(formValues)}
+            {formValues.uploadedFiles.map((uploadedFile, idx) => (
+              <ul>
+                Document {idx + 1} :<li>Name : {uploadedFile.name}</li>
+                <li>Type : {uploadedFile.type}</li>
+                <li>content : {uploadedFile.content}</li>
+              </ul>
+            ))}
+          </>
+        </Paper>
+      </Box>
+
       <Footer />
     </Container>
   );
