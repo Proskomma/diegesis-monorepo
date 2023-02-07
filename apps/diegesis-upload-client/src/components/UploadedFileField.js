@@ -6,15 +6,20 @@ import {
   Typography,
 } from "@mui/material";
 import { DeleteForeverRounded } from "@mui/icons-material";
+import AppLangContext from "../contexts/AppLangContext";
+import { useContext } from "react";
+import i18n from "../i18n";
+import { directionText } from "../i18n/languageDirection";
 
 export default function UploadedFileField({ files }) {
+  const appLang = useContext(AppLangContext);
   return (
     <Grid
       sx={{
         display: "flex",
         flexDirection: "row",
-        justifyContent : 'space-around',
-        flexWrap :'wrap'
+        justifyContent: "space-between",
+        flexWrap: "wrap"
       }}
     >
       <>
@@ -22,21 +27,21 @@ export default function UploadedFileField({ files }) {
           return (
             <>
               <Paper style={{ marginTop: "5%" }}>
-                <CardContent>
+                <CardContent dir={directionText(appLang)}>
                   <Typography variant="h5" component="div">
-                    Document {idx + 1} :
+                    {i18n(appLang, "DOCUMENT")} {idx + 1} :
                   </Typography>
                   <Typography sx={{ mb: 1.5 }} color="text.secondary">
-                    Name : {uploadedFile.name}
+                    {i18n(appLang, "NAME")} : {uploadedFile.name}
                   </Typography>
                   <Typography sx={{ mb: 1.5 }} color="text.secondary">
-                    Type : {uploadedFile.type}
+                    {i18n(appLang, "BOOK")}: {uploadedFile.type}
                   </Typography>
                   <Typography sx={{ mb: 1.5 }} color="text.secondary">
-                    Content Length: {uploadedFile.content.length}
+                    {i18n(appLang, "CONTENT_LENGTH")} : {uploadedFile.content.length}
                   </Typography>
                 </CardContent>
-                <CardActions>
+                <CardActions dir={directionText(appLang)}>
                   <DeleteForeverRounded
                     color="error"
                     style={{ justifyContent: "right" }}

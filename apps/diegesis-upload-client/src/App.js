@@ -79,7 +79,7 @@ function App() {
   return (
     <ApolloProvider client={client}>
       <ThemeProvider theme={theme}>
-        <SnackbarProvider maxSnack={3}>
+        <SnackbarProvider maxSnack={1}>
           <AppLangProvider value={appLanguage}>
             <CssBaseline />
             {!authed && (

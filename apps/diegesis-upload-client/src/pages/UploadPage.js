@@ -1,17 +1,13 @@
 import React, { useContext, useEffect, useState } from "react";
 import {
-  Alert,
   Grid,
   Button,
   Container,
   FormControlLabel,
   FormLabel,
   Input,
-  Paper,
   Radio,
   RadioGroup,
-  Snackbar,
-  Stack,
   Typography,
 } from "@mui/material";
 import Header from "../components/Header";
@@ -24,7 +20,6 @@ import UploadFormField from "../components/UploadFormField";
 import UploadedFileField from "../components/UploadedFileField";
 import { useSnackbar } from "notistack";
 
-// /text\/(txt|usfm|usm)/i
 const documentTypeRegex = /(text.*)/;
 const scriptRegex = /^[A-Za-z0-9]{1,16}$/;
 const abbreviationRegex = /^[A-Za-z][A-Za-z0-9]+$/;
@@ -34,6 +29,7 @@ export default function UploadPage({ setAppLanguage }) {
   const appLang = useContext(AppLangContext);
   const { enqueueSnackbar } = useSnackbar();
   const field_required = i18n(appLang, "FIELD_REQUIRED");
+  const textLengthError = i18n(appLang, "INVALID_LENGTH");
   const [uploads, setUploads] = useState([]);
   const [formValues, setFormValues] = useState({
     title: "",
@@ -45,14 +41,6 @@ export default function UploadPage({ setAppLanguage }) {
     textDirection: "",
   });
   const [fileValues, setFileValues] = useState([]);
-  const [open, setOpen] = useState(false);
-
-  const handleClose = (event, reason) => {
-    if (reason === "clickaway") {
-      return;
-    }
-    setOpen(false);
-  };
 
   const changeHandler = (e) => {
     const { files } = e.target;
@@ -62,8 +50,9 @@ export default function UploadPage({ setAppLanguage }) {
       if (file.type.match(documentTypeRegex)) {
         validFiles.push(file);
       } else {
-        enqueueSnackbar("Wrong File or Files !", {
+        enqueueSnackbar(i18n(appLang, "WRONG_FILES"), {
           autoHideDuration: 3000,
+          variant: "error"
         });
       }
     }
@@ -99,7 +88,7 @@ export default function UploadPage({ setAppLanguage }) {
         ret.push(field_required);
       }
       if (str.trim().length < 6 || str.trim().length > 64) {
-        ret.push("invalid text length");
+        ret.push(textLengthError);
       }
       return ret;
     },
@@ -109,7 +98,7 @@ export default function UploadPage({ setAppLanguage }) {
         ret.push(field_required);
       }
       if (str.trim().length < 6 || str.trim().length > 255) {
-        ret.push("invalid text length");
+        ret.push(textLengthError);
       }
       return ret;
     },
@@ -119,7 +108,7 @@ export default function UploadPage({ setAppLanguage }) {
         ret.push(field_required);
       }
       if (!str.trim().match(scriptRegex)) {
-        ret.push("invalid text");
+        ret.push(textLengthError);
       }
       return ret;
     },
@@ -129,7 +118,7 @@ export default function UploadPage({ setAppLanguage }) {
         ret.push(field_required);
       }
       if (str.trim().length < 6 || str.trim().length > 64) {
-        ret.push("invalid text length");
+        ret.push(textLengthError);
       }
       return ret;
     },
@@ -139,7 +128,7 @@ export default function UploadPage({ setAppLanguage }) {
         ret.push(field_required);
       }
       if (!str.trim().match(abbreviationRegex)) {
-        ret.push("invalid text");
+        ret.push(textLengthError);
       }
       return ret;
     },
@@ -157,7 +146,6 @@ export default function UploadPage({ setAppLanguage }) {
     return true;
   };
 
-  console.log(formValues);
   return (
     <Container fixed className="uploadpage">
       <Header setAppLanguage={setAppLanguage} selected="list" />
@@ -339,21 +327,6 @@ export default function UploadPage({ setAppLanguage }) {
               />
             </Grid>
           </Grid>
-          <Stack spacing={2} sx={{ width: "100%" }}>
-            <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
-              <Alert
-                onClose={handleClose}
-                severity="error"
-                sx={{
-                  width: "100%",
-                  vertical: "bottom",
-                  horizontal: "center",
-                }}
-              >
-                Not Valid Document!
-              </Alert>
-            </Snackbar>
-          </Stack>
         </Grid>
         <Button
           type="submit"
@@ -365,7 +338,7 @@ export default function UploadPage({ setAppLanguage }) {
           {i18n(appLang, "SUBMIT")}
         </Button>
       </form>
-      <Grid container>
+      <Grid container dir={directionText(appLang)}>
         <UploadedFileField files={fileValues}></UploadedFileField>
       </Grid>
       <Footer />

@@ -82,5 +82,12 @@
     "RTL":"De droite à gauche",
     "LTR":"De gauche à droite",
     "FIELD_REQUIRED":"Ce champ est obligatoire !",
-    "Upload_documents":"Télécharger des documents"
+    "Upload_documents":"Télécharger des documents",
+    "INVALID_LENGTH":"Longueur de texte invalide !",
+    "SELECT_LANGUAGE":"Veuillez sélectionner une langue",
+    "DOCUMENT":"Fichier",
+    "NAME":"Nom",
+    "BOOK":"Livre",
+    "CONTENT_LENGTH":"Longuer du contenu",
+    "WRONG_FILES":"Mauvais fichier ou fichiers"
 }

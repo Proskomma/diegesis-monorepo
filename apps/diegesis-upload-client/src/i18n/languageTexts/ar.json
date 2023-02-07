@@ -82,5 +82,12 @@
     "RTL":"من اليمين الى اليسار",
     "LTR":"من اليسار إلى اليمين",
     "FIELD_REQUIRED":"هذه الخانة مطلوبة",
-    "Upload_documents":"تحميل المستندات"
+    "Upload_documents":"تحميل المستندات",
+    "INVALID_LENGTH":"!طول النص غير صالح",
+    "SELECT_LANGUAGE":"يرجى تحديد لغة",
+    "DOCUMENT":"ملف",
+    "NAME":"اسم",
+    "BOOK":"كتاب",
+    "CONTENT_LENGTH":"طول المحتوى",
+    "WRONG_FILES":"ملف أو ملفات خاطئة"
  }

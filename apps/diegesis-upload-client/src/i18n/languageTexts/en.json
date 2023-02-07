@@ -82,5 +82,12 @@
     "RTL":"Right To Left",
     "LTR":"Left To Right",
     "FIELD_REQUIRED":"This field is required !",
-    "Upload_documents":"Upload Documents"
+    "Upload_documents":"Upload Documents",
+    "INVALID_LENGTH":"Invalid text length !",
+    "SELECT_LANGUAGE":"Please select a language",
+    "DOCUMENT":"File",
+    "NAME":"Name",
+    "BOOK":"Book",
+    "CONTENT_LENGTH":"Content Length",
+    "WRONG_FILES":"Wrong File Or Files"
 }
