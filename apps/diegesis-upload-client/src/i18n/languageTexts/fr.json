@@ -89,5 +89,6 @@
     "NAME":"Nom",
     "BOOK":"Livre",
     "CONTENT_LENGTH":"Longuer du contenu",
-    "WRONG_FILES":"Mauvais fichier ou fichiers"
+    "WRONG_FILES":"Mauvais fichier ou fichiers",
+    "SELECT_FILES":"Veuillez sélectionner des fichiers"
 }

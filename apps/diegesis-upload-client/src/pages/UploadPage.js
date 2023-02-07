@@ -20,17 +20,14 @@ import UploadFormField from "../components/UploadFormField";
 import UploadedFileField from "../components/UploadedFileField";
 import { useSnackbar } from "notistack";
 
-const documentTypeRegex = /(text.*)/;
-const scriptRegex = /^[A-Za-z0-9]{1,16}$/;
-const abbreviationRegex = /^[A-Za-z][A-Za-z0-9]+$/;
+const documentSuffixRegex = /^[A-Za-z0-9-_()]+(.txt|.usfm|.sfm)$/;
 const documentRegex = /^\\id ([A-Z1-6]{3})/;
 
 export default function UploadPage({ setAppLanguage }) {
   const appLang = useContext(AppLangContext);
   const { enqueueSnackbar } = useSnackbar();
-  const field_required = i18n(appLang, "FIELD_REQUIRED");
-  const textLengthError = i18n(appLang, "INVALID_LENGTH");
   const [uploads, setUploads] = useState([]);
+  const [invalidFields, setInvalidFields] = useState({});
   const [formValues, setFormValues] = useState({
     title: "",
     description: "",
@@ -47,12 +44,12 @@ export default function UploadPage({ setAppLanguage }) {
     const validFiles = [];
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
-      if (file.type.match(documentTypeRegex)) {
+      if (file.name.match(documentSuffixRegex)) {
         validFiles.push(file);
       } else {
         enqueueSnackbar(i18n(appLang, "WRONG_FILES"), {
           autoHideDuration: 3000,
-          variant: "error"
+          variant: "error",
         });
       }
     }
@@ -81,69 +78,35 @@ export default function UploadPage({ setAppLanguage }) {
     }
   }, [uploads]);
 
-  const formValidators = {
-    title: (str) => {
-      let ret = [];
-      if (str.trim().length === 0) {
-        ret.push(field_required);
-      }
-      if (str.trim().length < 6 || str.trim().length > 64) {
-        ret.push(textLengthError);
-      }
-      return ret;
+  const fields = [
+    {
+      field: "title",
+      i18n: "CONTROLS_TITLE",
+      validations: { required: true, minLength: 6, maxLength: 64 },
     },
-    description: (str) => {
-      let ret = [];
-      if (str.trim().length === 0) {
-        ret.push(field_required);
-      }
-      if (str.trim().length < 6 || str.trim().length > 255) {
-        ret.push(textLengthError);
-      }
-      return ret;
+    {
+      field: "description",
+      i18n: "DESCRIPTION",
+      validations: { required: true, minLength: 6, maxLength: 255 },
     },
-    script: (str) => {
-      let ret = [];
-      if (str.trim().length === 0) {
-        ret.push(field_required);
-      }
-      if (!str.trim().match(scriptRegex)) {
-        ret.push(textLengthError);
-      }
-      return ret;
+    {
+      field: "script",
+      i18n: "SCRIPT",
+      validations: { required: true, regex: /^[A-Za-z0-9]{1,16}$/ },
     },
-    copyright: (str) => {
-      let ret = [];
-      if (str.trim().length === 0) {
-        ret.push(field_required);
-      }
-      if (str.trim().length < 6 || str.trim().length > 64) {
-        ret.push(textLengthError);
-      }
-      return ret;
+    {
+      field: "copyright",
+      i18n: "ADMIN_DETAILS_COPYRIGHT",
+      validations: { required: true, minLength: 6, maxLength: 64 },
     },
-    abbreviation: (str) => {
-      let ret = [];
-      if (str.trim().length === 0) {
-        ret.push(field_required);
-      }
-      if (!str.trim().match(abbreviationRegex)) {
-        ret.push(textLengthError);
-      }
-      return ret;
+    {
+      field: "abbreviation",
+      i18n: "ADMIN_DETAILS_ABBREVIATION",
+      validations: { required: true, regex: /^[A-Za-z][A-Za-z0-9]+$/ },
     },
-  };
-
-  const isValidForm = (keys) => {
-    for (const k in keys) {
-      if (!formValidators[k]) {
-        continue;
-      }
-      if (formValidators[k](formValues[k]).length > 0) {
-        return false;
-      }
-    }
-    return true;
+  ];
+  const isValidForm = () => {
+    return Object.values(invalidFields).filter(v=>v).length === 0;
   };
 
   return (
@@ -155,48 +118,23 @@ export default function UploadPage({ setAppLanguage }) {
             {i18n(appLang, "Add_Document")}
           </Typography>
 
-          <Grid
-            sx={{
-              display: "flex",
-              flexDirection: "row",
-              justifyContent: "space-around",
-              width: "100%",
-            }}
-          >
-            <UploadFormField
-              formTextFieldLabel={i18n(appLang, "CONTROLS_TITLE")}
-              name="title"
-              inputValue={formValues.title}
-              setInputValue={(e) =>
-                setFormValues({ ...formValues, title: e.target.value })
-              }
-              inputError={formValidators.title(formValues.title).length > 0}
-              errorText={formValidators.title(formValues.title).join("; ")}
-            ></UploadFormField>
-            <UploadFormField
-              formTextFieldLabel={i18n(appLang, "DESCRIPTION")}
-              name="description"
-              inputValue={formValues.description}
-              setInputValue={(e) =>
-                setFormValues({ ...formValues, description: e.target.value })
-              }
-              inputError={
-                formValidators.description(formValues.description).length > 0
-              }
-              errorText={formValidators
-                .description(formValues.description)
-                .join("; ")}
-            ></UploadFormField>
+          <Grid container spacing={2}>
+            {fields &&
+              fields.map((f) => (
+                <UploadFormField
+                  formTextFieldLabel={i18n(appLang, f.i18n)}
+                  name={f.field}
+                  inputValue={formValues[f.field]}
+                  setInputValue={(e) =>
+                    setFormValues({ ...formValues, [f.field]: e.target.value })
+                  }
+                  validationSpec={f.validations}
+                  setInvalidFields ={setInvalidFields}
+                  invalidFields = {invalidFields}
+                ></UploadFormField>
+              ))}
           </Grid>
-
-          <Grid
-            sx={{
-              display: "flex",
-              flexDirection: "row",
-              justifyContent: "space-around",
-              width: "100%",
-            }}
-          >
+          <Grid>
             <LangSelector
               selectLanguageLabel={i18n(appLang, "LANGUAGE_CODE")}
               name="langCode"
@@ -205,128 +143,54 @@ export default function UploadPage({ setAppLanguage }) {
                 setFormValues({ ...formValues, langCode: e.target.value })
               }
             />
-            <UploadFormField
-              formTextFieldLabel={i18n(appLang, "SCRIPT")}
-              name="script"
-              inputValue={formValues.script}
-              setInputValue={(e) =>
-                setFormValues({ ...formValues, script: e.target.value })
-              }
-              inputError={formValidators.script(formValues.script).length > 0}
-              errorText={formValidators.script(formValues.script).join("; ")}
-            ></UploadFormField>
           </Grid>
-
-          <Grid
+          <FormLabel
+            id="demo-radio-buttons-group-label"
+            htmlFor="textDirection"
+          >
+            {i18n(appLang, "TEXT_DIRECTION")}
+          </FormLabel>
+          <RadioGroup
+            aria-labelledby="demo-radio-buttons-group-label"
+            name="radio-buttons-group"
+            defaultValue="ltr"
+            onChange={(e) =>
+              setFormValues({
+                ...formValues,
+                textDirection: e.target.value,
+              })
+            }
+            value={formValues.textDirection}
             sx={{
               display: "flex",
               flexDirection: "row",
-              justifyContent: "space-around",
-              width: "100%",
             }}
           >
-            <UploadFormField
-              formTextFieldLabel={i18n(appLang, "ADMIN_DETAILS_COPYRIGHT")}
-              name="copyright"
-              inputValue={formValues.copyright}
-              setInputValue={(e) =>
-                setFormValues({ ...formValues, copyright: e.target.value })
-              }
-              inputError={
-                formValidators.copyright(formValues.copyright).length > 0
-              }
-              errorText={formValidators
-                .copyright(formValues.copyright)
-                .join("; ")}
-            ></UploadFormField>
-            <UploadFormField
-              formTextFieldLabel={i18n(appLang, "ADMIN_DETAILS_ABBREVIATION")}
-              name="abbreviation"
-              inputValue={formValues.abbreviation}
-              setInputValue={(e) =>
-                setFormValues({ ...formValues, abbreviation: e.target.value })
-              }
-              inputError={
-                formValidators.abbreviation(formValues.abbreviation).length > 0
-              }
-              errorText={formValidators
-                .abbreviation(formValues.abbreviation)
-                .join("; ")}
-            ></UploadFormField>
-          </Grid>
-
-          <Grid
-            sx={{
-              display: "flex",
-              flexDirection: "row",
-              justifyContent: "space-around",
-              width: "100%",
-            }}
+            <FormControlLabel
+              value="ltr"
+              control={<Radio />}
+              label={i18n(appLang, "LTR")}
+            />
+            <FormControlLabel
+              value="rtl"
+              control={<Radio />}
+              label={i18n(appLang, "RTL")}
+            />
+          </RadioGroup>
+          <FormLabel
+            id="demo-radio-buttons-group-label"
+            htmlFor="textDirection"
           >
-            <Grid
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                width: "45%",
-              }}
-            >
-              <FormLabel
-                id="demo-radio-buttons-group-label"
-                htmlFor="textDirection"
-              >
-                {i18n(appLang, "TEXT_DIRECTION")}
-              </FormLabel>
-              <RadioGroup
-                aria-labelledby="demo-radio-buttons-group-label"
-                name="radio-buttons-group"
-                defaultValue="ltr"
-                onChange={(e) =>
-                  setFormValues({
-                    ...formValues,
-                    textDirection: e.target.value,
-                  })
-                }
-                value={formValues.textDirection}
-                sx={{
-                  display: "flex",
-                  flexDirection: "row",
-                }}
-              >
-                <FormControlLabel
-                  value="ltr"
-                  control={<Radio />}
-                  label={i18n(appLang, "LTR")}
-                />
-                <FormControlLabel
-                  value="rtl"
-                  control={<Radio />}
-                  label={i18n(appLang, "RTL")}
-                />
-              </RadioGroup>
-            </Grid>
-            <Grid
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                width: "45%",
-              }}
-            >
-              <FormLabel
-                id="demo-radio-buttons-group-label"
-                htmlFor="textDirection"
-              >
-                {i18n(appLang, "Upload_documents")}
-              </FormLabel>
-              <br />
-              <Input
-                id="assets"
-                onChange={changeHandler}
-                type="file"
-                accept="*/txt"
-                inputProps={{ multiple: true }}
-              />
-            </Grid>
-          </Grid>
+            {i18n(appLang, "Upload_documents")}
+          </FormLabel>
+          <br />
+          <Input
+            id="assets"
+            onChange={changeHandler}
+            type="file"
+            accept="*/txt,*/usfm,*/sfm"
+            inputProps={{ multiple: true }}
+          />
         </Grid>
         <Button
           type="submit"
@@ -338,9 +202,7 @@ export default function UploadPage({ setAppLanguage }) {
           {i18n(appLang, "SUBMIT")}
         </Button>
       </form>
-      <Grid container dir={directionText(appLang)}>
-        <UploadedFileField files={fileValues}></UploadedFileField>
-      </Grid>
+      <UploadedFileField files={fileValues}></UploadedFileField>
       <Footer />
     </Container>
   );
