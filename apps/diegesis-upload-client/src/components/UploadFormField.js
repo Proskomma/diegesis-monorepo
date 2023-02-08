@@ -26,9 +26,10 @@ export default function UploadFormField({name,inputValue,setInputValue,validatio
     }
   }
   let newInvalidFields = { ...invalidFields}
-  newInvalidFields[name]=hasError
-  setInvalidFields(newInvalidFields)
-
+  if(!name in newInvalidFields || newInvalidFields[name] !== hasError){
+    newInvalidFields[name]=hasError
+    setInvalidFields(newInvalidFields)
+  }
   return (
     <Grid item xs={12} md={6}>
       <FormLabel id="demo-radio-buttons-group-label">

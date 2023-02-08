@@ -1,10 +1,18 @@
-import langTable from "./languages.json"
+import langTable from "./languages.json";
 
-const directionText = function directionText(lang) {
-    return langTable[lang]['textDirection']    
+function directionText(lang) {
+  return langTable[lang]["textDirection"];
 }
 
-const alignmentText = function alignmentText(lang) {
-    return (langTable[lang]['textDirection']==='rtl' ? "right" : "left")
+function otherDirectionText(lang) {
+  if (langTable[lang]["textDirection"] === "rtl") {
+    return "left";
+  } else {
+    return "right";
+  }
 }
-export {directionText,alignmentText}
+
+function alignmentText(lang) {
+  return langTable[lang]["textDirection"] === "rtl" ? "right" : "left";
+}
+export { directionText, alignmentText, otherDirectionText };

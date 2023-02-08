@@ -1,4 +1,4 @@
-import {FormLabel, Grid, MenuItem, Select } from "@mui/material";
+import {InputLabel, MenuItem, Select } from "@mui/material";
 import { useContext } from "react";
 import AppLangContext from "../contexts/AppLangContext";
 import i18n from "../i18n";
@@ -8,19 +8,12 @@ import { directionText } from "../i18n/languageDirection";
 export default function LangSelector({langCode,setlangCode,selectLanguageLabel,}) {
   const appLang = useContext(AppLangContext);
   return (
-    <Grid
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        width: "45%",
-      }}
-    >
-      <FormLabel id="demo-radio-buttons-group-label" htmlFor="langCode">
+    <>
+      <InputLabel id="selectLabel" htmlFor="langCode">
         {selectLanguageLabel}
-      </FormLabel>
+      </InputLabel>
       <Select
-        labelId="demo-simple-select-label"
-        id="demo-simple-select"
+        labelId="selectLabel"
         value={langCode}
         label="Language Code"
         onChange={setlangCode}
@@ -35,6 +28,6 @@ export default function LangSelector({langCode,setlangCode,selectLanguageLabel,}
           </MenuItem>
         ))}
       </Select>
-    </Grid>
+    </>
   );
 }
