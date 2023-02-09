@@ -11,7 +11,7 @@ COPY $client_loc/package.json .
 COPY $client_loc/yarn.lock .
 
 # Install
-RUN yarn install
+RUN npm install
 RUN npm run build
 
 #Stage 2: admin client (management) builder
@@ -27,7 +27,7 @@ COPY $client_loc/package.json .
 COPY $client_loc/yarn.lock .
 
 # Install
-RUN yarn install
+RUN npm install
 RUN npm run build
 
 #Stage 3: actual server
