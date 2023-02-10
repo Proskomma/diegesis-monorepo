@@ -2,7 +2,7 @@ const path = require("path");
 const fse = require('fs-extra');
 const languageCodes = require("../lib/languageCodes.json");
 const { ApolloClient, gql, InMemoryCache} = require("@apollo/client");
-const {transPath} = require("../lib/dataPaths");
+const {transPath} = require("./dataLayers/fs/dataPaths");
 
 async function getTranslationsCatalog(orgRecord) {
 

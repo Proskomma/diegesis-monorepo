@@ -2,7 +2,7 @@ const path = require("path");
 const fse = require("fs-extra");
 const jszip = require("jszip");
 const {ptBookArray} = require("proskomma-utils");
-const {transPath} = require('../../lib/dataPaths.js');
+const {transPath} = require('../../lib/dataLayers/fs/dataPaths.js');
 const languageCodes = require('../../lib/languageCodes.json');
 const appRoot = path.resolve(".");
 

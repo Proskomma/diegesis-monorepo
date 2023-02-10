@@ -11,7 +11,7 @@ const {
     succinctErrorPath,
     originalResourcePath,
     generatedResourcePath
-} = require('../../lib/dataPaths');
+} = require('../../lib/dataLayers/fs/dataPaths');
 
 const makeResolvers = async (orgsData, orgHandlers, config) => {
 

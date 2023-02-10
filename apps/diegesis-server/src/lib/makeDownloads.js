@@ -16,7 +16,7 @@ const {
     succinctPath,
     lockPath,
     generatedResourcePath
-} = require("./dataPaths.js");
+} = require("./dataLayers/fs/dataPaths.js");
 const documentStatsActions = require("./documentStatsActions");
 
 const appRoot = path.resolve(".");

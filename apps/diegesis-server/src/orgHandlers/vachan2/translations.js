@@ -1,6 +1,6 @@
 const path = require("path");
 const fse = require("fs-extra");
-const {transPath} = require('../../lib/dataPaths.js');
+const {transPath} = require('../../lib/dataLayers/fs/dataPaths.js');
 const appRoot = path.resolve(".");
 
 async function getTranslationsCatalog() {
