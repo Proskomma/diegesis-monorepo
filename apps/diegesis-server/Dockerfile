@@ -1,4 +1,5 @@
 # Stage 0: Copy monorepo package files
+FROM node:current-alpine
 WORKDIR /
 COPY ./package.json .
 COPY ./package-lock.json .
