@@ -18,6 +18,10 @@ const initializeEmptyEntry = (config, orgRecord, transId, transRevision) => {
     if (!fse.pathExistsSync(tp)) {
         fse.mkdirsSync(tp);
     }
+    const originalDir = path.join(tp, "original");
+    if (!fse.pathExistsSync(originalDir)) {
+        fse.mkdirsSync(originalDir);
+    }
 }
 
 const deleteEntry = (config, orgRecord, transId, transRevision) => {

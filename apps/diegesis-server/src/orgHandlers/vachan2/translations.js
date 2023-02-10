@@ -45,7 +45,7 @@ async function getTranslationsCatalog() {
 const fetchUsfm = async (org, trans, config) => {
     try {
         initializeEmptyEntry(config, org, trans.id, trans.revision);
-        lockEntry(config, org, trans.id, trans.revision, "dcs/translations");
+        lockEntry(config, org, trans.id, trans.revision, "vachan/translations");
         initializeEntryBookResourceCategory(
             config,
             org,

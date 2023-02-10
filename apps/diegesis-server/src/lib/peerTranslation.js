@@ -1,8 +1,13 @@
-const path = require("path");
-const fse = require('fs-extra');
 const languageCodes = require("../lib/languageCodes.json");
 const { ApolloClient, gql, InMemoryCache} = require("@apollo/client");
-const {transPath} = require("./dataLayers/fs/dataPaths");
+const {
+    initializeEmptyEntry,
+    lockEntry,
+    unlockEntry,
+    deleteEntry,
+    writeEntryMetadataJson,
+    writeEntryResource,
+} = require("./dataLayers/fs");
 
 async function getTranslationsCatalog(orgRecord) {
 
@@ -40,7 +45,7 @@ const fetchUsfm = async (org) => {
     throw new Error(`USFM fetching is not supported for ${org.name}`)
 };
 
-const fetchUsx = async (org, trans, config) => {
+const fetchUsx = async (org) => {
     throw new Error(`USX fetching is not supported for ${org.name}`)
 };
 
@@ -92,19 +97,23 @@ const fetchSuccinct = async (org, entryOrg, trans, config) => {
         owner: remoteLocalEntry.owner,
         revision: remoteLocalEntry.revision,
     }
-    const tp = transPath(config.dataPath, entryOrg.translationDir, metadata.id, metadata.revision);
-    if (!fse.pathExistsSync(tp)) {
-        fse.mkdirsSync(tp);
-    }
     try {
-        fse.writeJsonSync(path.join(tp, "lock.json"), {actor: `peer/${org.config.name}/translations`, orgDir: org.translationDir, transId: metadata.id, revision: metadata.revision});
-        fse.writeJsonSync(path.join(tp, 'metadata.json'), metadata);
-        fse.mkdirsSync(path.join(tp, 'original'));
-        fse.writeFileSync(path.join(tp, 'original', "succinct.json"), remoteLocalEntry.succinct.content);
-        fse.remove(path.join(tp, "lock.json"));
+        initializeEmptyEntry(config, entryOrg, trans.id, trans.revision);
+        lockEntry(config, entryOrg, trans.id, trans.revision, `peer/${org.config.name}/translations`);
+        writeEntryMetadataJson(config, entryOrg, trans.id, trans.revision, trans);
+        writeEntryResource(
+            config,
+            entryOrg,
+            trans.id,
+            trans.revision,
+            "original",
+            `succinct.json`,
+            remoteLocalEntry.succinct.content
+        );
+        unlockEntry(config, entryOrg, trans.id, trans.revision);
     } catch (err) {
         console.log(err);
-        fse.remove(tp);
+        deleteEntry(config, entryOrg, trans.id, trans.revision);
     }
 };
 
