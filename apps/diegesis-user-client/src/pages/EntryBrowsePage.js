@@ -63,7 +63,7 @@ export default function EntryBrowsePage() {
         },
     ]);
 
-    if (entryInfo.canonResource.content) {
+    if (entryInfo?.canonResource?.content) {
         pk.loadSuccinctDocSet(JSON.parse(entryInfo.canonResource.content));
     }
 
