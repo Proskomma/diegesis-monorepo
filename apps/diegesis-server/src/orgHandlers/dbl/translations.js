@@ -41,7 +41,10 @@ const fetchUsx = async (org, trans, config) => {
 
     const http = require(`${appRoot}/src/lib/http.js`);
     const entryInfoResponse = await http.getText(trans.downloadURL);
-    const licenceId = entryInfoResponse.data.replace(/[\S\s]+license=(\d+)[\S\s]+/, "$1");
+    const licenceId = entryInfoResponse.data.replace(
+        /[\S\s]+license=(\d+)[\S\s]+/,
+        "$1"
+    );
     const downloadResponse = await http.getBuffer(`https://app.thedigitalbiblelibrary.org/entry/download_archive?id=${trans.id}&license=${licenceId}&type=release`);
     const metadataRecord = {...trans};
     const zip = new jszip();
@@ -88,21 +91,50 @@ const fetchUsx = async (org, trans, config) => {
     try {
         initializeEmptyEntry(config, org, trans.id, metadataRecord.revision);
         lockEntry(config, org, trans.id, metadataRecord.revision, "dbl/translations");
-        initializeEntryBookResourceCategory(config, org, trans.id, metadataRecord.revision, "original", "usxBooks");
-        writeEntryMetadataJson(config, org, trans.id, metadataRecord.revision, metadataRecord);
+        initializeEntryBookResourceCategory(
+            config,
+            org,
+            trans.id,
+            metadataRecord.revision,
+            "original",
+            "usxBooks"
+        );
+        writeEntryMetadataJson(
+            config,
+            org,
+            trans.id,
+            metadataRecord.revision,
+            metadataRecord
+        );
         for (const bookName of ptBookArray) {
             for (const usxN of [1, 2, 3, 4, 5, 6, 7, 8, 9]) {
                 const foundFiles = zip.file(new RegExp(`release/USX_${usxN}/${bookName.code}[^/]*.usx$`, 'g'));
                 if (foundFiles.length === 1) {
                     const fileContent = await foundFiles[0].async('text');
-                    writeEntryBookResource(config, org, trans.id, metadataRecord.revision, "usxBooks",`${bookName.code}.usx`, fileContent);
+                    writeEntryBookResource(
+                        config,
+                        org,
+                        trans.id,
+                        metadataRecord.revision,
+                        "usxBooks",
+                        `${bookName.code}.usx`,
+                        fileContent
+                    );
                     break;
                 }
             }
         }
         const vrs = zip.file(new RegExp('versification.vrs'));
         const vrsContent = await vrs[0].async('text');
-        writeEntryResource(config, org, trans.id, metadataRecord.revision, "original",`versification.vrs`, vrsContent);
+        writeEntryResource(
+            config,
+            org,
+            trans.id,
+            metadataRecord.revision,
+            "original",
+            `versification.vrs`,
+            vrsContent
+        );
         unlockEntry(config, org, trans.id, metadataRecord.revision);
     } catch (err) {
         console.log(err);

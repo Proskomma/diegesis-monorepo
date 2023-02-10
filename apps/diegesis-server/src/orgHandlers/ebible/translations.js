@@ -1,10 +1,17 @@
 const path = require("path");
-const fse = require("fs-extra");
 const jszip = require("jszip");
 const {ptBookArray} = require("proskomma-utils");
-const {transPath} = require('../../lib/dataLayers/fs/dataPaths.js');
 const languageCodes = require('../../lib/languageCodes.json');
 const appRoot = path.resolve(".");
+const {
+    initializeEmptyEntry,
+    deleteEntry,
+    initializeEntryBookResourceCategory,
+    lockEntry,
+    unlockEntry,
+    writeEntryBookResource,
+    writeEntryMetadataJson,
+} = require('../../lib/dataLayers/fs/');
 
 async function getTranslationsCatalog() {
 
@@ -47,31 +54,41 @@ async function getTranslationsCatalog() {
 const fetchUsfm = async (org, trans, config) => {
 
     const http = require(`${appRoot}/src/lib/http.js`);
-    const tp = transPath(config.dataPath, org.translationDir, trans.id, trans.revision);
-    if (!fse.pathExistsSync(tp)) {
-        fse.mkdirsSync(tp);
-    }
     try {
-        fse.writeJsonSync(path.join(tp, "lock.json"), {actor: "ebible/translations", orgDir: org.translationDir, transId: trans.id, revision: trans.revision});
-        fse.writeJsonSync(path.join(tp, 'metadata.json'), trans);
+        initializeEmptyEntry(config, org, trans.id, trans.revision);
+        lockEntry(config, org, trans.id, trans.revision, "ebible/translations");
+        initializeEntryBookResourceCategory(
+            config,
+            org,
+            trans.id,
+            trans.revision,
+            "original",
+            "usfmBooks"
+        );
+        writeEntryMetadataJson(config, org, trans.id, trans.revision, trans);
+
         const downloadResponse = await http.getBuffer(trans.downloadURL);
-        const usfmBooksPath = path.join(tp, 'original', 'usfmBooks');
-        if (!fse.pathExistsSync(usfmBooksPath)) {
-            fse.mkdirsSync(usfmBooksPath);
-        }
         const zip = new jszip();
         await zip.loadAsync(downloadResponse.data);
         for (const bookName of ptBookArray) {
             const foundFiles = zip.file(new RegExp(`${bookName.code}[^/]*.usfm$`, 'g'));
             if (foundFiles.length === 1) {
                 const fileContent = await foundFiles[0].async('text');
-                fse.writeFileSync(path.join(usfmBooksPath, `${bookName.code}.usfm`), fileContent);
+                writeEntryBookResource(
+                    config,
+                    org,
+                    trans.id,
+                    trans.revision,
+                    "usfmBooks",
+                    `${bookName.code}.usfm`,
+                    fileContent
+                );
             }
         }
-        fse.remove(path.join(tp, "lock.json"));
+        unlockEntry(config, org, trans.id, trans.revision);
     } catch (err) {
         console.log(err);
-        fse.remove(tp);
+        deleteEntry(config, org, trans.id, trans.revision);
     }
 };
 
