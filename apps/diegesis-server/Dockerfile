@@ -1,9 +1,3 @@
-# Stage 0: Copy monorepo package files
-WORKDIR /
-COPY ./package.json .
-COPY ./package-lock.json .
-COPY nx.json .
-
 #Stage 1: user client (view only) builder
 FROM node:current-alpine
 ARG client_loc=./apps/diegesis-user-client
