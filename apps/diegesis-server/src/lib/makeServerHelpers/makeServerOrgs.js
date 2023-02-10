@@ -1,29 +1,27 @@
 const fse = require('fs-extra');
 const path = require("path");
-const {orgPath} = require("../dataLayers/fs/dataPaths");
 const peerTranslation = require("../peerTranslation");
+const {orgExists, orgEntries, initializeOrg} = require("../dataLayers/fs");
 
 const appRoot = path.resolve(".");
 
-function maybeMakeOrgDir(orgDir, config) {
-    const orgFQPath = orgPath(config.dataPath, orgDir);
-    if (!fse.existsSync(orgFQPath)) {
-        config.verbose && console.log(`      Making org dir at ${orgFQPath}`);
-        fse.mkdirSync(orgFQPath);
+function maybeInitializeOrg(config, orgRecord) {
+    if (!orgExists(config, orgRecord)) {
+        config.verbose && console.log(`      Initializing org`);
+        initializeOrg(config, orgRecord);
     }
 }
 
 async function setupNonPeerOrg(config, orgRecord) {
-    const orgDir = orgRecord.translationDir;
-    maybeMakeOrgDir(orgDir, config);
-    const translations = require(path.resolve(appRoot, 'src', 'orgHandlers', orgDir, 'translations.js'));
+    maybeInitializeOrg(config, orgRecord);
+    const translations = require(path.resolve(appRoot, 'src', 'orgHandlers', orgRecord.translationDir, 'translations.js'));
     const orgHandler = {
         getTranslationsCatalog: translations.getTranslationsCatalog,
         fetchUsfm: translations.fetchUsfm,
         fetchUsx: translations.fetchUsx,
     };
     const orgData = {
-        orgDir: orgDir,
+        orgDir: orgRecord.translationDir,
         name: orgRecord.name,
         fullName: orgRecord.fullName,
         contentType: orgRecord.contentType,
@@ -37,8 +35,7 @@ async function setupNonPeerOrg(config, orgRecord) {
 }
 
 async function setupPeerOrg(config, orgRecord) {
-    const orgDir = orgRecord.translationDir;
-    maybeMakeOrgDir(orgDir, config);
+    maybeInitializeOrg(config, orgRecord);
     const orgHandler = {
         getTranslationsCatalog: peerTranslation.getTranslationsCatalog,
         fetchUsfm: peerTranslation.fetchUsfm,
@@ -46,7 +43,7 @@ async function setupPeerOrg(config, orgRecord) {
         fetchSuccinct: peerTranslation.fetchSuccinct,
     };
     const orgData = {
-        orgDir: orgDir,
+        orgDir: orgRecord.translationDir,
         name: orgRecord.name,
         fullName: orgRecord.fullName,
         contentType: orgRecord.contentType,
@@ -60,8 +57,7 @@ async function setupPeerOrg(config, orgRecord) {
 }
 
 async function setupLocalOrg(config) {
-    const orgDir = "_local";
-    maybeMakeOrgDir(orgDir, config);
+    maybeInitializeOrg(config, {translationDir: "_local"});
     const translations = require('../localTranslations');
     const orgHandler = {
         getTranslationsCatalog: translations.getTranslationsCatalog,
@@ -69,11 +65,11 @@ async function setupLocalOrg(config) {
         fetchUsx: translations.fetchUsx,
     };
     const orgData = {
-        orgDir: orgDir,
+        orgDir: "_local",
         name: config.name,
         fullName: config.name,
         contentType: "USFM",
-        translationDir: orgDir,
+        translationDir: "_local",
         catalogHasRevisions: false,
         canSync: false,
         entries: await orgHandler.getTranslationsCatalog(),
@@ -133,18 +129,22 @@ async function makeServerOrgs(config) {
             const orgRecord = nonPeerOrgs[org];
             orgName = orgRecord.name;
             [orgHandlers[orgName], orgsData[orgName]] = await setupNonPeerOrg(config, orgRecord);
+            const nLocal = orgEntries(config, orgRecord).length;
+            config.verbose && console.log(`      ${nLocal} locally cached entr${nLocal === 1 ? "y" : "ies"}`);
         } else if (peerOrgs[org]) {
             const orgRecord = peerOrgs[org];
             orgName = orgRecord.name;
             [orgHandlers[orgName], orgsData[orgName]] = await setupPeerOrg(config, orgRecord);
+            const nLocal = orgEntries(config, orgRecord).length;
+            config.verbose && console.log(`      ${nLocal} locally cached entr${nLocal === 1 ? "y" : "ies"}`);
         } else if (org === config.name) {
             orgName = config.name;
             [orgHandlers[orgName], orgsData[orgName]] = await setupLocalOrg(config);
+            const nLocal = orgEntries(config, {translationDir: "_local"}).length;
+            config.verbose && console.log(`      ${nLocal} local entr${nLocal === 1 ? "y" : "ies"}`);
         } else {
             throw new Error(`No org called '${org}'`);
         }
-        const nLocal = fse.readdirSync(path.join(orgPath(config.dataPath, orgsData[orgName].translationDir))).length;
-        config.verbose && console.log(`      ${nLocal} local entr${nLocal === 1 ? "y" : "ies"}`);
     }
     return {orgsData, orgHandlers};
 }

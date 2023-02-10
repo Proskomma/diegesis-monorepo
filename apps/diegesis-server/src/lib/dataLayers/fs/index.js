@@ -1,10 +1,22 @@
 const fse = require('fs-extra');
-const {transPath} = require("./dataPaths.js");
+const {orgPath, transPath} = require("./dataPaths.js");
 const path = require("path");
 
 const checkResourceOrigin = v => {
     if (["original", "generated"].includes(v)) {
         throw new Error(`Resource origin should be 'original' or 'generated', not '${v}'`);
+    }
+}
+
+const orgExists = (config, orgRecord) => {
+    const orgP = orgPath(config.dataPath, orgRecord.translationDir);
+    return fse.pathExistsSync(orgP)
+}
+
+const initializeOrg = (config, orgRecord) => {
+    const orgP = orgPath(config.dataPath, orgRecord.translationDir);
+    if (!fse.pathExistsSync(orgP)) {
+        fse.mkdirsSync(orgP);
     }
 }
 
@@ -22,6 +34,17 @@ const initializeEmptyEntry = (config, orgRecord, transId, transRevision) => {
     if (!fse.pathExistsSync(originalDir)) {
         fse.mkdirsSync(originalDir);
     }
+}
+
+const orgEntries = (config, orgRecord) => {
+    const orgP = orgPath(config.dataPath, orgRecord.translationDir);
+    return fse.readdirSync(
+        orgP
+    )
+        .map(e => ({
+            id: e,
+            revisions: fse.readdirSync(path.join(orgP, e))
+        }))
 }
 
 const deleteEntry = (config, orgRecord, transId, transRevision) => {
@@ -107,6 +130,9 @@ const writeEntryBookResource = (config, orgRecord, transId, transRevision, resou
 }
 
 module.exports = {
+    initializeOrg,
+    orgExists,
+    orgEntries,
     initializeEmptyEntry,
     deleteEntry,
     initializeEntryBookResourceCategory,
