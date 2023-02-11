@@ -49,7 +49,10 @@ const orgEntries = (config, orgName) => {
     if (!(typeof orgName === "string")) {
         throw new Error('orgName should be string in orgEntries');
     }
-    const orgP = orgPath(config.dataPath, translationDir(orgName));
+    const orgP = orgPath(
+        config.dataPath,
+        translationDir(orgName === config.name ? "_local" : orgName)
+    );
     return fse.readdirSync(
         orgP
     )
@@ -70,6 +73,19 @@ const deleteEntry = (config, orgName, transId, transRevision) => {
         transRevision.replace(/\s/g, "__")
     );
     fse.remove(tp);
+}
+
+const deleteGeneratedEntryContent = (config, orgName, transId, transRevision) => {
+    if (!(typeof orgName === "string")) {
+        throw new Error('orgName should be string in deleteGeneratedEntryContent');
+    }
+    const tp = transPath(
+        config.dataPath,
+        translationDir(orgName),
+        transId,
+        transRevision.replace(/\s/g, "__")
+    );
+    fse.remove(path.join(tp, "generated"));
 }
 
 const lockEntry = (config, orgName, transId, transRevision, lockMsg) => {
@@ -168,6 +184,7 @@ module.exports = {
     orgEntries,
     initializeEmptyEntry,
     deleteEntry,
+    deleteGeneratedEntryContent,
     initializeEntryBookResourceCategory,
     lockEntry,
     unlockEntry,
