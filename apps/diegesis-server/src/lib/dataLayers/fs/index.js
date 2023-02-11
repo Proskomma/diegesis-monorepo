@@ -178,6 +178,56 @@ const writeEntryBookResource = (config, orgName, transId, transRevision, resourc
     fse.writeFileSync(path.join(tp, resourceOrigin, resourceCategory, resourceName), content);
 }
 
+const entryIsLocked = (config, orgName, transId, transRevision) => {
+    const tp = transPath(
+        config.dataPath,
+        translationDir(orgName),
+        transId,
+        transRevision.replace(/\s/g, "__")
+    );
+    return fse.pathExistsSync(path.join(tp, "lock.json"));
+};
+const entryHasSuccinctError = (config, orgName, transId, transRevision) => {
+    const tp = transPath(
+        config.dataPath,
+        translationDir(orgName),
+        transId,
+        transRevision.replace(/\s/g, "__")
+    );
+    return fse.pathExistsSync(path.join(tp, "succinctError.json"));
+};
+const entryHasGeneratedContent = (config, orgName, transId, transRevision) => {
+    const tp = transPath(
+        config.dataPath,
+        translationDir(orgName),
+        transId,
+        transRevision.replace(/\s/g, "__")
+    );
+    return fse.pathExistsSync(path.join(tp, "generated"));
+};
+const entryHasOriginal = (config, orgName, transId, transRevision, contentType) => {
+    const tp = transPath(
+        config.dataPath,
+        translationDir(orgName),
+        transId,
+        transRevision.replace(/\s/g, "__")
+    );
+    return fse.pathExistsSync(path.join(tp, "original", contentType));
+};
+const entryHasGenerated = (config, orgName, transId, transRevision, contentType) => {
+    const tp = transPath(
+        config.dataPath,
+        translationDir(orgName),
+        transId,
+        transRevision.replace(/\s/g, "__")
+    );
+    return fse.pathExistsSync(path.join(tp, "generated", contentType));
+};
+const entryHas = (config, orgName, transId, transRevision, contentType) => {
+    return entryHasOriginal(config, orgName, transId, transRevision, contentType) ||
+        entryHasOriginal(config, orgName, transId, transRevision, contentType);
+};
+
 module.exports = {
     initializeOrg,
     orgExists,
@@ -190,5 +240,11 @@ module.exports = {
     unlockEntry,
     writeEntryMetadataJson,
     writeEntryResource,
-    writeEntryBookResource
+    writeEntryBookResource,
+    entryIsLocked,
+    entryHasSuccinctError,
+    entryHasGeneratedContent,
+    entryHas,
+    entryHasOriginal,
+    entryHasGenerated,
 }

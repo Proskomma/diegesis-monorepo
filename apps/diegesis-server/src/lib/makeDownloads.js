@@ -15,13 +15,15 @@ const {
     sofriaDir,
     succinctPath,
     lockPath,
-    generatedResourcePath
+    generatedResourcePath,
+    translationDir,
 } = require("./dataLayers/fs/dataPaths.js");
 const documentStatsActions = require("./documentStatsActions");
 
 const appRoot = path.resolve(".");
 
-function doDownloads({dataPath, orgDir, transId, revision, contentType}) {
+function doDownloads({dataPath, org, transId, revision, contentType}) {
+    const orgDir = translationDir(org);
     try {
         const orgJson = require(path.join(appRoot, 'src', 'orgHandlers', orgDir, 'org.json'));
         const org = orgJson.name;
@@ -32,7 +34,7 @@ function doDownloads({dataPath, orgDir, transId, revision, contentType}) {
         );
         fse.writeJsonSync(lockPath(dataPath, orgDir, transId, revision), {
             actor: "makeDownloads",
-            orgDir,
+            org,
             transId,
             revision
         });
