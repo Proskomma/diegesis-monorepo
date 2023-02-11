@@ -98,22 +98,22 @@ const fetchSuccinct = async (org, entryOrg, trans, config) => {
         revision: remoteLocalEntry.revision,
     }
     try {
-        initializeEmptyEntry(config, entryOrg, trans.id, trans.revision);
-        lockEntry(config, entryOrg, trans.id, trans.revision, `peer/${org.config.name}/translations`);
-        writeEntryMetadataJson(config, entryOrg, trans.id, trans.revision, trans);
+        initializeEmptyEntry(config, entryOrg.name, trans.id, trans.revision);
+        lockEntry(config, entryOrg.name, trans.id, trans.revision, `peer/${org.config.name}/translations`);
+        writeEntryMetadataJson(config, entryOrg.name, trans.id, trans.revision, trans);
         writeEntryResource(
             config,
-            entryOrg,
+            entryOrg.name,
             trans.id,
             trans.revision,
             "original",
             `succinct.json`,
             remoteLocalEntry.succinct.content
         );
-        unlockEntry(config, entryOrg, trans.id, trans.revision);
+        unlockEntry(config, entryOrg.name, trans.id, trans.revision);
     } catch (err) {
         console.log(err);
-        deleteEntry(config, entryOrg, trans.id, trans.revision);
+        deleteEntry(config, entryOrg.name, trans.id, trans.revision);
     }
 };
 

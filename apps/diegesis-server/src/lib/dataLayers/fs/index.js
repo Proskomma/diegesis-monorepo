@@ -8,22 +8,31 @@ const checkResourceOrigin = v => {
     }
 }
 
-const orgExists = (config, orgRecord) => {
-    const orgP = orgPath(config.dataPath, translationDir(orgRecord.name));
+const orgExists = (config, orgName) => {
+    if (!(typeof orgName === "string")) {
+        throw new Error('orgName should be string in orgExists');
+    }
+    const orgP = orgPath(config.dataPath, translationDir(orgName));
     return fse.pathExistsSync(orgP)
 }
 
-const initializeOrg = (config, orgRecord) => {
-    const orgP = orgPath(config.dataPath, translationDir(orgRecord.name));
+const initializeOrg = (config, orgName) => {
+    if (!(typeof orgName === "string")) {
+        throw new Error('orgName should be string in initializeOrg');
+    }
+    const orgP = orgPath(config.dataPath, translationDir(orgName));
     if (!fse.pathExistsSync(orgP)) {
         fse.mkdirsSync(orgP);
     }
 }
 
-const initializeEmptyEntry = (config, orgRecord, transId, transRevision) => {
+const initializeEmptyEntry = (config, orgName, transId, transRevision) => {
+    if (!(typeof orgName === "string")) {
+        throw new Error('orgName should be string in initializeEmptyEntry');
+    }
     const tp = transPath(
         config.dataPath,
-        translationDir(orgRecord.name),
+        translationDir(orgName),
         transId,
         transRevision.replace(/\s/g, "__")
     );
@@ -36,8 +45,11 @@ const initializeEmptyEntry = (config, orgRecord, transId, transRevision) => {
     }
 }
 
-const orgEntries = (config, orgRecord) => {
-    const orgP = orgPath(config.dataPath, translationDir(orgRecord.name));
+const orgEntries = (config, orgName) => {
+    if (!(typeof orgName === "string")) {
+        throw new Error('orgName should be string in orgEntries');
+    }
+    const orgP = orgPath(config.dataPath, translationDir(orgName));
     return fse.readdirSync(
         orgP
     )
@@ -47,51 +59,66 @@ const orgEntries = (config, orgRecord) => {
         }))
 }
 
-const deleteEntry = (config, orgRecord, transId, transRevision) => {
+const deleteEntry = (config, orgName, transId, transRevision) => {
+    if (!(typeof orgName === "string")) {
+        throw new Error('orgName should be string in deleteEntry');
+    }
     const tp = transPath(
         config.dataPath,
-        translationDir(orgRecord.name),
+        translationDir(orgName),
         transId,
         transRevision.replace(/\s/g, "__")
     );
     fse.remove(tp);
 }
 
-const lockEntry = (config, orgRecord, transId, transRevision, lockMsg) => {
+const lockEntry = (config, orgName, transId, transRevision, lockMsg) => {
+    if (!(typeof orgName === "string")) {
+        throw new Error('orgName should be string in lockEntry');
+    }
     const tp = transPath(
         config.dataPath,
-        translationDir(orgRecord.name),
+        translationDir(orgName),
         transId,
         transRevision.replace(/\s/g, "__")
     );
-    fse.writeJsonSync(path.join(tp, "lock.json"), {actor: lockMsg, orgDir: translationDir(orgRecord.name), transId: transId, revision: transRevision});
+    fse.writeJsonSync(path.join(tp, "lock.json"), {actor: lockMsg, orgDir: translationDir(orgName), transId: transId, revision: transRevision});
 }
 
-const unlockEntry = (config, orgRecord, transId, transRevision) => {
+const unlockEntry = (config, orgName, transId, transRevision) => {
+    if (!(typeof orgName === "string")) {
+        throw new Error('orgName should be string in unlockEntry');
+    }
     const tp = transPath(
         config.dataPath,
-        translationDir(orgRecord.name),
+        translationDir(orgName),
         transId,
         transRevision.replace(/\s/g, "__")
     );
     fse.remove(path.join(tp, "lock.json"));
 }
 
-const writeEntryMetadataJson = (config, orgRecord, transId, transRevision, content) => {
+const writeEntryMetadataJson = (config, orgName, transId, transRevision, content) => {
+    if (!(typeof orgName === "string")) {
+        throw new Error('orgName should be string in writeEntryMetadataJson');
+    }
     const tp = transPath(
         config.dataPath,
-        translationDir(orgRecord.name),
+        translationDir(orgName),
         transId,
         transRevision.replace(/\s/g, "__")
     );
     fse.writeJsonSync(path.join(tp, "metadata.json"), content);
 }
 
-const initializeEntryBookResourceCategory = (config, orgRecord, transId, transRevision, resourceOrigin, resourceCategory) => {
+const initializeEntryBookResourceCategory = (config, orgName, transId, transRevision, resourceOrigin, resourceCategory) => {
+    if (!(typeof orgName === "string")) {
+        throw new Error('orgName should be string in initializeEntryBookResourceCategory');
+    }
     checkResourceOrigin();
     const tp = transPath(
         config.dataPath,
-        translationDir(orgRecord.name),
+        translationDir(orgName),
         transId,
         transRevision.replace(/\s/g, "__")
     );
@@ -101,20 +128,26 @@ const initializeEntryBookResourceCategory = (config, orgRecord, transId, transRe
     }
 }
 
-const writeEntryResource = (config, orgRecord, transId, transRevision, resourceOrigin, resourceName, content) => {
+const writeEntryResource = (config, orgName, transId, transRevision, resourceOrigin, resourceName, content) => {
+    if (!(typeof orgName === "string")) {
+        throw new Error('orgName should be string in writeEntryResource');
+    }
     const tp = transPath(
         config.dataPath,
-        translationDir(orgRecord.name),
+        translationDir(orgName),
         transId,
         transRevision.replace(/\s/g, "__")
     );
     fse.writeFileSync(path.join(tp, resourceOrigin, resourceName), content);
 }
 
-const writeEntryBookResource = (config, orgRecord, transId, transRevision, resourceCategory, resourceName, content) => {
+const writeEntryBookResource = (config, orgName, transId, transRevision, resourceCategory, resourceName, content) => {
+    if (!(typeof orgName === "string")) {
+        throw new Error('orgName should be string in writeEntryBookResource');
+    }
     const tp = transPath(
         config.dataPath,
-        translationDir(orgRecord.name),
+        translationDir(orgName),
         transId,
         transRevision.replace(/\s/g, "__")
     );

@@ -49,17 +49,17 @@ const fetchUsfm = async (org, trans, config) => {
     const zipUrl = responseJson.catalog.latest.zipball_url;
     const downloadResponse = await http.getBuffer(zipUrl);
 try {
-    initializeEmptyEntry(config, org, trans.id, trans.revision);
-    lockEntry(config, org, trans.id, trans.revision, "dcs/translations");
+    initializeEmptyEntry(config, org.name, trans.id, trans.revision);
+    lockEntry(config, org.name, trans.id, trans.revision, "dcs/translations");
     initializeEntryBookResourceCategory(
         config,
-        org,
+        org.name,
         trans.id,
         trans.revision,
         "original",
         "usfmBooks"
     );
-    writeEntryMetadataJson(config, org, trans.id, trans.revision, trans);
+    writeEntryMetadataJson(config, org.name, trans.id, trans.revision, trans);
     const zip = new jszip();
     await zip.loadAsync(downloadResponse.data);
     for (const bookName of ptBookArray) {
@@ -73,7 +73,7 @@ try {
             const fileContent = await foundFiles[0].async('text');
             writeEntryBookResource(
                 config,
-                org,
+                org.name,
                 trans.id,
                 trans.revision,
                 "usfmBooks",
@@ -87,17 +87,17 @@ try {
     );
     writeEntryResource(
         config,
-        org,
+        org.name,
         trans.id,
         trans.revision,
         "original",
         `versification.vrs`,
         vrsResponse.data
     );
-    unlockEntry(config, org, trans.id, trans.revision);
+    unlockEntry(config, org.name, trans.id, trans.revision);
 } catch (err) {
     console.log(err);
-    deleteEntry(config, org, trans.id, trans.revision);
+    deleteEntry(config, org.name, trans.id, trans.revision);
 }
 };
 

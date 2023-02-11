@@ -12,9 +12,9 @@ const {translationDir} = require("../dataLayers/fs/dataPaths");
 const appRoot = path.resolve(".");
 
 function maybeInitializeOrg(config, orgRecord) {
-    if (!orgExists(config, orgRecord)) {
+    if (!orgExists(config, orgRecord.name)) {
         config.verbose && console.log(`      Initializing org`);
-        initializeOrg(config, orgRecord);
+        initializeOrg(config, orgRecord.name);
     }
 }
 
@@ -129,18 +129,18 @@ async function makeServerOrgs(config) {
             const orgRecord = nonPeerOrgs[org];
             orgName = orgRecord.name;
             [orgHandlers[orgName], orgsData[orgName]] = await setupNonPeerOrg(config, orgRecord);
-            const nLocal = orgEntries(config, orgRecord).length;
+            const nLocal = orgEntries(config, orgRecord.name).length;
             config.verbose && console.log(`      ${nLocal} locally cached entr${nLocal === 1 ? "y" : "ies"}`);
         } else if (peerOrgs[org]) {
             const orgRecord = peerOrgs[org];
             orgName = orgRecord.name;
             [orgHandlers[orgName], orgsData[orgName]] = await setupPeerOrg(config, orgRecord);
-            const nLocal = orgEntries(config, orgRecord).length;
+            const nLocal = orgEntries(config, orgRecord.name).length;
             config.verbose && console.log(`      ${nLocal} locally cached entr${nLocal === 1 ? "y" : "ies"}`);
         } else if (org === config.name) {
             orgName = config.name;
             [orgHandlers[orgName], orgsData[orgName]] = await setupLocalOrg(config);
-            const nLocal = orgEntries(config, {name: "_local"}).length;
+            const nLocal = orgEntries(config, "_local").length;
             config.verbose && console.log(`      ${nLocal} local entr${nLocal === 1 ? "y" : "ies"}`);
         } else {
             throw new Error(`No org called '${org}'`);

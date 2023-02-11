@@ -40,7 +40,7 @@ async function getTranslationsCatalog() {
             languageCode: languageCodes[t.languageCode] || t.languageCode,
             title: t.title,
             downloadURL: `https://eBible.org/Scriptures/${t.translationId}_usfm.zip`,
-            textDirection: t.textDirection,
+            textDirection: t.textDirection || "ltr",
             script: t.script,
             copyright: t.Copyright,
             description: t.description,
@@ -55,13 +55,12 @@ const fetchUsfm = async (org, trans, config) => {
 
     const http = require(`${appRoot}/src/lib/http.js`);
     try {
-        initializeEmptyEntry(config, org, trans.id, trans.revision);
-        lockEntry(config, org, trans.id, trans.revision, "ebible/translations");
-        writeEntryMetadataJson(config, org, trans.id, trans.revision, trans);
-        console.log(trans);
+        initializeEmptyEntry(config, org.name, trans.id, trans.revision);
+        lockEntry(config, org.name, trans.id, trans.revision, "ebible/translations");
+        writeEntryMetadataJson(config, org.name, trans.id, trans.revision, trans);
         initializeEntryBookResourceCategory(
             config,
-            org,
+            org.name,
             trans.id,
             trans.revision,
             "original",
@@ -76,7 +75,7 @@ const fetchUsfm = async (org, trans, config) => {
                 const fileContent = await foundFiles[0].async('text');
                 writeEntryBookResource(
                     config,
-                    org,
+                    org.name,
                     trans.id,
                     trans.revision,
                     "usfmBooks",
@@ -85,10 +84,10 @@ const fetchUsfm = async (org, trans, config) => {
                 );
             }
         }
-        unlockEntry(config, org, trans.id, trans.revision);
+        unlockEntry(config, org.name, trans.id, trans.revision);
     } catch (err) {
         console.log(err);
-        deleteEntry(config, org, trans.id, trans.revision);
+        deleteEntry(config, org.name, trans.id, trans.revision);
     }
 };
 

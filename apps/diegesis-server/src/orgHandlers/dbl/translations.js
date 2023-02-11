@@ -89,11 +89,11 @@ const fetchUsx = async (org, trans, config) => {
     trans.owner = metadataRecord.owner;
     trans.revision = metadataRecord.revision;
     try {
-        initializeEmptyEntry(config, org, trans.id, metadataRecord.revision);
-        lockEntry(config, org, trans.id, metadataRecord.revision, "dbl/translations");
+        initializeEmptyEntry(config, org.name, trans.id, metadataRecord.revision);
+        lockEntry(config, org.name, trans.id, metadataRecord.revision, "dbl/translations");
         initializeEntryBookResourceCategory(
             config,
-            org,
+            org.name,
             trans.id,
             metadataRecord.revision,
             "original",
@@ -101,7 +101,7 @@ const fetchUsx = async (org, trans, config) => {
         );
         writeEntryMetadataJson(
             config,
-            org,
+            org.name,
             trans.id,
             metadataRecord.revision,
             metadataRecord
@@ -113,7 +113,7 @@ const fetchUsx = async (org, trans, config) => {
                     const fileContent = await foundFiles[0].async('text');
                     writeEntryBookResource(
                         config,
-                        org,
+                        org.name,
                         trans.id,
                         metadataRecord.revision,
                         "usxBooks",
@@ -128,17 +128,17 @@ const fetchUsx = async (org, trans, config) => {
         const vrsContent = await vrs[0].async('text');
         writeEntryResource(
             config,
-            org,
+            org.name,
             trans.id,
             metadataRecord.revision,
             "original",
             `versification.vrs`,
             vrsContent
         );
-        unlockEntry(config, org, trans.id, metadataRecord.revision);
+        unlockEntry(config, org.name, trans.id, metadataRecord.revision);
     } catch (err) {
         console.log(err);
-        deleteEntry(config, org, trans.id, metadataRecord.revision);
+        deleteEntry(config, org.name, trans.id, metadataRecord.revision);
     }
 };
 
