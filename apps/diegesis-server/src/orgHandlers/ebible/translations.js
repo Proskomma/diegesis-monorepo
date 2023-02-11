@@ -57,6 +57,8 @@ const fetchUsfm = async (org, trans, config) => {
     try {
         initializeEmptyEntry(config, org, trans.id, trans.revision);
         lockEntry(config, org, trans.id, trans.revision, "ebible/translations");
+        writeEntryMetadataJson(config, org, trans.id, trans.revision, trans);
+        console.log(trans);
         initializeEntryBookResourceCategory(
             config,
             org,
@@ -65,8 +67,6 @@ const fetchUsfm = async (org, trans, config) => {
             "original",
             "usfmBooks"
         );
-        writeEntryMetadataJson(config, org, trans.id, trans.revision, trans);
-
         const downloadResponse = await http.getBuffer(trans.downloadURL);
         const zip = new jszip();
         await zip.loadAsync(downloadResponse.data);

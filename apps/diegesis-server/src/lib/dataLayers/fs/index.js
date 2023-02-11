@@ -1,5 +1,5 @@
 const fse = require('fs-extra');
-const {orgPath, transPath} = require("./dataPaths.js");
+const {orgPath, transPath, translationDir} = require("./dataPaths.js");
 const path = require("path");
 
 const checkResourceOrigin = v => {
@@ -9,12 +9,12 @@ const checkResourceOrigin = v => {
 }
 
 const orgExists = (config, orgRecord) => {
-    const orgP = orgPath(config.dataPath, orgRecord.translationDir);
+    const orgP = orgPath(config.dataPath, translationDir(orgRecord.name));
     return fse.pathExistsSync(orgP)
 }
 
 const initializeOrg = (config, orgRecord) => {
-    const orgP = orgPath(config.dataPath, orgRecord.translationDir);
+    const orgP = orgPath(config.dataPath, translationDir(orgRecord.name));
     if (!fse.pathExistsSync(orgP)) {
         fse.mkdirsSync(orgP);
     }
@@ -23,7 +23,7 @@ const initializeOrg = (config, orgRecord) => {
 const initializeEmptyEntry = (config, orgRecord, transId, transRevision) => {
     const tp = transPath(
         config.dataPath,
-        orgRecord.translationDir.replace(/\s/g, "__"),
+        translationDir(orgRecord.name),
         transId,
         transRevision.replace(/\s/g, "__")
     );
@@ -37,7 +37,7 @@ const initializeEmptyEntry = (config, orgRecord, transId, transRevision) => {
 }
 
 const orgEntries = (config, orgRecord) => {
-    const orgP = orgPath(config.dataPath, orgRecord.translationDir);
+    const orgP = orgPath(config.dataPath, translationDir(orgRecord.name));
     return fse.readdirSync(
         orgP
     )
@@ -50,7 +50,7 @@ const orgEntries = (config, orgRecord) => {
 const deleteEntry = (config, orgRecord, transId, transRevision) => {
     const tp = transPath(
         config.dataPath,
-        orgRecord.translationDir.replace(/\s/g, "__"),
+        translationDir(orgRecord.name),
         transId,
         transRevision.replace(/\s/g, "__")
     );
@@ -60,17 +60,17 @@ const deleteEntry = (config, orgRecord, transId, transRevision) => {
 const lockEntry = (config, orgRecord, transId, transRevision, lockMsg) => {
     const tp = transPath(
         config.dataPath,
-        orgRecord.translationDir.replace(/\s/g, "__"),
+        translationDir(orgRecord.name),
         transId,
         transRevision.replace(/\s/g, "__")
     );
-    fse.writeJsonSync(path.join(tp, "lock.json"), {actor: lockMsg, orgDir: orgRecord.translationDir, transId: transId, revision: transRevision});
+    fse.writeJsonSync(path.join(tp, "lock.json"), {actor: lockMsg, orgDir: translationDir(orgRecord.name), transId: transId, revision: transRevision});
 }
 
 const unlockEntry = (config, orgRecord, transId, transRevision) => {
     const tp = transPath(
         config.dataPath,
-        orgRecord.translationDir.replace(/\s/g, "__"),
+        translationDir(orgRecord.name),
         transId,
         transRevision.replace(/\s/g, "__")
     );
@@ -80,7 +80,7 @@ const unlockEntry = (config, orgRecord, transId, transRevision) => {
 const writeEntryMetadataJson = (config, orgRecord, transId, transRevision, content) => {
     const tp = transPath(
         config.dataPath,
-        orgRecord.translationDir.replace(/\s/g, "__"),
+        translationDir(orgRecord.name),
         transId,
         transRevision.replace(/\s/g, "__")
     );
@@ -91,7 +91,7 @@ const initializeEntryBookResourceCategory = (config, orgRecord, transId, transRe
     checkResourceOrigin();
     const tp = transPath(
         config.dataPath,
-        orgRecord.translationDir.replace(/\s/g, "__"),
+        translationDir(orgRecord.name),
         transId,
         transRevision.replace(/\s/g, "__")
     );
@@ -104,7 +104,7 @@ const initializeEntryBookResourceCategory = (config, orgRecord, transId, transRe
 const writeEntryResource = (config, orgRecord, transId, transRevision, resourceOrigin, resourceName, content) => {
     const tp = transPath(
         config.dataPath,
-        orgRecord.translationDir.replace(/\s/g, "__"),
+        translationDir(orgRecord.name),
         transId,
         transRevision.replace(/\s/g, "__")
     );
@@ -114,7 +114,7 @@ const writeEntryResource = (config, orgRecord, transId, transRevision, resourceO
 const writeEntryBookResource = (config, orgRecord, transId, transRevision, resourceCategory, resourceName, content) => {
     const tp = transPath(
         config.dataPath,
-        orgRecord.translationDir.replace(/\s/g, "__"),
+        translationDir(orgRecord.name),
         transId,
         transRevision.replace(/\s/g, "__")
     );

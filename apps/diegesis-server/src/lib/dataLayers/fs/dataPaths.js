@@ -1,6 +1,8 @@
 const path = require("path");
 const fse = require("fs-extra");
 
+const translationDir = str => str.toLowerCase().replace(/[^A-Za-z0-9_-]/g, '');
+
 const orgPath =
     (dataPath, translationDir) => {
         return path.resolve(
@@ -187,5 +189,6 @@ module.exports = {
     lockPath,
     vrsPath,
     originalResourcePath,
-    generatedResourcePath
+    generatedResourcePath,
+    translationDir,
 };

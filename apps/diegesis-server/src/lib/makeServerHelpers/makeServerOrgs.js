@@ -1,7 +1,13 @@
 const fse = require('fs-extra');
 const path = require("path");
 const peerTranslation = require("../peerTranslation");
-const {orgExists, orgEntries, initializeOrg} = require("../dataLayers/fs");
+const {
+    orgExists,
+    orgEntries,
+    initializeOrg,
+} = require("../dataLayers/fs");
+
+const {translationDir} = require("../dataLayers/fs/dataPaths");
 
 const appRoot = path.resolve(".");
 
@@ -14,18 +20,16 @@ function maybeInitializeOrg(config, orgRecord) {
 
 async function setupNonPeerOrg(config, orgRecord) {
     maybeInitializeOrg(config, orgRecord);
-    const translations = require(path.resolve(appRoot, 'src', 'orgHandlers', orgRecord.translationDir, 'translations.js'));
+    const translations = require(path.resolve(appRoot, 'src', 'orgHandlers', translationDir(orgRecord.name), 'translations.js'));
     const orgHandler = {
         getTranslationsCatalog: translations.getTranslationsCatalog,
         fetchUsfm: translations.fetchUsfm,
         fetchUsx: translations.fetchUsx,
     };
     const orgData = {
-        orgDir: orgRecord.translationDir,
         name: orgRecord.name,
         fullName: orgRecord.fullName,
         contentType: orgRecord.contentType,
-        translationDir: orgRecord.translationDir,
         catalogHasRevisions: orgRecord.catalogHasRevisions,
         canSync: true,
         entries: await orgHandler.getTranslationsCatalog(config, orgRecord),
@@ -43,11 +47,9 @@ async function setupPeerOrg(config, orgRecord) {
         fetchSuccinct: peerTranslation.fetchSuccinct,
     };
     const orgData = {
-        orgDir: orgRecord.translationDir,
         name: orgRecord.name,
         fullName: orgRecord.fullName,
         contentType: orgRecord.contentType,
-        translationDir: orgRecord.translationDir,
         catalogHasRevisions: true,
         canSync: true,
         entries: await orgHandler.getTranslationsCatalog(orgRecord),
@@ -57,7 +59,7 @@ async function setupPeerOrg(config, orgRecord) {
 }
 
 async function setupLocalOrg(config) {
-    maybeInitializeOrg(config, {translationDir: "_local"});
+    maybeInitializeOrg(config, {name: "_local"});
     const translations = require('../localTranslations');
     const orgHandler = {
         getTranslationsCatalog: translations.getTranslationsCatalog,
@@ -65,11 +67,9 @@ async function setupLocalOrg(config) {
         fetchUsx: translations.fetchUsx,
     };
     const orgData = {
-        orgDir: "_local",
         name: config.name,
         fullName: config.name,
         contentType: "USFM",
-        translationDir: "_local",
         catalogHasRevisions: false,
         canSync: false,
         entries: await orgHandler.getTranslationsCatalog(),
@@ -101,7 +101,7 @@ async function makeServerOrgs(config) {
             throw new Error(`Peer org name '${orgConfigRecord.name}' is same as this server name`);
         }
         peerOrgs[orgConfigRecord.name] = {
-            "translationDir": orgConfigRecord.name.toLowerCase(),
+            "translationDir": translationDir(orgConfigRecord.name),
             "name": orgConfigRecord.name,
             "fullName": `Peer ${orgConfigRecord.name}`,
             "contentType": "succinct",
@@ -140,7 +140,7 @@ async function makeServerOrgs(config) {
         } else if (org === config.name) {
             orgName = config.name;
             [orgHandlers[orgName], orgsData[orgName]] = await setupLocalOrg(config);
-            const nLocal = orgEntries(config, {translationDir: "_local"}).length;
+            const nLocal = orgEntries(config, {name: "_local"}).length;
             config.verbose && console.log(`      ${nLocal} local entr${nLocal === 1 ? "y" : "ies"}`);
         } else {
             throw new Error(`No org called '${org}'`);
