@@ -2,6 +2,7 @@ const {
     orgEntries,
     unlockEntry,
     deleteGeneratedEntryContent,
+    deleteSuccinctError,
 } = require("../dataLayers/fs");
 
 function makeServerDelete(config) {
@@ -13,6 +14,7 @@ function makeServerDelete(config) {
         for (const entryRecord of orgEntries(config, org)) {
             for (const revision of entryRecord.revisions) {
                 unlockEntry(config, org, entryRecord.id, revision);
+                deleteSuccinctError(config, org, entryRecord.id, revision);
                 if (config.deleteGenerated) {
                     deleteGeneratedEntryContent(config, org, entryRecord.id, revision);
                 }
