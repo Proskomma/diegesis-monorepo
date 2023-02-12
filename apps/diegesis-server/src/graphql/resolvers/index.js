@@ -5,14 +5,22 @@ const {ptBooks} = require('proskomma-utils');
 const {
     transPath,
     transParentPath,
-    usfmDir,
-    usxDir,
     succinctPath,
     succinctErrorPath,
     originalResourcePath,
     generatedResourcePath,
     translationDir,
 } = require('../../lib/dataLayers/fs/dataPaths');
+const {
+    entryExists,
+    entryRevisionExists,
+    entryHas,
+    entryHasSuccinctError,
+    entryIsLocked,
+    readEntryMetadata,
+    orgEntries,
+    entryResources,
+} = require("../../lib/dataLayers/fs");
 
 const makeResolvers = async (orgsData, orgHandlers, config) => {
 
@@ -138,12 +146,9 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
 
     const entryCanSync = (org, entry) => {
         let path;
-        if (org.catalogHasRevisions) {
-            path = transPath(config.dataPath, translationDir(org.name), entry.id, entry.revision);
-        } else {
-            path = transParentPath(config.dataPath, translationDir(org.name), entry.id);
-        }
-        if (fse.pathExistsSync(path)) {
+        if (org.catalogHasRevisions && entryRevisionExists(config, translationDir(org.name), entry.id, entry.revision)) {
+            return false;
+        } else if (entryExists(config, translationDir(org.name), entry.id)) {
             return false;
         }
         if (org.config) {
@@ -195,31 +200,35 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
             )
         }
         if ('withUsfm' in args) {
+            const filterFunc = (e => entryHas(config, context.orgData.name, e.id, e.revision, "usfmBooks"));
             if (args.withUsfm) {
-                ret = ret.filter(t => fse.pathExistsSync(usfmDir(config.dataPath, translationDir(context.orgData.name), t.id, t.revision)));
+                ret = ret.filter(t => filterFunc(t));
             } else {
-                ret = ret.filter(t => !fse.pathExistsSync(usfmDir(config.dataPath, translationDir(context.orgData.name), t.id, t.revision)));
+                ret = ret.filter(t => !filterFunc(t));
             }
         }
         if ('withUsx' in args) {
+            const filterFunc = (e => entryHas(config, context.orgData.name, e.id, e.revision, "usxBooks"));
             if (args.withUsx) {
-                ret = ret.filter(t => fse.pathExistsSync(usxDir(config.dataPath, translationDir(context.orgData.name), t.id, t.revision)));
+                ret = ret.filter(t => filterFunc(t));
             } else {
-                ret = ret.filter(t => !fse.pathExistsSync(usxDir(config.dataPath, translationDir(context.orgData.name), t.id, t.revision)));
+                ret = ret.filter(t => !filterFunc(t));
             }
         }
         if ('withSuccinct' in args) {
+            const filterFunc = (e => entryHas(config, context.orgData.name, e.id, e.revision, "succinct.json"));
             if (args.withSuccinct) {
-                ret = ret.filter(t => fse.pathExistsSync(succinctPath(config.dataPath, translationDir(context.orgData.name), t.id)));
+                ret = ret.filter(t => filterFunc(t));
             } else {
-                ret = ret.filter(t => !fse.pathExistsSync(succinctPath(config.dataPath, translationDir(context.orgData.name), t.id)));
+                ret = ret.filter(t => !filterFunc(t));
             }
         }
         if ('withSuccinctError' in args) {
+            const filterFunc = (e => entryHasSuccinctError(config, context.orgData.name, e.id, e.revision));
             if (args.withSuccinctError) {
-                ret = ret.filter(t => fse.pathExistsSync(succinctErrorPath(config.dataPath, translationDir(context.orgData.name), t.id)));
+                ret = ret.filter(t => filterFunc(t));
             } else {
-                ret = ret.filter(t => !fse.pathExistsSync(succinctErrorPath(config.dataPath, translationDir(context.orgData.name), t.id)));
+                ret = ret.filter(t => !filterFunc(t));
             }
         }
         if (args.sortedBy) {
@@ -239,13 +248,10 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
     }
 
     const localEntry = (org, entryId, revision) => {
-        const translationPath = transPath(config.dataPath, org, entryId, revision);
-        console.log(translationPath);
-        if (fse.pathExistsSync(translationPath)) {
-            return fse.readJsonSync(path.join(translationPath, "metadata.json"));
-        } else {
-            return null;
+        if (!entryIsLocked(config, org, entryId, revision)) {
+            return readEntryMetadata(config, org, entryId, revision);
         }
+        return null;
     }
 
     const scalarResolvers = {
@@ -268,19 +274,10 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
             },
             localEntries: (root, args) => {
                 let ret = [];
-                for (const source of fse.readdirSync(config.dataPath)) {
-                    const sourcePath = path.join(config.dataPath, source);
-                    if (!fse.lstatSync(sourcePath).isDirectory()) {
-                        continue;
-                    }
-                    for (const transId of fse.readdirSync(sourcePath)) {
-                        const idPath = path.join(sourcePath, transId);
-                        if (!fse.lstatSync(idPath).isDirectory()) {
-                            continue;
-                        }
-                        for (const revision of fse.readdirSync(idPath)) {
-                            const metadataPath = path.join(idPath, revision, "metadata.json");
-                            ret.push(fse.readJsonSync(metadataPath));
+                for (const org of Object.keys(orgsData)) {
+                    for (const entry of orgEntries(config, org)) {
+                        for (const revision of entry.revisions) {
+                            ret.push(readEntryMetadata(config, org, entry.id, revision));
                         }
                     }
                 }
@@ -391,29 +388,7 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                 return ret;
             },
             canonResources: root => {
-                let ret = [];
-                const searchPaths = [
-                    ['original', originalResourcePath(config.dataPath, translationDir(orgsData[root.source].name), root.id, root.revision)],
-                    ['generated', generatedResourcePath(config.dataPath, translationDir(orgsData[root.source].name), root.id, root.revision)],
-                ];
-                for (const [searchName, searchPath] of searchPaths) {
-                    if (!fse.existsSync(searchPath)) {
-                        continue;
-                    }
-                    for (const resource of fse.readdirSync(searchPath)) {
-                        const resourcePath = path.join(searchPath, resource);
-                        if (fse.lstatSync(resourcePath).isDirectory()) {
-                            continue;
-                        }
-                        ret.push({
-                            type: resource.split('.')[0],
-                            isOriginal: searchName === 'original',
-                            content: fse.readFileSync(resourcePath).toString(),
-                            suffix: resource.split('.')[1]
-                        })
-                    }
-                }
-                return ret;
+                return entryResources(config, orgsData[root.source].name, root.id, root.revision);
             },
             canonResource: (root, args) => {
                 const searchPaths = [
@@ -685,10 +660,11 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                     return false;
                 }
                 try {
-                    let pathDir = transPath(config.dataPath, orgOb.orgDir, args.id, args.revision);
+                    let pathDir = transPath(config.dataPath, translationDir(orgOb.name), args.id, args.revision);
                     if (fse.pathExistsSync(pathDir)) {
                         fse.rmSync(pathDir, {recursive: true});
-                        pathDir = transParentPath(config.dataPath, orgOb.orgDir, args.id);
+                        pathDir = transParentPath(config.dataPath, translationDir(orgOb.name), args.id);
+                        pathDir = transParentPath(config.dataPath, translationDir(orgOb.name), args.id);
                         if (fse.readdirSync(pathDir).length === 0) {
                             fse.rmSync(pathDir, {recursive: true});
                         }

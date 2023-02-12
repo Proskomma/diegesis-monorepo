@@ -61,7 +61,6 @@ export default function EntryDetailsPage({ setAppLanguage }) {
       ${queryString}
     `
   );
-
   if (loading) {
     return <Spinner />;
   }

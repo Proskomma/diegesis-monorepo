@@ -2,7 +2,6 @@ const {Proskomma} = require('proskomma-core');
 const {PerfRenderFromProskomma, render, mergeActions} = require('proskomma-json-tools');
 const {ptBooks} = require('proskomma-utils');
 const {parentPort} = require("node:worker_threads");
-const {translationDir} = require("./dataLayers/fs/dataPaths.js");
 const {
     lockEntry,
     unlockEntry,
@@ -70,8 +69,6 @@ function doDownloads({configString, org, transId, revision, contentType}) {
 }
 
 function makeDownloads(config, org, metadata, docType, docs, vrsContent) {
-    const dataPath = config.dataPath;
-    const orgDir = translationDir(org);
     let pk;
     let docSetId;
     let ret;

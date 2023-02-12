@@ -1,5 +1,10 @@
 const fse = require('fs-extra');
-const {orgPath, transPath, translationDir} = require("./dataPaths.js");
+const {
+    orgPath,
+    transPath,
+    transParentPath,
+    translationDir
+} = require("./dataPaths.js");
 const path = require("path");
 
 // Utils
@@ -69,29 +74,6 @@ const orgEntries = (config, orgName) => {
         }))
 }
 
-const entryBookResources = (config, orgName, transId, transRevision, bookResourceCategory) => {
-    if (!(typeof orgName === "string")) {
-        throw new Error('orgName should be string in entryBookResources');
-    }
-    const tp = transPath(
-        config.dataPath,
-        translationDir(orgName),
-        transId,
-        transRevision.replace(/\s/g, "__")
-    );
-    let resourceOrigin;
-    if (fse.pathExistsSync(path.join(tp, "original", bookResourceCategory))) {
-        resourceOrigin = "original";
-    }
-    if (fse.pathExistsSync(path.join(tp, "generated", bookResourceCategory))) {
-        resourceOrigin = "generated";
-    }
-    if (!resourceOrigin) {
-        throw new Error(`Resource category ${bookResourceCategory} not found for ${orgName}/${transId}/${transRevision}`);
-    }
-    return fse.readdirSync(path.join(tp, resourceOrigin, bookResourceCategory));
-}
-
 const deleteEntry = (config, orgName, transId, transRevision) => {
     if (!(typeof orgName === "string")) {
         throw new Error('orgName should be string in deleteEntry');
@@ -118,6 +100,42 @@ const deleteGeneratedEntryContent = (config, orgName, transId, transRevision) =>
     fse.remove(path.join(tp, "generated"));
 }
 
+const _EntryResources = (config, orgName, transId, transRevision, resourceOrigin) => {
+    const tp = transPath(
+        config.dataPath,
+        translationDir(orgName),
+        transId,
+        transRevision.replace(/\s/g, "__")
+    );
+    const resourceDirPath = path.join(tp, resourceOrigin);
+    if (fse.pathExistsSync(resourceDirPath)) {
+        return fse.readdirSync(resourceDirPath)
+            .filter(p => !fse.lstatSync(path.join(tp, resourceOrigin, p)).isDirectory())
+            .map(p => ({
+                type: p.split('.')[0],
+                isOriginal: (resourceOrigin === "original"),
+                content: readEntryResource(config, orgName, transId, transRevision, p),
+                suffix: p.split('.')[1]
+            }));
+    } else {
+        return [];
+    }
+}
+
+const originalEntryResources = (config, orgName, transId, transRevision) => {
+    return _EntryResources(config, orgName, transId, transRevision, "original");
+}
+
+const generatedEntryResources = (config, orgName, transId, transRevision) => {
+    return _EntryResources(config, orgName, transId, transRevision, "generated");
+}
+const entryResources = (config, orgName, transId, transRevision) => {
+    return [
+        ...originalEntryResources(config, orgName, transId, transRevision),
+        ...generatedEntryResources(config, orgName, transId, transRevision)
+    ];
+}
+
 const initializeEntryBookResourceCategory = (config, orgName, transId, transRevision, resourceOrigin, resourceCategory) => {
     if (!(typeof orgName === "string")) {
         throw new Error('orgName should be string in initializeEntryBookResourceCategory');
@@ -135,7 +153,47 @@ const initializeEntryBookResourceCategory = (config, orgName, transId, transRevi
     }
 }
 
+const entryBookResources = (config, orgName, transId, transRevision, bookResourceCategory) => {
+    if (!(typeof orgName === "string")) {
+        throw new Error('orgName should be string in entryBookResources');
+    }
+    const tp = transPath(
+        config.dataPath,
+        translationDir(orgName),
+        transId,
+        transRevision.replace(/\s/g, "__")
+    );
+    let resourceOrigin;
+    if (fse.pathExistsSync(path.join(tp, "original", bookResourceCategory))) {
+        resourceOrigin = "original";
+    }
+    if (fse.pathExistsSync(path.join(tp, "generated", bookResourceCategory))) {
+        resourceOrigin = "generated";
+    }
+    if (!resourceOrigin) {
+        throw new Error(`Resource category ${bookResourceCategory} not found for ${orgName}/${transId}/${transRevision}`);
+    }
+    return fse.readdirSync(path.join(tp, resourceOrigin, bookResourceCategory));
+}
+
 // Entry Tests
+
+const entryExists = (config, orgName, transId, transRevision) => {
+    const tp = transParentPath(
+        config.dataPath,
+        translationDir(orgName),
+        transId,
+        transRevision);
+    return fse.pathExistsSync(tp);
+}
+
+const entryRevisionExists = (config, orgName, transId) => {
+    const tpp = transParentPath(
+        config.dataPath,
+        translationDir(orgName),
+        transId);
+    return fse.pathExistsSync(tpp);
+}
 
 const entryIsLocked = (config, orgName, transId, transRevision) => {
     const tp = transPath(
@@ -189,7 +247,34 @@ const entryHasGenerated = (config, orgName, transId, transRevision, contentType)
 
 const entryHas = (config, orgName, transId, transRevision, contentType) => {
     return entryHasOriginal(config, orgName, transId, transRevision, contentType) ||
-        entryHasOriginal(config, orgName, transId, transRevision, contentType);
+        entryHasGenerated(config, orgName, transId, transRevision, contentType);
+};
+
+const entryHasOriginalBookResourceCategory = (config, orgName, transId, transRevision, contentType) => {
+    const tp = transPath(
+        config.dataPath,
+        translationDir(orgName),
+        transId,
+        transRevision.replace(/\s/g, "__")
+    );
+    const rcPath = path.join(tp, "original", contentType);
+    return fse.pathExistsSync(rcPath) && fse.lstatSync(rcPath).isDirectory();
+};
+
+const entryHasGeneratedBookResourceCategory = (config, orgName, transId, transRevision, contentType) => {
+    const tp = transPath(
+        config.dataPath,
+        translationDir(orgName),
+        transId,
+        transRevision.replace(/\s/g, "__")
+    );
+    const rcPath = path.join(tp, "generated", contentType);
+    return fse.pathExistsSync(rcPath) && fse.lstatSync(rcPath).isDirectory();
+};
+
+const entryHasBookSourceCategory = (config, orgName, transId, transRevision, contentType) => {
+    return entryHasOriginalBookResourceCategory(config, orgName, transId, transRevision, contentType) ||
+        entryHasGeneratedBookResourceCategory(config, orgName, transId, transRevision, contentType);
 };
 
 // Lock/Unlock
@@ -396,4 +481,12 @@ module.exports = {
     entryHasGenerated,
     writeSuccinctError,
     deleteSuccinctError,
+    entryExists,
+    entryRevisionExists,
+    entryHasBookSourceCategory,
+    entryHasOriginalBookResourceCategory,
+    entryHasGeneratedBookResourceCategory,
+    originalEntryResources,
+    generatedEntryResources,
+    entryResources,
 }

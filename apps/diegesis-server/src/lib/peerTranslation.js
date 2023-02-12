@@ -5,7 +5,7 @@ const {
     lockEntry,
     unlockEntry,
     deleteEntry,
-    writeEntryMetadataJson,
+    writeEntryMetadata,
     writeEntryResource,
 } = require("./dataLayers/fs");
 
@@ -89,7 +89,7 @@ const fetchSuccinct = async (org, entryOrg, trans, config) => {
         id: remoteLocalEntry.transId,
         languageCode: languageCodes[remoteLocalEntry.language] || remoteLocalEntry.language,
         title: remoteLocalEntry.title,
-        textDirection: remoteLocalEntry.textDirection,
+        textDirection: remoteLocalEntry.textDirection || "ltr",
         script: remoteLocalEntry.script,
         copyright: remoteLocalEntry.copyright,
         description: remoteLocalEntry.title,
@@ -100,7 +100,7 @@ const fetchSuccinct = async (org, entryOrg, trans, config) => {
     try {
         initializeEmptyEntry(config, entryOrg.name, trans.id, trans.revision);
         lockEntry(config, entryOrg.name, trans.id, trans.revision, `peer/${org.config.name}/translations`);
-        writeEntryMetadataJson(config, entryOrg.name, trans.id, trans.revision, trans);
+        writeEntryMetadata(config, entryOrg.name, trans.id, trans.revision, metadata);
         writeEntryResource(
             config,
             entryOrg.name,
@@ -108,7 +108,7 @@ const fetchSuccinct = async (org, entryOrg, trans, config) => {
             trans.revision,
             "original",
             `succinct.json`,
-            remoteLocalEntry.succinct.content
+            JSON.parse(remoteLocalEntry.succinct.content)
         );
         unlockEntry(config, entryOrg.name, trans.id, trans.revision);
     } catch (err) {
