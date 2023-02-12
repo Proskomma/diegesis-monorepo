@@ -10,7 +10,7 @@ const {
     lockEntry,
     unlockEntry,
     writeEntryBookResource,
-    writeEntryMetadataJson,
+    writeEntryMetadata,
 } = require('../../lib/dataLayers/fs/');
 
 async function getTranslationsCatalog() {
@@ -57,7 +57,7 @@ const fetchUsfm = async (org, trans, config) => {
     try {
         initializeEmptyEntry(config, org.name, trans.id, trans.revision);
         lockEntry(config, org.name, trans.id, trans.revision, "ebible/translations");
-        writeEntryMetadataJson(config, org.name, trans.id, trans.revision, trans);
+        writeEntryMetadata(config, org.name, trans.id, trans.revision, trans);
         initializeEntryBookResourceCategory(
             config,
             org.name,

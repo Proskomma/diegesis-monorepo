@@ -79,7 +79,7 @@ function doRenderCron(config) {
                     worker.on('message', e => config.incidentLogger.info(e));
                     worker.on('error', e => config.incidentLogger.error(e));
                     const [org, transId, revision, contentType] = taskSpec;
-                    worker.postMessage({dataPath: config.dataPath, org, transId, revision, contentType});
+                    worker.postMessage({configString: JSON.stringify({dataPath: config.dataPath}), org, transId, revision, contentType});
                 }
             } catch (err) {
                 console.log("makeDownload worker", err.message);

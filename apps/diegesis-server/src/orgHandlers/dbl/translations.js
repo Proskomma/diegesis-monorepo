@@ -12,7 +12,7 @@ const {
     unlockEntry,
     writeEntryResource,
     writeEntryBookResource,
-    writeEntryMetadataJson,
+    writeEntryMetadata,
 } = require('../../lib/dataLayers/fs/');
 
 async function getTranslationsCatalog() {
@@ -99,7 +99,7 @@ const fetchUsx = async (org, trans, config) => {
             "original",
             "usxBooks"
         );
-        writeEntryMetadataJson(
+        writeEntryMetadata(
             config,
             org.name,
             trans.id,

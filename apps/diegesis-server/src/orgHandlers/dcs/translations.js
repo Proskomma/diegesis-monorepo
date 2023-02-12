@@ -11,7 +11,7 @@ const {
     unlockEntry,
     writeEntryResource,
     writeEntryBookResource,
-    writeEntryMetadataJson,
+    writeEntryMetadata,
 } = require('../../lib/dataLayers/fs/');
 
 async function getTranslationsCatalog(config, orgRecord) {
@@ -59,7 +59,7 @@ try {
         "original",
         "usfmBooks"
     );
-    writeEntryMetadataJson(config, org.name, trans.id, trans.revision, trans);
+    writeEntryMetadata(config, org.name, trans.id, trans.revision, trans);
     const zip = new jszip();
     await zip.loadAsync(downloadResponse.data);
     for (const bookName of ptBookArray) {

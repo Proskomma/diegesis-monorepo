@@ -7,7 +7,7 @@ const {
     lockEntry,
     unlockEntry,
     writeEntryBookResource,
-    writeEntryMetadataJson,
+    writeEntryMetadata,
 } = require('../../lib/dataLayers/fs/');
 
 async function getTranslationsCatalog() {
@@ -54,7 +54,7 @@ const fetchUsfm = async (org, trans, config) => {
             "original",
             "usfmBooks"
         );
-        writeEntryMetadataJson(config, org.name, trans.id, trans.revision, trans);
+        writeEntryMetadata(config, org.name, trans.id, trans.revision, trans);
         const http = require(`${appRoot}/src/lib/http.js`);
         const downloadResponse = await http.getText(trans.downloadURL);
         const responseJson = downloadResponse.data;

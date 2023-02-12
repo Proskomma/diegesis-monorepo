@@ -8,72 +8,60 @@ const {
     transPath,
     usfmDir,
     usxDir,
-    vrsPath,
-    succinctErrorPath,
     perfDir,
     simplePerfDir,
     sofriaDir,
     succinctPath,
     lockPath,
-    generatedResourcePath,
     translationDir,
 } = require("./dataLayers/fs/dataPaths.js");
+const {
+    lockEntry,
+    unlockEntry,
+    readEntryMetadata,
+    entryHas,
+    readEntryResource,
+    writeEntryResource,
+    writeSuccinctError,
+} = require('./dataLayers/fs');
 const documentStatsActions = require("./documentStatsActions");
 
-const appRoot = path.resolve(".");
-
-function doDownloads({dataPath, org, transId, revision, contentType}) {
-    const orgDir = translationDir(org);
+function doDownloads({configString, org, transId, revision, contentType}) {
+    const config = JSON.parse(configString);
     try {
-        const orgJson = require(path.join(appRoot, 'src', 'orgHandlers', orgDir, 'org.json'));
-        const org = orgJson.name;
+        const orgDir = translationDir(org);
+        const dataPath = config.dataPath;
         const t = Date.now();
-        const metadataPath = path.join(
-            transPath(dataPath, orgDir, transId, revision),
-            'metadata.json'
-        );
-        fse.writeJsonSync(lockPath(dataPath, orgDir, transId, revision), {
-            actor: "makeDownloads",
-            org,
-            transId,
-            revision
-        });
-        const metadata = fse.readJsonSync(metadataPath);
-        let contentDir = (contentType === 'usfm') ?
-            usfmDir(dataPath, orgDir, transId, revision) :
-            usxDir(dataPath, orgDir, transId, revision);
-        if (!fse.pathExistsSync(contentDir)) {
-            if (contentType !== 'succinct') {
-                throw new Error(`${contentType} content directory for ${org}/${transId}/${revision} does not exist`);
-            }
-            contentDir = null;
+        lockEntry(config, org, transId, revision, "makeDownloads");
+        const metadata = readEntryMetadata(config, org, transId, revision);
+        let contentDir = null;
+        if (contentType === "usfm") {
+            contentDir = usfmDir(dataPath, orgDir, transId, revision)
+        } else if (contentType === "usx") {
+            contentDir = usxDir(dataPath, orgDir, transId, revision);
         }
         let vrsContent = null;
-        const vrsP = vrsPath(dataPath, orgDir, transId, revision);
-        if (fse.pathExistsSync(vrsP)) {
-            vrsContent = fse.readFileSync(vrsP).toString();
+        if (entryHas(config, org, transId, revision, "versification.vrs")) {
+            vrsContent = readEntryResource(config, org, transId, revision, "versification.vrs");
         }
         const downloads = makeDownloads(
-            dataPath,
+            config,
             org,
-            orgDir,
             metadata,
             contentType,
             contentDir ? fse.readdirSync(contentDir).map(f => fse.readFileSync(path.join(contentDir, f)).toString()) : null,
             vrsContent,
         );
         if (downloads.succinctError) {
-            fse.writeJsonSync(succinctErrorPath(dataPath, orgDir, transId, revision), downloads.succinctError);
-            fse.remove(lockPath(dataPath, orgDir, transId, revision));
+            writeSuccinctError(config, org, transId, revision, downloads.succinctError);
+            unlockEntry(config, org, transId, revision);
             return;
         }
-        const genP = generatedResourcePath(dataPath, orgDir, transId, revision);
-        if (!fse.pathExistsSync(genP)) {
-            fse.mkdirsSync(genP);
-        }
         if (downloads.succinct) {
-            fse.writeJsonSync(succinctPath(dataPath, orgDir, transId, revision), downloads.succinct);
+            writeEntryResource(config, org, transId, revision, "generated", "succinct.json", downloads.succinct);
         }
+        unlockEntry(config, org, transId, revision);
+        parentPort.postMessage({org, transId, revision, status: "done"});
     } catch (err) {
         const succinctError = {
             generatedBy: 'cron',
@@ -83,61 +71,63 @@ function doDownloads({dataPath, org, transId, revision, contentType}) {
             message: err.message
         };
         parentPort.postMessage(succinctError);
-        fse.writeJsonSync(succinctErrorPath(dataPath, orgDir, transId, revision), succinctError);
-        fse.remove(lockPath(dataPath, orgDir, transId, revision));
-        return;
+        writeSuccinctError(config, org, transId, revision, succinctError);
+        unlockEntry(config, org, transId, revision);
     }
-    fse.remove(lockPath(dataPath, orgDir, transId, revision));
-    parentPort.postMessage({orgDir, transId, revision, status: "done"});
 }
 
-function makeDownloads(dataPath, org, orgDir, metadata, docType, docs, vrsContent) {
-    const pk = new Proskomma([
-        {
-            name: "source",
-            type: "string",
-            regex: "^[^\\s]+$"
-        },
-        {
-            name: "project",
-            type: "string",
-            regex: "^[^\\s]+$"
-        },
-        {
-            name: "revision",
-            type: "string",
-            regex: "^[^\\s]+$"
-        },
-    ]);
-    const ret = {
-        succinct: null,
-        perf: [],
-        simplePerf: [],
-        sofria: [],
-        stats: {
-            nOT: 0,
-            nNT: 0,
-            nDC: 0,
-            nChapters: 0,
-            nVerses: 0,
-            nIntroductions: 0,
-            nHeadings: 0,
-            nFootnotes: 0,
-            nXrefs: 0,
-            nStrong: 0,
-            nLemma: 0,
-            nGloss: 0,
-            nContent: 0,
-            nMorph: 0,
-            nOccurrences: 0,
-            documents: {}
-        }
-    };
+function makeDownloads(config, org, metadata, docType, docs, vrsContent) {
+    parentPort.postMessage({where: "here"});
+    const dataPath = config.dataPath;
+    const orgDir = translationDir(org);
+    let pk;
     let docSetId;
+    let ret;
     try {
-        const succinctP = succinctPath(dataPath, orgDir, metadata.id, metadata.revision);
-        if (fse.pathExistsSync(succinctP)) {
-            pk.loadSuccinctDocSet(fse.readJsonSync(succinctP));
+        pk = new Proskomma([
+            {
+                name: "source",
+                type: "string",
+                regex: "^[^\\s]+$"
+            },
+            {
+                name: "project",
+                type: "string",
+                regex: "^[^\\s]+$"
+            },
+            {
+                name: "revision",
+                type: "string",
+                regex: "^[^\\s]+$"
+            },
+        ]);
+        ret = {
+            succinct: null,
+            perf: [],
+            simplePerf: [],
+            sofria: [],
+            stats: {
+                nOT: 0,
+                nNT: 0,
+                nDC: 0,
+                nChapters: 0,
+                nVerses: 0,
+                nIntroductions: 0,
+                nHeadings: 0,
+                nFootnotes: 0,
+                nXrefs: 0,
+                nStrong: 0,
+                nLemma: 0,
+                nGloss: 0,
+                nContent: 0,
+                nMorph: 0,
+                nOccurrences: 0,
+                documents: {}
+            }
+        };
+        if (entryHas(config, org, metadata.id, metadata.revision, "succinct.json")) {
+            const succinct = readEntryResource(config, org, metadata.id, metadata.revision, "succinct.json");
+            pk.loadSuccinctDocSet(succinct);
         } else {
             pk.importDocuments(
                 {

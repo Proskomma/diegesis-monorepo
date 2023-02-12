@@ -2,11 +2,15 @@ const fse = require('fs-extra');
 const {orgPath, transPath, translationDir} = require("./dataPaths.js");
 const path = require("path");
 
+// Utils
+
 const checkResourceOrigin = v => {
     if (["original", "generated"].includes(v)) {
         throw new Error(`Resource origin should be 'original' or 'generated', not '${v}'`);
     }
 }
+
+// Orgs
 
 const orgExists = (config, orgName) => {
     if (!(typeof orgName === "string")) {
@@ -26,6 +30,8 @@ const initializeOrg = (config, orgName) => {
     }
 }
 
+// Entries
+
 const initializeEmptyEntry = (config, orgName, transId, transRevision) => {
     if (!(typeof orgName === "string")) {
         throw new Error('orgName should be string in initializeEmptyEntry');
@@ -36,9 +42,10 @@ const initializeEmptyEntry = (config, orgName, transId, transRevision) => {
         transId,
         transRevision.replace(/\s/g, "__")
     );
-    if (!fse.pathExistsSync(tp)) {
-        fse.mkdirsSync(tp);
+    if (fse.pathExistsSync(tp)) {
+        throw new Error(`Entry ${orgName}/${transId}/${transRevision} already exists in initializeEmptyEntry`);
     }
+    fse.mkdirsSync(tp);
     const originalDir = path.join(tp, "original");
     if (!fse.pathExistsSync(originalDir)) {
         fse.mkdirsSync(originalDir);
@@ -88,6 +95,25 @@ const deleteGeneratedEntryContent = (config, orgName, transId, transRevision) =>
     fse.remove(path.join(tp, "generated"));
 }
 
+const initializeEntryBookResourceCategory = (config, orgName, transId, transRevision, resourceOrigin, resourceCategory) => {
+    if (!(typeof orgName === "string")) {
+        throw new Error('orgName should be string in initializeEntryBookResourceCategory');
+    }
+    checkResourceOrigin();
+    const tp = transPath(
+        config.dataPath,
+        translationDir(orgName),
+        transId,
+        transRevision.replace(/\s/g, "__")
+    );
+    const booksPath = path.join(tp, resourceOrigin, resourceCategory);
+    if (!fse.pathExistsSync(booksPath)) {
+        fse.mkdirsSync(booksPath);
+    }
+}
+
+// Lock/Unlock
+
 const lockEntry = (config, orgName, transId, transRevision, lockMsg) => {
     if (!(typeof orgName === "string")) {
         throw new Error('orgName should be string in lockEntry');
@@ -114,9 +140,12 @@ const unlockEntry = (config, orgName, transId, transRevision) => {
     fse.remove(path.join(tp, "lock.json"));
 }
 
-const writeEntryMetadataJson = (config, orgName, transId, transRevision, content) => {
+// Read
+
+const readEntryMetadata = (config, orgName, transId, transRevision) => {
+    // Returns JSON
     if (!(typeof orgName === "string")) {
-        throw new Error('orgName should be string in writeEntryMetadataJson');
+        throw new Error('orgName should be string in readEntryMetadataJson');
     }
     const tp = transPath(
         config.dataPath,
@@ -124,29 +153,13 @@ const writeEntryMetadataJson = (config, orgName, transId, transRevision, content
         transId,
         transRevision.replace(/\s/g, "__")
     );
-    fse.writeJsonSync(path.join(tp, "metadata.json"), content);
+    return fse.readJsonSync(path.join(tp, "metadata.json"));
 }
 
-const initializeEntryBookResourceCategory = (config, orgName, transId, transRevision, resourceOrigin, resourceCategory) => {
+const readEntryResource = (config, orgName, transId, transRevision, resourceName) => {
+    // Returns JSON or a string depending on resourceName suffix
     if (!(typeof orgName === "string")) {
-        throw new Error('orgName should be string in initializeEntryBookResourceCategory');
-    }
-    checkResourceOrigin();
-    const tp = transPath(
-        config.dataPath,
-        translationDir(orgName),
-        transId,
-        transRevision.replace(/\s/g, "__")
-    );
-    const booksPath = path.join(tp, resourceOrigin, resourceCategory);
-    if (!fse.pathExistsSync(booksPath)) {
-        fse.mkdirsSync(booksPath);
-    }
-}
-
-const writeEntryResource = (config, orgName, transId, transRevision, resourceOrigin, resourceName, content) => {
-    if (!(typeof orgName === "string")) {
-        throw new Error('orgName should be string in writeEntryResource');
+        throw new Error('orgName should be string in readEntryResource');
     }
     const tp = transPath(
         config.dataPath,
@@ -154,10 +167,27 @@ const writeEntryResource = (config, orgName, transId, transRevision, resourceOri
         transId,
         transRevision.replace(/\s/g, "__")
     );
-    fse.writeFileSync(path.join(tp, resourceOrigin, resourceName), content);
+    let rawRead;
+    if (fse.pathExistsSync(path.join(tp, "original", resourceName))) {
+        rawRead = fse.readFileSync(path.join(tp, "original", resourceName));
+    }
+    if (fse.pathExistsSync(path.join(tp, "generated", resourceName))) {
+        rawRead = fse.readFileSync(path.join(tp, "generated", resourceName));
+    }
+    if (!rawRead) {
+        return null;
+    }
+    if (resourceName.endsWith('.json')) {
+        return JSON.parse(rawRead.toString());
+    } else {
+        return rawRead.toString();
+    }
 }
 
-const writeEntryBookResource = (config, orgName, transId, transRevision, resourceCategory, resourceName, content) => {
+// Write
+
+const writeEntryBookResource = (config, orgName, transId, transRevision, resourceCategory, resourceName, rawContent) => {
+    // Convert JSON to string before writing according to resourceName suffix
     if (!(typeof orgName === "string")) {
         throw new Error('orgName should be string in writeEntryBookResource');
     }
@@ -175,8 +205,51 @@ const writeEntryBookResource = (config, orgName, transId, transRevision, resourc
     } else {
         throw new Error(`No book resource category '${resourceCategory}' for ${transId}/${transRevision}`);
     }
+    const content = resourceName.endsWith('.json') ? JSON.stringify(rawContent) : rawContent;
     fse.writeFileSync(path.join(tp, resourceOrigin, resourceCategory, resourceName), content);
 }
+
+const writeEntryMetadata = (config, orgName, transId, transRevision, contentJson) => {
+    // Expect and write JSON
+    if (!(typeof orgName === "string")) {
+        throw new Error('orgName should be string in writeEntryMetadataJson');
+    }
+    const tp = transPath(
+        config.dataPath,
+        translationDir(orgName),
+        transId,
+        transRevision.replace(/\s/g, "__")
+    );
+    fse.writeJsonSync(path.join(tp, "metadata.json"), contentJson);
+}
+
+const writeEntryResource = (config, orgName, transId, transRevision, resourceOrigin, resourceName, rawContent) => {
+    // Convert JSON to string before writing according to resourceName suffix
+    if (!(typeof orgName === "string")) {
+        throw new Error('orgName should be string in writeEntryResource');
+    }
+    const tp = transPath(
+        config.dataPath,
+        translationDir(orgName),
+        transId,
+        transRevision.replace(/\s/g, "__")
+    );
+    const content = resourceName.endsWith('.json') ? JSON.stringify(rawContent) : rawContent;
+    fse.writeFileSync(path.join(tp, resourceOrigin, resourceName), content);
+}
+
+const writeSuccinctError = (config, orgName, transId, transRevision, succinctErrorJson) => {
+    // Expect and write JSON
+    const tp = transPath(
+        config.dataPath,
+        translationDir(orgName),
+        transId,
+        transRevision.replace(/\s/g, "__")
+    );
+    fse.writeJsonSync(path.join(tp, "succinctError.json"), succinctErrorJson);
+};
+
+// Tests
 
 const entryIsLocked = (config, orgName, transId, transRevision) => {
     const tp = transPath(
@@ -187,6 +260,7 @@ const entryIsLocked = (config, orgName, transId, transRevision) => {
     );
     return fse.pathExistsSync(path.join(tp, "lock.json"));
 };
+
 const entryHasSuccinctError = (config, orgName, transId, transRevision) => {
     const tp = transPath(
         config.dataPath,
@@ -196,6 +270,7 @@ const entryHasSuccinctError = (config, orgName, transId, transRevision) => {
     );
     return fse.pathExistsSync(path.join(tp, "succinctError.json"));
 };
+
 const entryHasGeneratedContent = (config, orgName, transId, transRevision) => {
     const tp = transPath(
         config.dataPath,
@@ -205,6 +280,7 @@ const entryHasGeneratedContent = (config, orgName, transId, transRevision) => {
     );
     return fse.pathExistsSync(path.join(tp, "generated"));
 };
+
 const entryHasOriginal = (config, orgName, transId, transRevision, contentType) => {
     const tp = transPath(
         config.dataPath,
@@ -214,6 +290,7 @@ const entryHasOriginal = (config, orgName, transId, transRevision, contentType) 
     );
     return fse.pathExistsSync(path.join(tp, "original", contentType));
 };
+
 const entryHasGenerated = (config, orgName, transId, transRevision, contentType) => {
     const tp = transPath(
         config.dataPath,
@@ -223,6 +300,7 @@ const entryHasGenerated = (config, orgName, transId, transRevision, contentType)
     );
     return fse.pathExistsSync(path.join(tp, "generated", contentType));
 };
+
 const entryHas = (config, orgName, transId, transRevision, contentType) => {
     return entryHasOriginal(config, orgName, transId, transRevision, contentType) ||
         entryHasOriginal(config, orgName, transId, transRevision, contentType);
@@ -238,7 +316,9 @@ module.exports = {
     initializeEntryBookResourceCategory,
     lockEntry,
     unlockEntry,
-    writeEntryMetadataJson,
+    readEntryMetadata,
+    writeEntryMetadata,
+    readEntryResource,
     writeEntryResource,
     writeEntryBookResource,
     entryIsLocked,
@@ -247,4 +327,5 @@ module.exports = {
     entryHas,
     entryHasOriginal,
     entryHasGenerated,
+    writeSuccinctError
 }
