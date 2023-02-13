@@ -3,7 +3,7 @@ import { Container, Typography, Box, Button } from "@mui/material";
 import { ArrowBack } from "@mui/icons-material";
 import { useParams, Link as RouterLink } from "react-router-dom";
 import { gql, useQuery } from "@apollo/client";
-import { Proskomma } from 'proskomma-core/esm';
+import { Proskomma } from 'proskomma-core';
 import GqlError from "../components/GqlError";
 
 import Header from "../components/Header";
@@ -49,7 +49,7 @@ export default function EntryBrowsePage({setAppLanguage}) {
     const entryInfo = data.localEntry;
 
     console.log(Proskomma);
-    
+
     if (!entryInfo) {
         return (
             <Container fixed className="homepage">
