@@ -1,10 +1,18 @@
 const path = require("path");
-const fse = require("fs-extra");
 const jszip = require("jszip");
 const {ptBookArray} = require("proskomma-utils");
-const appRootPath = require("app-root-path");
-const {transPath, vrsPath} = require('../../lib/dataPaths.js');
+const languageCodes = require("../../lib/languageCodes.json");
 const appRoot = path.resolve(".");
+const {
+    initializeEmptyEntry,
+    deleteEntry,
+    initializeEntryBookResourceCategory,
+    lockEntry,
+    unlockEntry,
+    writeEntryResource,
+    writeEntryBookResource,
+    writeEntryMetadata,
+} = require('../../lib/dataLayers/fs/');
 
 async function getTranslationsCatalog(config, orgRecord) {
 
@@ -20,7 +28,7 @@ async function getTranslationsCatalog(config, orgRecord) {
         source: "DCS",
         resourceTypes: ["bible"],
         id: `${t.id}`,
-        languageCode: t.language,
+        languageCode: languageCodes[t[2]] || t.language,
         title: t.title.trim(),
         downloadURL: ` https://git.door43.org/api/v1/repos/${t.full_name}`,
         textDirection: t.language_direction,
@@ -40,29 +48,56 @@ const fetchUsfm = async (org, trans, config) => {
     const responseJson = JSON.parse(repoDetailsResponse.data);
     const zipUrl = responseJson.catalog.latest.zipball_url;
     const downloadResponse = await http.getBuffer(zipUrl);
-    const tp = transPath(config.dataPath, org.translationDir, trans.id, trans.revision);
 try {
-    const usfmBooksPath = path.join(tp, 'original', 'usfmBooks');
-    if (!fse.pathExistsSync(usfmBooksPath)) {
-        fse.mkdirsSync(usfmBooksPath);
-    }
-    fse.writeJsonSync(path.join(tp, "lock.json"), {actor: "dcs/translations", orgDir: org.translationDir, transId: trans.id, revision: trans.revision});
-    fse.writeJsonSync(path.join(tp, 'metadata.json'), trans);
+    initializeEmptyEntry(config, org.name, trans.id, trans.revision);
+    lockEntry(config, org.name, trans.id, trans.revision, "dcs/translations");
+    initializeEntryBookResourceCategory(
+        config,
+        org.name,
+        trans.id,
+        trans.revision,
+        "original",
+        "usfmBooks"
+    );
+    writeEntryMetadata(config, org.name, trans.id, trans.revision, trans);
     const zip = new jszip();
     await zip.loadAsync(downloadResponse.data);
     for (const bookName of ptBookArray) {
-        const foundFiles = zip.file(new RegExp(`${bookName.code}[^/]*.usfm$`, 'g'));
+        const foundFiles = zip.file(
+            new RegExp(
+                `${bookName.code}[^/]*.usfm$`,
+                'g'
+            )
+        );
         if (foundFiles.length === 1) {
             const fileContent = await foundFiles[0].async('text');
-            fse.writeFileSync(path.join(usfmBooksPath, `${bookName.code}.usfm`), fileContent);
+            writeEntryBookResource(
+                config,
+                org.name,
+                trans.id,
+                trans.revision,
+                "usfmBooks",
+                `${bookName.code}.usfm`,
+                fileContent
+            );
         }
     }
-    const vrsResponse = await http.getText('https://git.door43.org/Door43-Catalog/versification/raw/branch/master/bible/ufw/ufw.vrs');
-    fse.writeFileSync(vrsPath(config.dataPath, org.translationDir, trans.id, trans.revision), vrsResponse.data);
-    fse.remove(path.join(tp, "lock.json"));
+    const vrsResponse = await http.getText(
+        'https://git.door43.org/Door43-Catalog/versification/raw/branch/master/bible/ufw/ufw.vrs'
+    );
+    writeEntryResource(
+        config,
+        org.name,
+        trans.id,
+        trans.revision,
+        "original",
+        `versification.vrs`,
+        vrsResponse.data
+    );
+    unlockEntry(config, org.name, trans.id, trans.revision);
 } catch (err) {
     console.log(err);
-    fse.remove(tp);
+    deleteEntry(config, org.name, trans.id, trans.revision);
 }
 };
 

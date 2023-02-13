@@ -8,6 +8,7 @@ WORKDIR /build
 COPY $client_loc/src/ src/
 COPY $client_loc/public/ public/
 COPY $client_loc/package.json .
+# COPY $client_loc/package-lock.json .
 
 # Install
 RUN npm install
@@ -23,6 +24,7 @@ WORKDIR /build
 COPY $client_loc/src/ src/
 COPY $client_loc/public/ public/
 COPY $client_loc/package.json .
+COPY $client_loc/package-lock.json .
 
 # Install
 RUN npm install

@@ -1,14 +1,35 @@
 import {gql} from "@apollo/client";
 
-async function fetchEntry(client, org, transId, contentType) {
-    const mutationString = `mutation Fetch {
-                fetch%contentType%(
-                  org: """%org%""",
+async function fetchEntry(client, org, transId, contentType, source) {
+    const contentTypes = {
+        USFM: "Usfm",
+        USX: "Usx",
+        succinct: "Succinct"
+    };
+    let mutationString;
+    if (contentType === "succinct") {
+        mutationString = `mutation Fetch {
+                fetchSuccinct(
+                  org: """%org%"""
+                  entryOrg: """%source%"""
                   entryId: """%transId%"""
                 )
         }`.replace('%org%', org)
-        .replace('%transId%', transId)
-        .replace('%contentType%', contentType === "USFM" ? 'Usfm' : 'Usx');
+            .replace('%transId%', transId)
+            .replace('%source%', source)
+            .replace('%contentType%', contentTypes[contentType]);
+
+    }
+     else {
+        mutationString = `mutation Fetch {
+                fetch%contentType%(
+                  org: """%org%"""
+                  entryId: """%transId%"""
+                )
+        }`.replace('%org%', org)
+            .replace('%transId%', transId)
+            .replace('%contentType%', contentTypes[contentType]);
+    }
     client.mutate({mutation: gql`${mutationString}`});
 }
 

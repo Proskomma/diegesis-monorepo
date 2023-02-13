@@ -27,6 +27,7 @@ export default function SyncTab({selectedOrgRecord, searchLang, searchText}) {
                 catalogHasRevisions
                 canSync
                 catalogEntries%searchClause% {
+                    source
                     transId
                     languageCode
                     title
@@ -47,6 +48,7 @@ export default function SyncTab({selectedOrgRecord, searchLang, searchText}) {
     );
 
     const columns = [
+        {id: 'source', label: 'Source', minWidth: 100},
         {id: 'id', label: 'ID', minWidth: 100},
         {id: 'revision', label: 'Revision', minWidth: 50},
         {id: 'languageCode', label: 'Language', minWidth: 50},
@@ -65,6 +67,7 @@ export default function SyncTab({selectedOrgRecord, searchLang, searchText}) {
 
     function createData(catalogEntry, contentType) {
         return {
+            source: catalogEntry.source || "unknown",
             id: catalogEntry.transId,
             languageCode: catalogEntry.languageCode,
             revision: selectedOrgRecord.catalogHasRevisions ? catalogEntry.revision : "unknown",
@@ -77,7 +80,8 @@ export default function SyncTab({selectedOrgRecord, searchLang, searchText}) {
                                 client,
                                 selectedOrgRecord.id,
                                 catalogEntry.transId,
-                                contentType
+                                contentType,
+                                catalogEntry.source
                             );
                         } catch (err) {
                             console.log("ERROR FROM FETCHENTRY", err.msg);

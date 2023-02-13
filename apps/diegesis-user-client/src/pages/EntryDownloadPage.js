@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useState, useContext} from "react";
 import {Container, Typography, Grid, Box, Button} from "@mui/material";
 import {useParams, Link as RouterLink} from "react-router-dom";
 import {ArrowBack, Download} from '@mui/icons-material';
@@ -9,11 +9,12 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import Spinner from "../components/Spinner";
 import BookSelector from "../components/BookSelector";
+import {directionText} from "../i18n/languageDirection";
+import AppLangContext from "../contexts/AppLangContext";
 
-export default function EntryDownloadPage() {
-
+export default function EntryDownloadPage({setAppLanguage}) {
+    const appLang = useContext(AppLangContext);
     const {source, entryId, revision} = useParams();
-
     const [selectedBook, setSelectedBook] = useState("");
 
     const client = useApolloClient();
@@ -58,23 +59,23 @@ export default function EntryDownloadPage() {
 
     const downloadBook = async (downloadType, bookCode) => {
         const downloadTypes = {
-            usfm: {
+            usfmBooks: {
                 mime: "text/plain",
                 suffix: "usfm.txt"
             },
-            usx: {
+            usxBooks: {
                 mime: "text/xml",
                 suffix: "usx.xml"
             },
-            perf: {
+            perfBooks: {
                 mime: "application/json",
                 suffix: "perf.json"
             },
-            simplePerf: {
+            simplePerfBooks: {
                 mime: "application/json",
                 suffix: "simple_perf.json"
             },
-            sofria: {
+            sofriaBooks: {
                 mime: "application/json",
                 suffix: "sofria.json"
             }
@@ -143,13 +144,24 @@ export default function EntryDownloadPage() {
 
     const entryInfo = data.localEntry;
 
-    let bookCodes;
-    if (entryInfo.usfmBookCodes.length > 0) {
-        bookCodes = [...entryInfo.usfmBookCodes];
-    } else {
-        bookCodes = [...entryInfo.usxBookCodes];
+    if (!entryInfo) {
+        return (
+            <Container fixed className="homepage">
+                <Header setAppLanguage={setAppLanguage} selected="list"/>
+                <Box dir={directionText(appLang)} style={{marginTop: "100px"}}>
+                    <Typography variant="h4" paragraph="true" sx={{mt: "20px"}}>
+                        Processing on server - wait a while and hit "refresh"
+                    </Typography>
+                </Box>
+            </Container>
+        );
     }
-    
+
+    let bookCodes = new Set([]);
+    for (const downloadType of ["usfm", "usx", "perf", "simplePerf", "sofria"]) {
+        entryInfo[`${downloadType}BookCodes`].forEach(b => bookCodes.add(b));
+    }
+
     return <Container fixed className="homepage">
         <Header selected="list"/>
         <Box style={{marginTop: "100px"}}>
@@ -164,7 +176,7 @@ export default function EntryDownloadPage() {
                     <Typography variant="h5" paragraph="true">Canon-level Resources</Typography>
                 </Grid>
                 {
-                    entryInfo.canonResources
+                    entryInfo.canonResources && entryInfo.canonResources
                         .map(cro => cro.type)
                         .map(
                         cr => <>
@@ -181,18 +193,19 @@ export default function EntryDownloadPage() {
                     )
                 }
                 {
-                    bookCodes.length > 0 &&
+                    bookCodes.size > 0 &&
                     <>
                         <Grid item xs={4} md={2}>
                             <Typography variant="h5" paragraph="true">Book Resources</Typography>
                         </Grid>
                         <Grid item xs={8} md={10}>
-                            <BookSelector bookCodes={bookCodes} selectedBook={selectedBook}
+                            <BookSelector bookCodes={Array.from(bookCodes)} selectedBook={selectedBook}
                                           setSelectedBook={setSelectedBook}/>
                         </Grid>
                         {
                             selectedBook !== "" &&
                             entryInfo.bookResourceTypes
+                                .map(rt => rt.replace("Books", ""))
                                 .map(
                                 rt => <>
                                     <Grid item xs={4}>
@@ -200,8 +213,8 @@ export default function EntryDownloadPage() {
                                     </Grid>
                                     <Grid item xs={8}>
                                         <Button
-                                            onClick={() => downloadBook(rt, selectedBook)}
-                                            disabled={!entryInfo[`${rt}BookCodes`].includes(selectedBook)}
+                                            onClick={() => downloadBook(`${rt}Books`, selectedBook)}
+                                            disabled={!entryInfo || !entryInfo[`${rt}BookCodes`] || !entryInfo[`${rt}BookCodes`].includes(selectedBook)}
                                         >
                                             <Download/>
                                         </Button>

@@ -99,6 +99,9 @@ const querySchema = gql`
 
     """A Catalog Entry"""
     type CatalogEntry {
+    
+        """The source of the entry"""
+        source: String
 
         """An id for the entry which is unique within the organization"""
         transId: EntryId!
@@ -196,13 +199,13 @@ const querySchema = gql`
             type: String!
         ): CanonResource
 
-        """Book-level resources"""
+        """Book-level resources for one book"""
         bookResources(
           """The bookCode"""
           bookCode: String!
         ): [BookResource!]!
 
-        """Book-level resource of a given type for the entry, if it exists"""
+        """Book-level resource of a given type for one book, if it exists"""
         bookResource(
           """The bookCode"""
           bookCode: String!
@@ -210,11 +213,11 @@ const querySchema = gql`
           type: String!
         ): BookResource
 
-        """Book codes for book-level resources, optionally filtered by type"""
+        """Book codes for book-level resources"""
         bookCodes(
-            """The resource type"""
-            type: String
-        ) : [String!]!
+           """The type of resource that must exist for this book code"""
+           type: String
+        ): [String!]!
 
         """Resource types that exist for this book"""
         bookResourceTypes: [String!]!
@@ -303,6 +306,15 @@ const mutationSchema = gql`
         fetchUsx(
             """The name of the organization"""
             org: OrgName!
+            """The id of the entry"""
+            entryId: EntryId!
+        ) : Boolean!
+        """Fetches and processes the specified Succinct content from a remote server"""
+        fetchSuccinct(
+            """The name of the peer organization"""
+            org: OrgName!
+            """The name of the organization of the entry"""
+            entryOrg: OrgName!
             """The id of the entry"""
             entryId: EntryId!
         ) : Boolean!

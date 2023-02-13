@@ -21,8 +21,6 @@ export default function LocalTab({selectedOrg, searchLang, searchText}) {
                 language
                 owner
                 title
-                usfmBookCodes: bookCodes(type:"usfm")
-                usxBookCodes: bookCodes(type: "usx")
                 succinctRecord: canonResource(type:"succinct") {type}
                 hasSuccinctError
                 vrsRecord: canonResource(type:"versification") {type}

@@ -36,7 +36,7 @@ npm install
 Start by copying `config/debug_config.json`. You may want to create a `local` directory for this. (That directory is gitignore'd.)
 ```
 mkdir local
-copy config/debug_config.json local/
+cp config/debug_config.json local/
 ```
 #### Choose a server name
 This is the identifier used for peer to peer transactions. Pick something short and meaningful in upper-case letters and digits.
@@ -52,33 +52,9 @@ node add_admin_user.js ../local/debug_config.json auser aGreatPassword admin arc
 ```
 You should then see a superuser record in your config file.
 
-#### Add some clients
-
-Diegesis will run with no clients, and/or with third party clients, but the standard setup requires the following in the config file:
-```
-  "staticPaths": [
-    {
-      "path": "../diegesis-admin-client/build",
-      "url": "/admin"
-    },
-    {
-      "path": "../diegesis-user-client/build",
-      "url": "/",
-      "redirectTarget": "../diegesis-user-client/build/index.html",
-      "redirects": [
-        "/who",
-        "/how",
-        "/list",
-        "/blend",
-        "/entry/*"
-      ]
-    }
-  ],
-```
-This declares two clients, one at root and one at /admin, with React-style redirection for the client at root.
-
 ### Run the server
 ```
+# In diegesis-server directory
 node src/index.js local/debug_config.json
 ```
 
