@@ -18,7 +18,7 @@
     "deep-copy-all": "^1.3.4",
     "fs": "npm:crypto-browserify",
     "graphql": "^16.6.0",
-    "proskomma-core": "0.9.15",
+    "proskomma-core": "0.9.14",
     "proskomma-json-tools": "^0.6.6",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
