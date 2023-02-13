@@ -6,10 +6,7 @@ import {
   Box,
   Select,
   MenuItem,
-  Fab,
-  SvgIcon,
 } from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
 
 import langTable from "../i18n/languages.json";
 import AppLangContext from "../contexts/AppLangContext";

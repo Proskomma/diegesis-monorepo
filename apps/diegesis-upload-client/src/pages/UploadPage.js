@@ -20,12 +20,25 @@ import { directionText } from "../i18n/languageDirection";
 import UploadFormField from "../components/UploadFormField";
 import UploadedFileField from "../components/UploadedFileField";
 import { useSnackbar } from "notistack";
+import { useApolloClient,gql} from "@apollo/client";
 
 const documentSuffixRegex = /^[A-Za-z0-9-_()]+(.txt|.usfm|.sfm)$/;
 const documentRegex = /^\\id ([A-Z1-6]{3})/;
 const BookRegex = /[a-zA-Z0-9]{3}/;
 
 export default function UploadPage({ setAppLanguage }) {
+  const client = useApolloClient();
+
+  async function createEntry(client) {
+    const query = buildQuery()
+    console.log(query)
+    client.mutate({
+      mutation: gql`
+        ${query}
+      `,
+    });
+  }
+
   const appLang = useContext(AppLangContext);
   const { enqueueSnackbar } = useSnackbar();
   const [uploads, setUploads] = useState([]);
@@ -139,32 +152,39 @@ export default function UploadPage({ setAppLanguage }) {
   const replacing = (data) => {
     return data.replace(/"""/g, `'''`);
   };
-  console.log("fileValues", fileValues);
-  console.log("formValues", formValues);
-  let gqlBits = [];
-  gqlBits.push("createLocalEntry(");
-  gqlBits.push("metadata:[");
-  for (const [key, value] of Object.entries(formValues)) {
-    gqlBits.push("{");
-    gqlBits.push(`key: """${replacing(key)}"""`);
-    gqlBits.push(`value:"""${replacing(value)}"""`);
-    gqlBits.push("}");
-  }
-  gqlBits.push("]");
-  gqlBits.push("resources:[");
-  for (const resource of fileValues) {
-    gqlBits.push("{");
-    gqlBits.push(`bookCode: """${replacing(resource.type)}"""`);
-    gqlBits.push(`content:"""${replacing(resource.content)}"""`);
-    gqlBits.push("}");
-  }
-  gqlBits.push("]");
-  gqlBits.push(")");
-  console.log(gqlBits.join("\n"));
+
+  const buildQuery = () => {
+    let gqlBits = [];
+    gqlBits.push("mutation { createLocalEntry(");
+    gqlBits.push("metadata:[");
+    for (const [key, value] of Object.entries(formValues)) {
+      gqlBits.push("{");
+      gqlBits.push(`key: """${replacing(key)}"""`);
+      gqlBits.push(`value:"""${replacing(value)}"""`);
+      gqlBits.push("}");
+    }
+    gqlBits.push("]");
+    gqlBits.push("resources:[");
+    for (const resource of fileValues) {
+      gqlBits.push("{");
+      gqlBits.push(`bookCode: """${replacing(resource.type)}"""`);
+      gqlBits.push(`content:"""${replacing(resource.content)}"""`);
+      gqlBits.push("}");
+    }
+    gqlBits.push("]");
+    gqlBits.push(")}");
+    return gqlBits.join("\n");
+  };
+
   return (
     <Container fixed className="uploadpage">
-      <Header setAppLanguage={setAppLanguage} selected="add"/>
-      <Typography dir={directionText(appLang)} variant="h4" paragraph="true" sx={{ mt: "100px" }}>
+      <Header setAppLanguage={setAppLanguage} selected="add" />
+      <Typography
+        dir={directionText(appLang)}
+        variant="h4"
+        paragraph="true"
+        sx={{ mt: "100px" }}
+      >
         {i18n(appLang, "Add_Document")}
       </Typography>
       <form>
@@ -235,11 +255,14 @@ export default function UploadPage({ setAppLanguage }) {
           </Grid>
           <Grid item xs={12}>
             <Button
-              type="submit"
               variant="contained"
               size="large"
               style={{ marginBottom: "20px", marginTop: "20px" }}
               disabled={!isValidForm(formValues)}
+              onClick={
+                () => createEntry(
+                  client
+              )}
             >
               {i18n(appLang, "SUBMIT")}
             </Button>

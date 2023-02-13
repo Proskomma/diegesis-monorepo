@@ -722,6 +722,17 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                     return false;
                 }
             },
+            createLocalEntry: async (root, args, context) => {
+                if (!context.auth || !context.auth.authenticated) {
+                    throw new Error(`No auth found for createLocalEntry mutation`);
+                }
+                if (!context.auth.roles || !context.auth.roles.includes("archivist")) {
+                    throw new Error(`Required auth role 'archivist' not found for createLocalEntry`);
+                }
+                console.log(root)
+                console.log(args)
+                console.log(context)
+            },
         },
     };
 
