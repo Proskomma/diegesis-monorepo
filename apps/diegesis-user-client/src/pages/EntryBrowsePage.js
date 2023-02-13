@@ -53,7 +53,13 @@ export default function EntryBrowsePage({setAppLanguage}) {
                 <Header setAppLanguage={setAppLanguage} selected="list"/>
                 <Box dir={directionText(appLang)} style={{marginTop: "100px"}}>
                     <Typography variant="h4" paragraph="true" sx={{mt: "20px"}}>
-                        Processing on server - wait a while and hit "refresh"
+                        <Button>
+                            <RouterLink to={`/entry/details/${source}/${entryId}/${revision}`}><ArrowBack/></RouterLink>
+                        </Button>
+                        Processing
+                    </Typography>
+                    <Typography paragraph="true">
+                        Unable to render this new translation at present as server is currently processing the new data: please try again in a few minutes.
                     </Typography>
                 </Box>
             </Container>
@@ -99,7 +105,9 @@ export default function EntryBrowsePage({setAppLanguage}) {
             }
             {
                 (!entryInfo || !entryInfo.canonResource || !entryInfo.canonResource.content) &&
-                <Typography paragraph="true">Unable to render this translation at present: please try later</Typography>
+                <Typography paragraph="true">
+                    Unable to render this new translation at present as server has not yet processed the new data: please try again in a few minutes.
+                </Typography>
             }
             <Footer/>
         </Box>

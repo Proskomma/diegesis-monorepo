@@ -10,7 +10,7 @@ const {
     entryHasGenerated,
     entryHas,
     initializeEntryBookResourceCategory,
-    entryBookResources,
+    entryBookResourcesForCategory,
     readEntryResource,
     readEntryBookResource,
     writeEntryResource,
@@ -26,7 +26,7 @@ function doDownloads({configString, org, transId, revision, contentType}) {
         const metadata = readEntryMetadata(config, org, transId, revision);
         let bookContent = null;
         if (["usfm", "usx"].includes(contentType)) {
-            const bookResources = entryBookResources(config, org, transId, revision, `${contentType}Books`);
+            const bookResources = entryBookResourcesForCategory(config, org, transId, revision, `${contentType}Books`);
             bookContent = bookResources.map(r => readEntryBookResource(config, org, transId, revision, `${contentType}Books`, r));
         }
         let vrsContent = null;

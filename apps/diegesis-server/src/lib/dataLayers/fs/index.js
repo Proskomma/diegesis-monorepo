@@ -100,7 +100,7 @@ const deleteGeneratedEntryContent = (config, orgName, transId, transRevision) =>
     fse.remove(path.join(tp, "generated"));
 }
 
-const _EntryResources = (config, orgName, transId, transRevision, resourceOrigin) => {
+const _entryResources = (config, orgName, transId, transRevision, resourceOrigin) => {
     const tp = transPath(
         config.dataPath,
         translationDir(orgName),
@@ -123,11 +123,11 @@ const _EntryResources = (config, orgName, transId, transRevision, resourceOrigin
 }
 
 const originalEntryResources = (config, orgName, transId, transRevision) => {
-    return _EntryResources(config, orgName, transId, transRevision, "original");
+    return _entryResources(config, orgName, transId, transRevision, "original");
 }
 
 const generatedEntryResources = (config, orgName, transId, transRevision) => {
-    return _EntryResources(config, orgName, transId, transRevision, "generated");
+    return _entryResources(config, orgName, transId, transRevision, "generated");
 }
 const entryResources = (config, orgName, transId, transRevision) => {
     return [
@@ -153,7 +153,7 @@ const initializeEntryBookResourceCategory = (config, orgName, transId, transRevi
     }
 }
 
-const entryBookResources = (config, orgName, transId, transRevision, bookResourceCategory) => {
+const entryBookResourcesForCategory = (config, orgName, transId, transRevision, bookResourceCategory) => {
     if (!(typeof orgName === "string")) {
         throw new Error('orgName should be string in entryBookResources');
     }
@@ -175,6 +175,161 @@ const entryBookResources = (config, orgName, transId, transRevision, bookResourc
     }
     return fse.readdirSync(path.join(tp, resourceOrigin, bookResourceCategory));
 }
+
+const _entryBookResourcesForBook = (config, orgName, transId, transRevision, resourceOrigin, bookCode) => {
+    const tp = transPath(
+        config.dataPath,
+        translationDir(orgName),
+        transId,
+        transRevision.replace(/\s/g, "__")
+    );
+    const resourceDirPath = path.join(tp, resourceOrigin);
+    if (fse.pathExistsSync(resourceDirPath)) {
+        const ret = [];
+        for (const bookResourceDir of fse.readdirSync(resourceDirPath)
+            .filter(p => fse.lstatSync(path.join(resourceDirPath, p)).isDirectory())) {
+            for (const resource of fse.readdirSync(path.join(resourceDirPath, bookResourceDir))
+                .filter(r => r.startsWith(`${bookCode}.`))) {
+                ret.push({
+                    type: bookResourceDir,
+                    isOriginal: (resourceOrigin === "original"),
+                    content: readEntryBookResource(config, orgName, transId, transRevision, bookResourceDir, resource),
+                    suffix: resource.split('.')[1]
+                })
+            }
+        }
+        return ret;
+    } else {
+        return [];
+    }
+}
+
+const originalEntryBookResourcesForBook = (config, orgName, transId, transRevision, bookCode) => {
+    return _entryBookResourcesForBook(config, orgName, transId, transRevision, "original", bookCode);
+}
+
+const generatedEntryBookResourcesForBook = (config, orgName, transId, transRevision, bookCode) => {
+    return _entryBookResourcesForBook(config, orgName, transId, transRevision, "generated", bookCode);
+}
+
+const entryBookResourcesForBook = (config, orgName, transId, transRevision, bookCode) => {
+    return [
+        ...originalEntryBookResourcesForBook(config, orgName, transId, transRevision, bookCode),
+        ...generatedEntryBookResourcesForBook(config, orgName, transId, transRevision, bookCode)
+    ];
+}
+
+const _entryBookResourceBookCodes = (config, orgName, transId, transRevision, resourceOrigin) => {
+    const tp = transPath(
+        config.dataPath,
+        translationDir(orgName),
+        transId,
+        transRevision.replace(/\s/g, "__")
+    );
+    const resourceDirPath = path.join(tp, resourceOrigin);
+    const bookCodes = new Set([]);
+    if (fse.pathExistsSync(resourceDirPath)) {
+        for (const bookResourceDir of fse.readdirSync(resourceDirPath)
+            .filter(p => fse.lstatSync(path.join(tp, resourceOrigin, p)).isDirectory())) {
+            for (const resource of fse.readdirSync(path.join(resourceDirPath, bookResourceDir))) {
+                bookCodes.add(resource.split('.')[0]);
+            }
+        }
+        return Array.from(bookCodes);
+    } else {
+        return [];
+    }
+}
+
+const originalEntryBookResourceBookCodes = (config, orgName, transId, transRevision) => {
+    return _entryBookResourceBookCodes(config, orgName, transId, transRevision, "original");
+}
+
+const generatedEntryBookResourceBookCodes = (config, orgName, transId, transRevision) => {
+    return _entryBookResourceBookCodes(config, orgName, transId, transRevision, "generated");
+}
+
+const entryBookResourceBookCodes = (config, orgName, transId, transRevision) => {
+    return Array.from(
+        new Set([
+                ...originalEntryBookResourceBookCodes(config, orgName, transId, transRevision),
+                ...generatedEntryBookResourceBookCodes(config, orgName, transId, transRevision)
+            ]
+        )
+    );
+}
+
+const _entryBookResourceBookCodesForCategory = (config, orgName, transId, transRevision, resourceOrigin, category) => {
+    const tp = transPath(
+        config.dataPath,
+        translationDir(orgName),
+        transId,
+        transRevision.replace(/\s/g, "__")
+    );
+    const resourceDirPath = path.join(tp, resourceOrigin, `${category}Books`);
+    const bookCodes = new Set([]);
+    if (fse.pathExistsSync(resourceDirPath) && fse.lstatSync(resourceDirPath).isDirectory()) {
+        for (const resource of fse.readdirSync(resourceDirPath)) {
+            bookCodes.add(resource.split('.')[0]);
+        }
+        return Array.from(bookCodes);
+    } else {
+        return [];
+    }
+}
+
+const originalEntryBookResourceBookCodesForCategory = (config, orgName, transId, transRevision, category) => {
+    return _entryBookResourceBookCodesForCategory(config, orgName, transId, transRevision, "original", category);
+}
+
+const generatedEntryBookResourceBookCodesForCategory = (config, orgName, transId, transRevision, category) => {
+    return _entryBookResourceBookCodesForCategory(config, orgName, transId, transRevision, "generated", category);
+}
+
+const entryBookResourceBookCodesForCategory = (config, orgName, transId, transRevision, category) => {
+    return Array.from(
+        new Set([
+                ...originalEntryBookResourceBookCodesForCategory(config, orgName, transId, transRevision, category),
+                ...generatedEntryBookResourceBookCodesForCategory(config, orgName, transId, transRevision, category)
+            ]
+        )
+    );
+}
+
+const _entryBookResourceCategories = (config, orgName, transId, transRevision, resourceOrigin) => {
+    const tp = transPath(
+        config.dataPath,
+        translationDir(orgName),
+        transId,
+        transRevision.replace(/\s/g, "__")
+    );
+    const resourcesDirPath = path.join(tp, resourceOrigin);
+    if (fse.pathExistsSync(resourcesDirPath)) {
+        return fse.readdirSync(resourcesDirPath)
+            .filter(c => fse.lstatSync(path.join(resourcesDirPath, c)).isDirectory());
+    } else {
+        return [];
+    }
+}
+
+const originalEntryBookResourceCategories = (config, orgName, transId, transRevision) => {
+    return _entryBookResourceCategories(config, orgName, transId, transRevision, "original");
+}
+
+const generatedEntryBookResourceCategories = (config, orgName, transId, transRevision) => {
+    return _entryBookResourceCategories(config, orgName, transId, transRevision, "generated");
+}
+
+const entryBookResourceCategories = (config, orgName, transId, transRevision) => {
+    return Array.from(
+        new Set([
+                ...originalEntryBookResourceCategories(config, orgName, transId, transRevision),
+                ...generatedEntryBookResourceCategories(config, orgName, transId, transRevision)
+            ]
+        )
+    );
+}
+
 
 // Entry Tests
 
@@ -289,7 +444,12 @@ const lockEntry = (config, orgName, transId, transRevision, lockMsg) => {
         transId,
         transRevision.replace(/\s/g, "__")
     );
-    fse.writeJsonSync(path.join(tp, "lock.json"), {actor: lockMsg, orgDir: translationDir(orgName), transId: transId, revision: transRevision});
+    fse.writeJsonSync(path.join(tp, "lock.json"), {
+        actor: lockMsg,
+        orgDir: translationDir(orgName),
+        transId: transId,
+        revision: transRevision
+    });
 }
 
 const unlockEntry = (config, orgName, transId, transRevision) => {
@@ -464,7 +624,7 @@ module.exports = {
     deleteEntry,
     deleteGeneratedEntryContent,
     initializeEntryBookResourceCategory,
-    entryBookResources,
+    entryBookResourcesForCategory,
     lockEntry,
     unlockEntry,
     readEntryMetadata,
@@ -489,4 +649,16 @@ module.exports = {
     originalEntryResources,
     generatedEntryResources,
     entryResources,
+    originalEntryBookResourcesForBook,
+    generatedEntryBookResourcesForBook,
+    entryBookResourcesForBook,
+    originalEntryBookResourceBookCodes,
+    generatedEntryBookResourceBookCodes,
+    entryBookResourceBookCodes,
+    originalEntryBookResourceBookCodesForCategory,
+    generatedEntryBookResourceBookCodesForCategory,
+    entryBookResourceBookCodesForCategory,
+    originalEntryBookResourceCategories,
+    generatedEntryBookResourceCategories,
+    entryBookResourceCategories,
 }

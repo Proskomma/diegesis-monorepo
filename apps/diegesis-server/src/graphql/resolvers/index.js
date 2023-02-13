@@ -20,6 +20,12 @@ const {
     readEntryMetadata,
     orgEntries,
     entryResources,
+    entryBookResourcesForBook,
+    entryBookResourceBookCodes,
+    entryBookResourceBookCodesForCategory,
+    entryBookResourceCategories,
+    originalEntryBookResourceCategories,
+    generatedEntryBookResourceCategories,
 } = require("../../lib/dataLayers/fs");
 
 const makeResolvers = async (orgsData, orgHandlers, config) => {
@@ -145,7 +151,6 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
     }
 
     const entryCanSync = (org, entry) => {
-        let path;
         if (org.catalogHasRevisions && entryRevisionExists(config, translationDir(org.name), entry.id, entry.revision)) {
             return false;
         } else if (entryExists(config, translationDir(org.name), entry.id)) {
@@ -326,7 +331,7 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
             },
             localEntry: (root, args) => {
                 return localEntry(
-                    translationDir(orgsData[args.source].name),
+                    orgsData[args.source].name,
                     args.id,
                     args.revision
                 );
@@ -391,137 +396,33 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                 return entryResources(config, orgsData[root.source].name, root.id, root.revision);
             },
             canonResource: (root, args) => {
-                const searchPaths = [
-                    ['original', originalResourcePath(config.dataPath, translationDir(orgsData[root.source].name), root.id, root.revision)],
-                    ['generated', generatedResourcePath(config.dataPath, translationDir(orgsData[root.source].name), root.id, root.revision)],
-                ];
-                for (const [searchName, searchPath] of searchPaths) {
-                    if (!fse.existsSync(searchPath)) {
-                        continue;
-                    }
-                    for (const resource of fse.readdirSync(searchPath)) {
-                        const resourcePath = path.join(searchPath, resource);
-                        if (fse.lstatSync(resourcePath).isDirectory()) {
-                            continue;
-                        }
-                        if (resource.split('.')[0] === args.type) {
-                            return {
-                                type: resource.split('.')[0],
-                                isOriginal: searchName === 'original',
-                                content: fse.readFileSync(resourcePath).toString(),
-                                suffix: resource.split('.')[1]
-                            };
-                        }
-                    }
+                const matchingResources = entryResources(config, orgsData[root.source].name, root.id, root.revision)
+                    .filter(r => r.type === args.type);
+                if (matchingResources.length === 0) {
+                    return null;
                 }
-                return null;
+                return matchingResources[0];
             },
             bookResources: (root, args) => {
-                let ret = [];
-                const searchPaths = [
-                    ['original', originalResourcePath(config.dataPath, translationDir(orgsData[root.source].name), root.id, root.revision)],
-                    ['generated', generatedResourcePath(config.dataPath, translationDir(orgsData[root.source].name), root.id, root.revision)],
-                ];
-                for (const [searchName, searchPath] of searchPaths) {
-                    if (!fse.existsSync(searchPath)) {
-                        continue;
-                    }
-                    for (const resourceDir of fse.readdirSync(searchPath)) {
-                        const resourceDirPath = path.join(searchPath, resourceDir);
-                        if (!fse.lstatSync(resourceDirPath).isDirectory()) {
-                            continue;
-                        }
-                        for (const bookResource of fse.readdirSync(resourceDirPath)) {
-                            if (bookResource.split('.')[0] === args.bookCode) {
-                                ret.push({
-                                    type: resourceDir.replace('Books', ''),
-                                    isOriginal: searchName === 'original',
-                                    content: fse.readFileSync(path.join(resourceDirPath, bookResource)).toString(),
-                                    suffix: bookResource.split('.')[1]
-                                })
-                            }
-                        }
-                    }
-                }
-                return ret;
+                return entryBookResourcesForBook(config, orgsData[root.source].name, root.id, root.revision, args.bookCode);
             },
             bookResource: (root, args) => {
-                const searchPaths = [
-                    ['original', originalResourcePath(config.dataPath, translationDir(orgsData[root.source].name), root.id, root.revision)],
-                    ['generated', generatedResourcePath(config.dataPath, translationDir(orgsData[root.source].name), root.id, root.revision)],
-                ];
-                for (const [searchName, searchPath] of searchPaths) {
-                    if (!fse.existsSync(searchPath)) {
-                        continue;
-                    }
-                    const resourceDirPath = path.join(searchPath, `${args.type}Books`);
-                    if (!fse.existsSync(resourceDirPath) || !fse.lstatSync(resourceDirPath).isDirectory()) {
-                        continue;
-                    }
-                    for (const bookResource of fse.readdirSync(resourceDirPath)) {
-                        if (bookResource.split('.')[0] === args.bookCode) {
-                            return {
-                                type: args.type,
-                                isOriginal: searchName === 'original',
-                                content: fse.readFileSync(path.join(resourceDirPath, bookResource)).toString(),
-                                suffix: bookResource.split('.')[1]
-                            };
-                        }
-                    }
+                const resources = entryBookResourcesForBook(config, orgsData[root.source].name, root.id, root.revision, args.bookCode);
+                const matchingResources = resources.filter(r => r.type === args.type);
+                if (matchingResources.length === 0) {
+                    return null;
                 }
-                return null;
+                return matchingResources[0];
             },
             bookCodes: (root, args) => {
-                if (root.stats && root.stats.documents) {
-                    let typeBooks = null;
-                    if (args.type) {
-                        let typeBooksArray = [];
-                        const generatedP = path.join(
-                            generatedResourcePath(config.dataPath, translationDir(orgsData[root.source].name), root.id, root.revision),
-                            `${args.type}Books`
-                        );
-                        if (fse.pathExistsSync(generatedP)) {
-                            fse.readdirSync(generatedP).map(fn => fn.split('.')[0]).forEach(fn => typeBooksArray.push(fn));
-                        }
-                        const originalP = path.join(
-                            originalResourcePath(config.dataPath, translationDir(orgsData[root.source].name), root.id, root.revision),
-                            `${args.type}Books`
-                        );
-                        if (fse.pathExistsSync(originalP)) {
-                            fse.readdirSync(originalP).map(fn => fn.split('.')[0]).forEach(fn => typeBooksArray.push(fn));
-                        }
-                        typeBooks = new Set(typeBooksArray);
-                    }
-                    return Object.keys(root.stats.documents)
-                        .filter(b => !typeBooks || typeBooks.has(b))
-                        .sort((a, b) =>
-                            ptBooks[a].position - ptBooks[b].position);
+                if (args.type) {
+                    return entryBookResourceBookCodesForCategory(config, orgsData[root.source].name, root.id, root.revision, args.type);
                 } else {
-                    return [];
+                    return entryBookResourceBookCodes(config, orgsData[root.source].name, root.id, root.revision);
                 }
             },
-            bookResourceTypes: (root, args) => {
-                let ret = [];
-                const searchPaths = [
-                    ['original', originalResourcePath(config.dataPath, translationDir(orgsData[root.source].name), root.id, root.revision)],
-                    ['generated', generatedResourcePath(config.dataPath, translationDir(orgsData[root.source].name), root.id, root.revision)],
-                ];
-                for (const [searchName, searchPath] of searchPaths) {
-                    if (!fse.existsSync(searchPath)) {
-                        continue;
-                    }
-                    for (const resourceDir of fse.readdirSync(searchPath)) {
-                        const resourceDirPath = path.join(searchPath, resourceDir);
-                        if (!fse.lstatSync(resourceDirPath).isDirectory()) {
-                            continue;
-                        }
-                        if (args.type && resourceDir !== `${args.type}Books`) {
-                            continue;
-                        }
-                        ret.push(resourceDir.replace('Books', ''));
-                    }
-                }
-                return ret;
+            bookResourceTypes: (root) => {
+                return entryBookResourceCategories(config, orgsData[root.source].name, root.id, root.revision);
             },
             hasSuccinctError: root => {
                 return false;
@@ -555,12 +456,36 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
         },
         CatalogEntry: {
             transId: root => root.id,
-            isLocal: (trans, args, context) => fse.pathExists(transParentPath(config.dataPath, translationDir(context.orgData.name), trans.id)),
-            isRevisionLocal: (trans, args, context) =>
+            isLocal: (root, args, context) => entryExists(config, orgsData[root.source].name, root.id),
+            isRevisionLocal: (root, args, context) =>
                 context.orgData.catalogHasRevisions ?
-                    fse.pathExists(transPath(config.dataPath, translationDir(context.orgData.name), trans.id, trans.revision)) :
+                    entryRevisionExists(config, orgsData[root.source].name, root.id, root.revision) :
                     null,
         },
+        CanonResource: {
+            content: root => {
+                if (!root.content) { // shouldn't happen
+                    return null;
+                }
+                if (typeof root.content === "object") {
+                    return JSON.stringify(root.content);
+                } else {
+                    return root.content;
+                }
+            }
+        },
+        BookResource: {
+            content: root => {
+                if (!root.content) { // shouldn't happen
+                    return null;
+                }
+                if (typeof root.content === "object") {
+                    return JSON.stringify(root.content);
+                } else {
+                    return root.content;
+                }
+            }
+        }
     };
     const mutationResolver = {
         Mutation: {

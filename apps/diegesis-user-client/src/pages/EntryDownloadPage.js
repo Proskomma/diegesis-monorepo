@@ -59,23 +59,23 @@ export default function EntryDownloadPage({setAppLanguage}) {
 
     const downloadBook = async (downloadType, bookCode) => {
         const downloadTypes = {
-            usfm: {
+            usfmBooks: {
                 mime: "text/plain",
                 suffix: "usfm.txt"
             },
-            usx: {
+            usxBooks: {
                 mime: "text/xml",
                 suffix: "usx.xml"
             },
-            perf: {
+            perfBooks: {
                 mime: "application/json",
                 suffix: "perf.json"
             },
-            simplePerf: {
+            simplePerfBooks: {
                 mime: "application/json",
                 suffix: "simple_perf.json"
             },
-            sofria: {
+            sofriaBooks: {
                 mime: "application/json",
                 suffix: "sofria.json"
             }
@@ -205,6 +205,7 @@ export default function EntryDownloadPage({setAppLanguage}) {
                         {
                             selectedBook !== "" &&
                             entryInfo.bookResourceTypes
+                                .map(rt => rt.replace("Books", ""))
                                 .map(
                                 rt => <>
                                     <Grid item xs={4}>
@@ -212,8 +213,8 @@ export default function EntryDownloadPage({setAppLanguage}) {
                                     </Grid>
                                     <Grid item xs={8}>
                                         <Button
-                                            onClick={() => downloadBook(rt, selectedBook)}
-                                            disabled={!entryInfo[`${rt}BookCodes`].includes(selectedBook)}
+                                            onClick={() => downloadBook(`${rt}Books`, selectedBook)}
+                                            disabled={!entryInfo || !entryInfo[`${rt}BookCodes`] || !entryInfo[`${rt}BookCodes`].includes(selectedBook)}
                                         >
                                             <Download/>
                                         </Button>
