@@ -20,6 +20,8 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
         EntryId: new RegExp(/^[A-Za-z0-9_-]{1,64}$/),
         BookCode: new RegExp(/^[A-Z0-9]{3}$/),
         ContentType: new RegExp(/^(USFM|USX|succinct)$/),
+        scriptRegex: /^[A-Za-z0-9]{1,16}$/,
+        abbreviationRegex : /^[A-Za-z][A-Za-z0-9]+$/ 
     }
 
     const orgNameScalar = new GraphQLScalarType({
@@ -729,9 +731,55 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                 if (!context.auth.roles || !context.auth.roles.includes("archivist")) {
                     throw new Error(`Required auth role 'archivist' not found for createLocalEntry`);
                 }
-                console.log(root)
-                console.log(args)
-                console.log(context)
+                for (const arg of args.metadata) {
+                    if(arg.key !== 'langCode'){
+                        if(arg.value.length === 0){
+                            console.log(`please fill in the ${arg.key} field`)
+                            return false
+                        }
+                    }
+                    if(arg.key === 'langCode'){
+                        if(arg.value === 'pleaseChoose'){
+                            console.log(`please fill in the ${arg.key} field`)
+                            return false
+                        }
+                    }
+                    if(arg.key === 'title'){
+                        if(arg.value.length < 6 || arg.value.length > 64){
+                            console.log(`please respect the ${arg.key} field length between 6 and 64`)
+                            return false
+                        }
+                    }
+                    if(arg.key === 'description'){
+                        if(arg.value.length < 6 || arg.value.length > 255){
+                            console.log(`please respect the ${arg.key} field length between 6 and 255`)
+                            return false
+                        }
+                    }
+                    if(arg.key === 'script'){
+                        if(!scalarRegexes.scriptRegex.test(arg.value)){
+                            console.log(`please respect the regular expression of ${arg.key} field`)
+                            return false
+                        }
+                    }
+                    if(arg.key === 'copyright'){
+                        if(arg.value.length < 6 || arg.value.length > 64){
+                            console.log(`please respect the ${arg.key} field length between 6 and 64`)
+                            return false
+                        }
+                    }
+                    if(arg.key === 'abbreviation'){
+                        if(!scalarRegexes.abbreviationRegex.test(arg.value)){
+                            console.log(`please respect the regular expression of ${arg.key} field`)
+                            return false
+                        }
+                    }
+                }
+                if (args.resources.length === 0) {
+                    console.log('please select at least one file')
+                    return false
+                }
+                return true
             },
         },
     };

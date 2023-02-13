@@ -32,11 +32,12 @@ export default function UploadPage({ setAppLanguage }) {
   async function createEntry(client) {
     const query = buildQuery()
     console.log(query)
-    client.mutate({
+    const result = await client.mutate({
       mutation: gql`
         ${query}
       `,
     });
+    console.log(result)
   }
 
   const appLang = useContext(AppLangContext);
@@ -258,7 +259,7 @@ export default function UploadPage({ setAppLanguage }) {
               variant="contained"
               size="large"
               style={{ marginBottom: "20px", marginTop: "20px" }}
-              disabled={!isValidForm(formValues)}
+              // disabled={!isValidForm(formValues)}
               onClick={
                 () => createEntry(
                   client
