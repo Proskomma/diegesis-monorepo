@@ -2,27 +2,32 @@ import { FormLabel, Grid, TextField } from "@mui/material";
 import { useContext } from "react";
 import AppLangContext from "../contexts/AppLangContext";
 import { directionText } from "../i18n/languageDirection";
+import i18n from "../i18n";
 
 export default function UploadFormField({name,inputValue,setInputValue,validationSpec,formTextFieldLabel,setInvalidFields,invalidFields}) {
   const appLang = useContext(AppLangContext);
   let hasError = false 
   let errorMessages = []
   let trimmedInput = inputValue.trim()
+  const requiredError = i18n(appLang,"ERROR_REQUIRED")
+  const tooShortError = i18n(appLang,"ERROR_TOO_SHORT")
+  const tooLongError = i18n(appLang,"ERROR_TOO_LONG")
+  const regexError = i18n(appLang,"ERROR_REGEX")
   if( validationSpec.required && trimmedInput.length === 0){
     hasError= true 
-    errorMessages.push("Field required !")
+    errorMessages.push(requiredError)
   }else {
     if( validationSpec.minLength && trimmedInput.length < validationSpec.minLength){
       hasError= true 
-      errorMessages.push("Field too short !")
+      errorMessages.push(tooShortError)
     }
     if( validationSpec.maxLength && trimmedInput.length > validationSpec.maxLength){
       hasError= true 
-      errorMessages.push("Field too long !")
+      errorMessages.push(tooLongError)
     }
     if( validationSpec.regex && !trimmedInput.match(validationSpec.regex)){
       hasError= true 
-      errorMessages.push("Field not match regex !")
+      errorMessages.push(regexError)
     }
   }
   let newInvalidFields = { ...invalidFields}

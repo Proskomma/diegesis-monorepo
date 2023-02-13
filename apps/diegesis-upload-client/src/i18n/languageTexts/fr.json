@@ -90,5 +90,12 @@
     "BOOK":"Livre",
     "CONTENT_LENGTH":"Longuer du contenu",
     "WRONG_FILES":"Mauvais fichier ou fichiers",
-    "SELECT_FILES":"Veuillez sélectionner des fichiers"
+    "SELECT_FILES":"Veuillez sélectionner des fichiers",
+    "METADATA":"Métadonnées",
+    "RESOURCES":"Ressources",
+    "ERROR_REQUIRED":"Champ obligatoire !",
+    "ERROR_TOO_SHORT":"Champ trop court !",
+    "ERROR_TOO_LONG":"Champ trop long !",
+    "ERROR_REGEX":"Le champ ne correspond pas à l'expression régulière !",
+    "BYTES":"OCTETS"
 }

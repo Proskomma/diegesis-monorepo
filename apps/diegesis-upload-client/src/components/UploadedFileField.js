@@ -30,7 +30,7 @@ export default function UploadedFileField({ setFileValues, filesValues }) {
                   {i18n(appLang, "NAME")} : {uploadedFile.name}
                 </Typography>
                 <Typography sx={{ mb: 1.5 }} color="text.secondary"  dir={directionText(appLang)}>
-                  {i18n(appLang, "BOOK")}: {uploadedFile.type} , {uploadedFile.content.length} bytes
+                  {i18n(appLang, "BOOK")} : {`${uploadedFile.content.length} ${i18n(appLang, "BYTES")}`} : {uploadedFile.type} 
                   <DeleteForeverRounded
                   color="error"
                   onClick={() => deleteFile(uploadedFile.name)}

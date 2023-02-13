@@ -1,25 +1,26 @@
-import React, { useContext} from "react";
+import React, { useContext } from "react";
 import { Link as RouterLink } from "react-router-dom";
-import { AppBar, Toolbar, Box, Select, MenuItem, Fab, SvgIcon } from "@mui/material";
+import {
+  AppBar,
+  Toolbar,
+  Box,
+  Select,
+  MenuItem,
+  Fab,
+  SvgIcon,
+} from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 
 import langTable from "../i18n/languages.json";
 import AppLangContext from "../contexts/AppLangContext";
 import { alignmentText } from "../i18n/languageDirection";
+import { Add, Home } from "@mui/icons-material";
 
-export default function Header({ children, setAppLanguage }) {
+export default function Header({selected, children, setAppLanguage }) {
   const appLang = useContext(AppLangContext);
   const handleLanguageChange = (e) => setAppLanguage(e.target.value);
 
-  function HomeIcon(props) {
-    return (
-      <SvgIcon {...props}>
-        <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
-      </SvgIcon>
-    );
-  }
-
-  const showPathNAme = () => {
+  const showPathName = () => {
     let ret;
     if (window.location.pathname === `/uploads/add`) {
       ret = true;
@@ -29,24 +30,32 @@ export default function Header({ children, setAppLanguage }) {
     return ret;
   };
 
+  const linkBoxStyles = {
+    m: 3,
+  };
+
+  const selectedLinkStyles = {
+    color: "#fff",
+  };
+
   return (
     <AppBar position="fixed">
       <Toolbar dir={alignmentText(appLang) === "right" ? "rtl" : "ltr"}>
-        {!showPathNAme() ? (
-          <Box sx={{ display: "flex", flexDirection: "row", flexGrow: 1 }}>
-            <Fab color="light" aria-label="add">
-              <RouterLink to={`/uploads/add`}>
-                <AddIcon sx={{ fontSize: 40 , color:'blue' }}/>
-              </RouterLink>
-            </Fab>
+        {!showPathName() ? (
+          <Box
+            sx={{ display: "flex", flexDirection: "row", flexGrow: 1, m: 3 }}
+          >
+            <RouterLink to={`/uploads/add`}>
+              <Add sx={selectedLinkStyles}></Add>
+            </RouterLink>
           </Box>
         ) : (
           <Box sx={{ display: "flex", flexDirection: "row", flexGrow: 1 }}>
-            <Fab color="light" aria-label="home">
-              <RouterLink to={`/uploads`}>
-                <HomeIcon sx={{ fontSize: 40 , color:'blue' }} />
-              </RouterLink>
-            </Fab>
+            <RouterLink to={`/uploads`}>
+              <Box sx={linkBoxStyles}>
+                <Home sx={selectedLinkStyles}/>
+              </Box>
+            </RouterLink>
           </Box>
         )}
         <Box>

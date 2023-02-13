@@ -90,5 +90,12 @@
     "BOOK":"Book",
     "CONTENT_LENGTH":"Content Length",
     "WRONG_FILES":"Wrong File Or Files",
-    "SELECT_FILES":"Please Select Files "
+    "SELECT_FILES":"Please Select Files ",
+    "METADATA":"Metadata",
+    "RESOURCES":"Resources",
+    "ERROR_REQUIRED":"Field required !",
+    "ERROR_TOO_SHORT":"Field too short !",
+    "ERROR_TOO_LONG":"Field too long !",
+    "ERROR_REGEX":"Field not match regex !",
+    "BYTES":"Bytes"
 }

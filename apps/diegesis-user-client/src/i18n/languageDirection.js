@@ -7,4 +7,8 @@ const directionText = function directionText(lang) {
 const alignmentText = function alignmentText(lang) {
     return (langTable[lang]['textDirection']==='rtl' ? "right" : "left")
 }
-export {directionText,alignmentText}
+
+const getAutonym = function getAutonym(lang){
+    return (langTable[lang]['autonym'])
+}
+export {directionText,alignmentText,getAutonym}

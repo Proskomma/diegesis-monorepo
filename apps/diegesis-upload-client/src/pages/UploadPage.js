@@ -60,21 +60,24 @@ export default function UploadPage({ setAppLanguage }) {
 
   function dedupe(elements) {
     let ret = [];
-    let usedBooks = new Set([])
-    let ignoredBooks = []
+    let usedBooks = new Set([]);
+    let ignoredBooks = [];
     for (const el of elements) {
-        if (!usedBooks.has(el.type)) {
-          ret.push(el);
-          usedBooks.add(el.type)
-        }else{
-          ignoredBooks.push(el.type)
-        }
+      if (!usedBooks.has(el.type)) {
+        ret.push(el);
+        usedBooks.add(el.type);
+      } else {
+        ignoredBooks.push(el.type);
+      }
     }
-    if(ignoredBooks.length>0){
-      enqueueSnackbar(`ignoring duplicate upload for ${ignoredBooks.join(';')}`, {
-        autoHideDuration: 3000,
-        variant: "error",
-      });
+    if (ignoredBooks.length > 0) {
+      enqueueSnackbar(
+        `ignoring duplicate upload for ${ignoredBooks.join(";")}`,
+        {
+          autoHideDuration: 3000,
+          variant: "error",
+        }
+      );
     }
     return ret;
   }
@@ -133,46 +136,42 @@ export default function UploadPage({ setAppLanguage }) {
     return Object.values(invalidFields).filter((v) => v).length === 0;
   };
 
-  const replacing = (data) =>{
-    return data.replace(/"""/g,`'''`);
-  }
-  console.log("fileValues", fileValues)
-  console.log("formValues", formValues)
+  const replacing = (data) => {
+    return data.replace(/"""/g, `'''`);
+  };
+  console.log("fileValues", fileValues);
+  console.log("formValues", formValues);
   let gqlBits = [];
-  gqlBits.push('createLocalEntry(')
-  gqlBits.push('metadata:[')
-  for(const [key,value] of Object.entries(formValues)){
-    gqlBits.push('{')
-    gqlBits.push(`key: """${replacing(key)}"""`)
-    gqlBits.push(`value:"""${replacing(value)}"""`)
-    gqlBits.push('}')
+  gqlBits.push("createLocalEntry(");
+  gqlBits.push("metadata:[");
+  for (const [key, value] of Object.entries(formValues)) {
+    gqlBits.push("{");
+    gqlBits.push(`key: """${replacing(key)}"""`);
+    gqlBits.push(`value:"""${replacing(value)}"""`);
+    gqlBits.push("}");
   }
-  gqlBits.push(']')
-  gqlBits.push('resources:[')
-  for(const resource of fileValues){
-    gqlBits.push('{')
-    gqlBits.push(`bookCode: """${replacing(resource.type)}"""`)
-    gqlBits.push(`content:"""${replacing(resource.content)}"""`)
-    gqlBits.push('}')
+  gqlBits.push("]");
+  gqlBits.push("resources:[");
+  for (const resource of fileValues) {
+    gqlBits.push("{");
+    gqlBits.push(`bookCode: """${replacing(resource.type)}"""`);
+    gqlBits.push(`content:"""${replacing(resource.content)}"""`);
+    gqlBits.push("}");
   }
-  gqlBits.push(']')
-  gqlBits.push(')')
-  console.log(gqlBits.join('\n'))
+  gqlBits.push("]");
+  gqlBits.push(")");
+  console.log(gqlBits.join("\n"));
   return (
     <Container fixed className="uploadpage">
-      <Header setAppLanguage={setAppLanguage} selected="list" />
-      <Typography variant="h4" paragraph="true" sx={{ mt: "100px" }}>
+      <Header setAppLanguage={setAppLanguage} selected="add"/>
+      <Typography dir={directionText(appLang)} variant="h4" paragraph="true" sx={{ mt: "100px" }}>
         {i18n(appLang, "Add_Document")}
       </Typography>
       <form>
-        <Grid
-          dir={directionText(appLang)}
-          container
-          spacing={2}
-        >
+        <Grid dir={directionText(appLang)} container spacing={2}>
           <Grid item xs={12}>
             <Typography variant="h5" paragraph="true" sx={{ mt: "20px" }}>
-              Metadata
+              {i18n(appLang, "METADATA")}
             </Typography>
           </Grid>
           {fields &&
@@ -199,7 +198,7 @@ export default function UploadPage({ setAppLanguage }) {
               }
             />
           </Grid>
-          <Grid item xs={12} md={6}> 
+          <Grid item xs={12} md={6}>
             <FormLabel
               id="demo-radio-buttons-group-label"
               htmlFor="textDirection"
@@ -250,13 +249,11 @@ export default function UploadPage({ setAppLanguage }) {
       <Grid container dir={directionText(appLang)} spacing={2}>
         <Grid item xs={12}>
           <Typography variant="h5" paragraph="true" sx={{ mt: "20px" }}>
-            Resources
+            {i18n(appLang, "RESOURCES")}
           </Typography>
         </Grid>
         <Grid item xs={12}>
-          <InputLabel
-            id="uploadFilesId"
-          >
+          <InputLabel id="uploadFilesId">
             {i18n(appLang, "Upload_documents")}
           </InputLabel>
           <TextField
