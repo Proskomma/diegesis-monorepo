@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useState, useContext} from "react";
 import {Container, Typography, Grid, Box, Button} from "@mui/material";
 import {useParams, Link as RouterLink} from "react-router-dom";
 import {ArrowBack, Download} from '@mui/icons-material';
@@ -9,11 +9,12 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import Spinner from "../components/Spinner";
 import BookSelector from "../components/BookSelector";
+import {directionText} from "../i18n/languageDirection";
+import AppLangContext from "../contexts/AppLangContext";
 
-export default function EntryDownloadPage() {
-
+export default function EntryDownloadPage({setAppLanguage}) {
+    const appLang = useContext(AppLangContext);
     const {source, entryId, revision} = useParams();
-
     const [selectedBook, setSelectedBook] = useState("");
 
     const client = useApolloClient();
@@ -143,6 +144,19 @@ export default function EntryDownloadPage() {
 
     const entryInfo = data.localEntry;
 
+    if (!entryInfo) {
+        return (
+            <Container fixed className="homepage">
+                <Header setAppLanguage={setAppLanguage} selected="list"/>
+                <Box dir={directionText(appLang)} style={{marginTop: "100px"}}>
+                    <Typography variant="h4" paragraph="true" sx={{mt: "20px"}}>
+                        Processing on server - wait a while and hit "refresh"
+                    </Typography>
+                </Box>
+            </Container>
+        );
+    }
+
     let bookCodes = new Set([]);
     for (const downloadType of ["usfm", "usx", "perf", "simplePerf", "sofria"]) {
         entryInfo[`${downloadType}BookCodes`].forEach(b => bookCodes.add(b));
@@ -162,7 +176,7 @@ export default function EntryDownloadPage() {
                     <Typography variant="h5" paragraph="true">Canon-level Resources</Typography>
                 </Grid>
                 {
-                    entryInfo.canonResources
+                    entryInfo.canonResources && entryInfo.canonResources
                         .map(cro => cro.type)
                         .map(
                         cr => <>
