@@ -1,15 +1,16 @@
 import React from 'react';
-import {Container, Typography, Box, Button} from "@mui/material";
-import {ArrowBack} from "@mui/icons-material";
-import {useParams, Link as RouterLink} from "react-router-dom";
-import {gql, useQuery} from "@apollo/client";
-import {Proskomma} from 'proskomma-core';
+import { Container, Typography, Box, Button } from "@mui/material";
+import { ArrowBack } from "@mui/icons-material";
+import { useParams, Link as RouterLink } from "react-router-dom";
+import { gql, useQuery } from "@apollo/client";
+import { Proskomma } from 'proskomma-core/esm';
 import GqlError from "../components/GqlError";
 
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import Spinner from "../components/Spinner";
 import BrowseScripture from "../components/BrowseScripture";
+// const ProskommaRequire = require('proskomma-core');
 
 export default function EntryBrowsePage() {
 
@@ -45,6 +46,8 @@ export default function EntryBrowsePage() {
 
     const entryInfo = data.localEntry;
 
+    console.log(Proskomma);
+    // console.log(ProskommaRequire);
     const pk = new Proskomma([
         {
             name: "source",
