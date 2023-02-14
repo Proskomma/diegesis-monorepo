@@ -231,7 +231,7 @@ export default function EntryDetailsPage({setAppLanguage}) {
                             </Grid>
                         </Grid>
                         <Grid item xs={8} style={{textAlign: alignmentText(appLang)}}>
-                            <Grid item>{contentString}</Grid>
+                            <Grid item>{contentString||"?"}</Grid>
                         </Grid>
                         <Grid
                             item

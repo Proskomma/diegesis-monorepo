@@ -30,7 +30,7 @@ function doRenderCron(config) {
             try {
                 let orgs = config.orgs;
                 if (config.localContent) {
-                    orgs.push(config.name);
+                    orgs = [...orgs,config.name];
                 }
                 for (const org of orgs) {
                     for (const entryRecord of orgEntries(config, org)) {
@@ -62,6 +62,7 @@ function doRenderCron(config) {
                 return;
             }
             try {
+                console.log('taskSpecs',taskSpecs)
                 for (
                     const taskSpec of taskSpecs
                     .map(value => ({value, sort: Math.random()}))
