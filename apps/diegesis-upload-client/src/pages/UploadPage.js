@@ -260,10 +260,7 @@ export default function UploadPage({ setAppLanguage }) {
               size="large"
               style={{ marginBottom: "20px", marginTop: "20px" }}
               // disabled={!isValidForm(formValues)}
-              onClick={
-                () => createEntry(
-                  client
-              )}
+              onClick={() => createEntry(client)}
             >
               {i18n(appLang, "SUBMIT")}
             </Button>
