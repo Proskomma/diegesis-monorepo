@@ -71,9 +71,6 @@ async function makeServer(config) {
     await server.start();
     server.applyMiddleware({
         app,
-        bodyParserConfig: {
-            limit: "100mb",
-        },
     });
     return app;
 }
