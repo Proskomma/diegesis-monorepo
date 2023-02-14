@@ -1,4 +1,4 @@
-import React, {useState, useContext} from "react";
+import React, {useContext, useState} from "react";
 import {Container, Typography, Grid, Box, Button} from "@mui/material";
 import {useParams, Link as RouterLink} from "react-router-dom";
 import {ArrowBack, Download} from '@mui/icons-material';
@@ -9,8 +9,9 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import Spinner from "../components/Spinner";
 import BookSelector from "../components/BookSelector";
-import {directionText} from "../i18n/languageDirection";
+import i18n from "../i18n";
 import AppLangContext from "../contexts/AppLangContext";
+import {directionText} from "../i18n/languageDirection";
 
 export default function EntryDownloadPage({setAppLanguage}) {
     const appLang = useContext(AppLangContext);
@@ -163,8 +164,8 @@ export default function EntryDownloadPage({setAppLanguage}) {
     }
 
     return <Container fixed className="homepage">
-        <Header selected="list"/>
-        <Box style={{marginTop: "100px"}}>
+        <Header setAppLanguage={setAppLanguage} selected="list"/>
+        <Box dir={directionText(appLang)} style={{marginTop: "100px"}}>
             <Typography variant="h4" paragraph="true" sx={{mt: "20px"}}>
                 <Button>
                     <RouterLink to={`/entry/details/${source}/${entryId}/${revision}`}
@@ -173,30 +174,30 @@ export default function EntryDownloadPage({setAppLanguage}) {
             </Typography>
             <Grid container>
                 <Grid item xs={12}>
-                    <Typography variant="h5" paragraph="true">Canon-level Resources</Typography>
+                    <Typography variant="h5" paragraph="true">{i18n(appLang, "ADMIN_DOWNLOAD_PAGE_TITLE")}</Typography>
                 </Grid>
                 {
                     entryInfo.canonResources && entryInfo.canonResources
                         .map(cro => cro.type)
                         .map(
-                        cr => <>
-                            <Grid item xs={4}>
-                                <Typography variant="body1" paragraph="true">{cr}</Typography>
-                            </Grid>
-                            <Grid item xs={8}>
+                            cr => <>
+                                <Grid item xs={4}>
+                                    <Typography variant="body1" paragraph="true">{cr}</Typography>
+                                </Grid>
+                                <Grid item xs={8}>
                                     <Button onClick={() => downloadTranslation(cr)}>
                                         <Download/>
                                     </Button>
-                            </Grid>
-                        </>
-
-                    )
+                                </Grid>
+                            </>
+                        )
                 }
                 {
                     bookCodes.size > 0 &&
                     <>
                         <Grid item xs={4} md={2}>
-                            <Typography variant="h5" paragraph="true">Book Resources</Typography>
+                            <Typography variant="h5"
+                                        paragraph="true">{i18n(appLang, "ADMIN_DOWNLOAD_PAGE_STITLE")}</Typography>
                         </Grid>
                         <Grid item xs={8} md={10}>
                             <BookSelector bookCodes={Array.from(bookCodes)} selectedBook={selectedBook}

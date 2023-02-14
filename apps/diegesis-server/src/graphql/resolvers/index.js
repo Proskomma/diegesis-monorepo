@@ -1,7 +1,7 @@
-const path = require('path');
-const fse = require('fs-extra');
-const {GraphQLScalarType, Kind} = require('graphql');
-const {ptBooks} = require('proskomma-utils');
+const path = require("path");
+const fse = require("fs-extra");
+const {GraphQLScalarType, Kind} = require("graphql");
+const {ptBooks} = require("proskomma-utils");
 const {
     transPath,
     transParentPath,
@@ -29,19 +29,20 @@ const {
 } = require("../../lib/dataLayers/fs");
 
 const makeResolvers = async (orgsData, orgHandlers, config) => {
-
     const scalarRegexes = {
         OrgName: new RegExp(/^[A-Za-z0-9]{2,64}$/),
         EntryId: new RegExp(/^[A-Za-z0-9_-]{1,64}$/),
         BookCode: new RegExp(/^[A-Z0-9]{3}$/),
         ContentType: new RegExp(/^(USFM|USX|succinct)$/),
-    }
+        scriptRegex: /^[A-Za-z0-9]{1,16}$/,
+        abbreviationRegex: /^[A-Za-z][A-Za-z0-9]+$/,
+    };
 
     const orgNameScalar = new GraphQLScalarType({
-        name: 'OrgName',
-        description: 'Name of a data source',
+        name: "OrgName",
+        description: "Name of a data source",
         serialize(value) {
-            if (typeof value !== 'string') {
+            if (typeof value !== "string") {
                 return null;
             }
             if (!scalarRegexes.OrgName.test(value)) {
@@ -59,15 +60,15 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
             if (!scalarRegexes.OrgName.test(ast.value)) {
                 throw new Error(`One or more characters is not allowed`);
             }
-            return ast.value
+            return ast.value;
         },
     });
 
     const ContentTypeScalar = new GraphQLScalarType({
-        name: 'ContentType',
-        description: 'The type of content returned by an organization',
+        name: "ContentType",
+        description: "The type of content returned by an organization",
         serialize(value) {
-            if (typeof value !== 'string') {
+            if (typeof value !== "string") {
                 return null;
             }
             if (!scalarRegexes.ContentType.test(value)) {
@@ -85,15 +86,15 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
             if (!scalarRegexes.ContentType.test(ast.value)) {
                 throw new Error(`Expected USFM or USX`);
             }
-            return ast.value
+            return ast.value;
         },
     });
 
     const entryIdScalar = new GraphQLScalarType({
-        name: 'EntryId',
-        description: 'Identifier for an entry',
+        name: "EntryId",
+        description: "Identifier for an entry",
         serialize(value) {
-            if (typeof value !== 'string') {
+            if (typeof value !== "string") {
                 return null;
             }
             if (!scalarRegexes.EntryId.test(value)) {
@@ -111,15 +112,15 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
             if (!scalarRegexes.EntryId.test(ast.value)) {
                 throw new Error(`One or more characters is not allowed`);
             }
-            return ast.value
+            return ast.value;
         },
     });
 
     const bookCodeScalar = new GraphQLScalarType({
-        name: 'BookCode',
-        description: 'Paratext-like code for a Scripture book',
+        name: "BookCode",
+        description: "Paratext-like code for a Scripture book",
         serialize(value) {
-            if (typeof value !== 'string') {
+            if (typeof value !== "string") {
                 return null;
             }
             if (!scalarRegexes.BookCode.test(value)) {
@@ -137,7 +138,7 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
             if (!scalarRegexes.BookCode.test(ast.value)) {
                 throw new Error(`One or more characters is not allowed`);
             }
-            return ast.value
+            return ast.value;
         },
     });
 
@@ -148,7 +149,7 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
             }
         }
         return false;
-    }
+    };
 
     const entryCanSync = (org, entry) => {
         if (org.catalogHasRevisions && entryRevisionExists(config, translationDir(org.name), entry.id, entry.revision)) {
@@ -157,52 +158,56 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
             return false;
         }
         if (org.config) {
-            if (org.config.blacklist && entryInColorList(org.config.blacklist, entry)) {
+            if (
+                org.config.blacklist &&
+                entryInColorList(org.config.blacklist, entry)
+            ) {
                 return false;
             }
-            if (org.config.whitelist && entryInColorList(org.config.whitelist, entry)) {
+            if (
+                org.config.whitelist &&
+                entryInColorList(org.config.whitelist, entry)
+            ) {
                 return true;
             }
-            if (org.config.languages && !org.config.languages.includes(entry.languageCode.split('-')[0])) {
+            if (
+                org.config.languages &&
+                !org.config.languages.includes(entry.languageCode.split("-")[0])
+            ) {
                 return false;
             }
         }
         return true;
-    }
+    };
 
     const filteredCatalog = (org, args, context, entries) => {
         context.orgData = org;
         context.orgHandler = orgHandlers[org.name];
         let ret = [...entries];
         if (args.withId) {
-            ret = ret.filter(t => args.withId.includes(t.id));
+            ret = ret.filter((t) => args.withId.includes(t.id));
         }
         if (args.syncOnly) {
-            ret = ret.filter(
-                e => entryCanSync(
-                    orgsData[e.source],
-                    e
-                )
-            );
+            ret = ret.filter((e) => entryCanSync(orgsData[e.source], e));
         }
         if (args.withOwner) {
             ret = ret.filter(
-                t =>
-                    args.withOwner.filter(
-                        ow => t.owner.toLowerCase().includes(ow.toLowerCase())
+                (t) =>
+                    args.withOwner.filter((ow) =>
+                        t.owner.toLowerCase().includes(ow.toLowerCase())
                     ).length > 0
-            )
+            );
         }
         if (args.withLanguageCode) {
-            ret = ret.filter(t => args.withLanguageCode.includes(t.languageCode));
+            ret = ret.filter((t) => args.withLanguageCode.includes(t.languageCode));
         }
         if (args.withMatchingMetadata) {
             ret = ret.filter(
-                t =>
-                    args.withMatchingMetadata.filter(
-                        md => t.title.toLowerCase().includes(md.toLowerCase())
+                (t) =>
+                    args.withMatchingMetadata.filter((md) =>
+                        t.title.toLowerCase().includes(md.toLowerCase())
                     ).length > 0
-            )
+            );
         }
         if ('withUsfm' in args) {
             const filterFunc = (e => entryHas(config, context.orgData.name, e.id, e.revision, "usfmBooks"));
@@ -237,7 +242,7 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
             }
         }
         if (args.sortedBy) {
-            if (!['id', 'languageCode', 'owner', 'title'].includes(args.sortedBy)) {
+            if (!["id", "languageCode", "owner", "title"].includes(args.sortedBy)) {
                 throw new Error(`Invalid sortedBy option '${args.sortedBy}'`);
             }
             ret.sort(function (a, b) {
@@ -250,7 +255,7 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
             ret.reverse();
         }
         return ret;
-    }
+    };
 
     const localEntry = (org, entryId, revision) => {
         if (!entryIsLocked(config, org, entryId, revision)) {
@@ -264,9 +269,9 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
         EntryId: entryIdScalar,
         BookCode: bookCodeScalar,
         ContentType: ContentTypeScalar,
-    }
+    };
 
-    const lowerCaseArray = arr => arr.map(e => e.trim().toLocaleLowerCase());
+    const lowerCaseArray = (arr) => arr.map((e) => e.trim().toLocaleLowerCase());
 
     const queryResolver = {
         Query: {
@@ -286,43 +291,58 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                         }
                     }
                 }
-                ret = ret.filter(e =>
-                    !args.sources ||
-                    lowerCaseArray(args.sources).includes(e.source.toLocaleLowerCase()))
-                    .filter(e =>
-                        !args.owners ||
-                        lowerCaseArray(args.owners).includes(e.owner.toLocaleLowerCase()))
-                    .filter(e =>
-                        !args.ids ||
-                        lowerCaseArray(args.ids).includes(e.id.toLocaleLowerCase()))
-                    .filter(e =>
-                        !args.languages ||
-                        lowerCaseArray(args.languages).includes(e.languageCode.toLocaleLowerCase()))
-                    .filter(e =>
-                        !args.titleMatching ||
-                        e.title.toLocaleLowerCase()
-                            .includes(args.titleMatching.toLocaleLowerCase()))
-                    .filter(e =>
-                        !args.types ||
-                        lowerCaseArray(args.types)
-                            .filter(t => e.resourceTypes.includes(t))
-                            .length > 0
+                ret = ret
+                    .filter(
+                        (e) =>
+                            !args.sources ||
+                            lowerCaseArray(args.sources).includes(
+                                e.source.toLocaleLowerCase()
+                            )
                     )
-                    .filter(e =>
-                        !args.withStatsFeatures ||
-                        (
-                            e.stats &&
-                            (args.withStatsFeatures
-                                .filter(f => {
+                    .filter(
+                        (e) =>
+                            !args.owners ||
+                            lowerCaseArray(args.owners).includes(e.owner.toLocaleLowerCase())
+                    )
+                    .filter(
+                        (e) =>
+                            !args.ids ||
+                            lowerCaseArray(args.ids).includes(e.id.toLocaleLowerCase())
+                    )
+                    .filter(
+                        (e) =>
+                            !args.languages ||
+                            lowerCaseArray(args.languages).includes(
+                                e.languageCode.toLocaleLowerCase()
+                            )
+                    )
+                    .filter(
+                        (e) =>
+                            !args.titleMatching ||
+                            e.title
+                                .toLocaleLowerCase()
+                                .includes(args.titleMatching.toLocaleLowerCase())
+                    )
+                    .filter(
+                        (e) =>
+                            !args.types ||
+                            lowerCaseArray(args.types).filter((t) =>
+                                e.resourceTypes.includes(t)
+                            ).length > 0
+                    )
+                    .filter(
+                        (e) =>
+                            !args.withStatsFeatures ||
+                            (e.stats &&
+                                args.withStatsFeatures.filter((f) => {
                                     const key = `n${f[0].toLocaleUpperCase()}${f.substring(1)}`;
-                                    return (key in e.stats && e.stats[key] > 0);
-                                })
-                                .length === args.withStatsFeatures.length)
-                        )
+                                    return key in e.stats && e.stats[key] > 0;
+                                }).length === args.withStatsFeatures.length)
                     );
-                ret = [...ret].sort(
-                    (a, b) =>
-                        a[args.sortedBy || 'title'].toLowerCase().localeCompare(b[args.sortedBy || 'title'].toLowerCase())
+                ret = [...ret].sort((a, b) =>
+                    a[args.sortedBy || "title"]
+                        .toLowerCase()
+                        .localeCompare(b[args.sortedBy || "title"].toLowerCase())
                 );
                 if (args.reverse) {
                     ret = [...ret].reverse();
@@ -335,34 +355,39 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                     args.id,
                     args.revision
                 );
-            }
+            },
         },
         LocalEntry: {
-            transId: root => root.id,
-            types: root => root.resourceTypes,
-            language: root => root.languageCode,
+            transId: (root) => root.id,
+            types: (root) => root.resourceTypes,
+            language: (root) => root.languageCode,
             stat: (root, args) => {
                 const stats = root.stats;
-                if (!stats || typeof stats[args.field] !== 'number') {
+                if (!stats || typeof stats[args.field] !== "number") {
                     return null;
                 }
                 return stats[args.field];
             },
             stats: (root) => {
-                let ret = []
+                let ret = [];
                 if (root.stats) {
                     for (const [field, stat] of Object.entries(root.stats)) {
                         if (field === "documents") {
-                            continue
+                            continue;
                         }
-                        ret.push({field, stat})
+                        ret.push({field, stat});
                     }
                 }
                 return ret;
             },
             resourceStat: (root, args) => {
                 const stats = root.stats;
-                if (!stats || !stats.documents || !stats.documents[args.bookCode] || typeof stats.documents[args.bookCode][args.field] !== 'number') {
+                if (
+                    !stats ||
+                    !stats.documents ||
+                    !stats.documents[args.bookCode] ||
+                    typeof stats.documents[args.bookCode][args.field] !== "number"
+                ) {
                     return null;
                 }
                 return stats.documents[args.bookCode][args.field];
@@ -376,18 +401,23 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                 if (!documentStats) {
                     return null;
                 }
-                return Object.entries(documentStats).map(kv => ({
+                return Object.entries(documentStats).map((kv) => ({
                     bookCode: kv[0],
                     field: args.field,
-                    stat: typeof kv[1][args.field] === "number" ? kv[1][args.field] : null
+                    stat:
+                        typeof kv[1][args.field] === "number" ? kv[1][args.field] : null,
                 }));
             },
             bookStats: (root, args) => {
-                let ret = []
-                if (root.stats && root.stats.documents && root.stats.documents[args.bookCode]) {
-                    const bookCodeStats = root.stats.documents[args.bookCode]
+                let ret = [];
+                if (
+                    root.stats &&
+                    root.stats.documents &&
+                    root.stats.documents[args.bookCode]
+                ) {
+                    const bookCodeStats = root.stats.documents[args.bookCode];
                     for (const [field, stat] of Object.entries(bookCodeStats)) {
-                        ret.push({bookCode: args.bookCode, field, stat})
+                        ret.push({bookCode: args.bookCode, field, stat});
                     }
                 }
                 return ret;
@@ -415,7 +445,7 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                 return matchingResources[0];
             },
             bookCodes: (root, args) => {
-                if (args.type) {
+               if (args.type) {
                     return entryBookResourceBookCodesForCategory(config, orgsData[root.source].name, root.id, root.revision, args.type);
                 } else {
                     return entryBookResourceBookCodes(config, orgsData[root.source].name, root.id, root.revision);
@@ -424,12 +454,12 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
             bookResourceTypes: (root) => {
                 return entryBookResourceCategories(config, orgsData[root.source].name, root.id, root.revision);
             },
-            hasSuccinctError: root => {
+            hasSuccinctError: (root) => {
                 return false;
             },
-            hasLock: root => {
+            hasLock: (root) => {
                 return false;
-            }
+            },
         },
         Org: {
             catalogEntries: (org, args, context) => {
@@ -437,7 +467,9 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                     throw new Error(`No auth found for catalogEntries`);
                 }
                 if (!context.auth.roles || !context.auth.roles.includes("admin")) {
-                    throw new Error(`Required auth role 'admin' not found for catalogEntries`);
+                    throw new Error(
+                        `Required auth role 'admin' not found for catalogEntries`
+                    );
                 }
                 return filteredCatalog(org, args, context, org.entries);
             },
@@ -446,12 +478,13 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                     throw new Error(`No auth found for catalogEntry`);
                 }
                 if (!context.auth.roles || !context.auth.roles.includes("admin")) {
-                    throw new Error(`Required auth role 'admin' not found for catalogEntry`);
+                    throw new Error(
+                        `Required auth role 'admin' not found for catalogEntry`
+                    );
                 }
                 context.orgData = org;
                 context.orgHandler = orgHandlers[org.name];
-                return org.entries
-                    .filter(t => t.id === args.id)[0];
+                return org.entries.filter((t) => t.id === args.id)[0];
             },
         },
         CatalogEntry: {
@@ -500,7 +533,7 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                 if (!orgOb) {
                     return false;
                 }
-                const transOb = orgOb.entries.filter(t => t.id === args.entryId)[0];
+                const transOb = orgOb.entries.filter((t) => t.id === args.entryId)[0];
                 if (!transOb) {
                     return false;
                 }
@@ -530,7 +563,7 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                 if (!orgOb) {
                     return false;
                 }
-                const transOb = orgOb.entries.filter(t => t.id === args.entryId)[0];
+                const transOb = orgOb.entries.filter((t) => t.id === args.entryId)[0];
                 if (!transOb) {
                     return false;
                 }
@@ -551,7 +584,9 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                     throw new Error(`No auth found for fetchSuccinct mutation`);
                 }
                 if (!context.auth.roles || !context.auth.roles.includes("admin")) {
-                    throw new Error(`Required auth role 'admin' not found for fetchSuccinct`);
+                    throw new Error(
+                        `Required auth role 'admin' not found for fetchSuccinct`
+                    );
                 }
                 const orgOb = orgsData[args.org];
                 if (!orgOb) {
@@ -561,12 +596,17 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                 if (!entryOrgOb) {
                     return false;
                 }
-                const transOb = orgOb.entries.filter(t => t.id === args.entryId)[0];
+                const transOb = orgOb.entries.filter((t) => t.id === args.entryId)[0];
                 if (!transOb) {
                     return false;
                 }
                 try {
-                    await orgHandlers[args.org].fetchSuccinct(orgOb, entryOrgOb, transOb, config); // Adds owner and revision to transOb
+                    await orgHandlers[args.org].fetchSuccinct(
+                        orgOb,
+                        entryOrgOb,
+                        transOb,
+                        config
+                    ); // Adds owner and revision to transOb
                     return true;
                 } catch (err) {
                     console.log(err);
@@ -578,7 +618,9 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                     throw new Error(`No auth found for deleteLocalEntry mutation`);
                 }
                 if (!context.auth.roles || !context.auth.roles.includes("admin")) {
-                    throw new Error(`Required auth role 'admin' not found for deleteLocalEntry`);
+                    throw new Error(
+                        `Required auth role 'admin' not found for deleteLocalEntry`
+                    );
                 }
                 const orgOb = orgsData[args.org];
                 if (!orgOb) {
@@ -600,20 +642,21 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                     console.log(err);
                     return false;
                 }
-
             },
             deleteSuccinctError: async (root, args, context) => {
                 if (!context.auth || !context.auth.authenticated) {
                     throw new Error(`No auth found for deleteSuccinctError mutation`);
                 }
                 if (!context.auth.roles || !context.auth.roles.includes("admin")) {
-                    throw new Error(`Required auth role 'admin' not found for deleteSuccinctError`);
+                    throw new Error(
+                        `Required auth role 'admin' not found for deleteSuccinctError`
+                    );
                 }
                 const orgOb = orgsData[args.org];
                 if (!orgOb) {
                     return false;
                 }
-                const transOb = orgOb.entries.filter(t => t.id === args.entryId)[0];
+                const transOb = orgOb.entries.filter((t) => t.id === args.entryId)[0];
                 if (!transOb) {
                     return false;
                 }
@@ -625,15 +668,104 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                     return false;
                 }
             },
+            createLocalEntry: async (root, args, context) => {
+                if (!context.auth || !context.auth.authenticated) {
+                    throw new Error(`No auth found for createLocalEntry mutation`);
+                }
+                if (!context.auth.roles || !context.auth.roles.includes("archivist")) {
+                    throw new Error(
+                        `Required auth role 'archivist' not found for createLocalEntry`
+                    );
+                }
+                const fields = [
+                    "title",
+                    "description",
+                    "langCode",
+                    "script",
+                    "copyright",
+                    "abbreviation",
+                    "textDirection",
+                ];
+                const argsFields = args.metadata.map((a) => a.key);
+                if (argsFields.length !== fields.length) {
+                    return "wrong number args";
+                }
+                if (argsFields.filter((f) => !fields.includes(f)).length !== 0) {
+                    return `Unexpected fields ${argsFields.filter((f) => !fields.includes(f)).join(";")}`;
+                }
+                if (fields.filter((f) => !argsFields.includes(f)).length !== 0) {
+                    return `Missing fields ${fields.filter((f) => !argsFields.includes(f)).join(";")}`;
+                }
+                if (args.metadata) {
+                    for (const arg of args.metadata) {
+                        if (arg.key !== "langCode") {
+                            if (arg.value.length === 0) {
+                                console.log(`please fill in the ${arg.key} field`);
+                                return false;
+                            }
+                        }
+                        if (arg.key === "langCode") {
+                            if (arg.value === "pleaseChoose") {
+                                console.log(`please fill in the ${arg.key} field`);
+                                return false;
+                            }
+                        }
+                        if (arg.key === "title") {
+                            if (arg.value.length < 6 || arg.value.length > 64) {
+                                console.log(
+                                    `please respect the ${arg.key} field length between 6 and 64`
+                                );
+                                return false;
+                            }
+                        }
+                        if (arg.key === "description") {
+                            if (arg.value.length < 6 || arg.value.length > 255) {
+                                console.log(
+                                    `please respect the ${arg.key} field length between 6 and 255`
+                                );
+                                return false;
+                            }
+                        }
+                        if (arg.key === "script") {
+                            if (!scalarRegexes.scriptRegex.test(arg.value)) {
+                                console.log(
+                                    `please respect the regular expression of ${arg.key} field : ${scalarRegexes.scriptRegex}`
+                                );
+                                return false;
+                            }
+                        }
+                        if (arg.key === "copyright") {
+                            if (arg.value.length < 6 || arg.value.length > 64) {
+                                console.log(
+                                    `please respect the ${arg.key} field length between 6 and 64`
+                                );
+                                return false;
+                            }
+                        }
+                        if (arg.key === "abbreviation") {
+                            if (!scalarRegexes.abbreviationRegex.test(arg.value)) {
+                                console.log(
+                                    `please respect the regular expression of ${arg.key} field :${scalarRegexes.abbreviationRegex}`
+                                );
+                                return false;
+                            }
+                        }
+                    }
+                }
+                if (args.resources.length === 0) {
+                    console.log("please select at least one file");
+                    return false;
+                }
+                return true;
+            },
         },
     };
 
-    if (config.includeMutations
-    ) {
+    if (config.includeMutations) {
         return {...scalarResolvers, ...queryResolver, ...mutationResolver};
     } else {
         return {...scalarResolvers, ...queryResolver};
     }
-}
+};
 
 module.exports = makeResolvers;

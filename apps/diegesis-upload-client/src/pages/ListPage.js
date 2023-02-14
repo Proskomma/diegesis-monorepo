@@ -62,7 +62,7 @@ export default function ListPage({ setAppLanguage }) {
 
   return (
     <Container fixed className="listpage">
-      <Header setAppLanguage={setAppLanguage} selected="list" />
+      <Header setAppLanguage={setAppLanguage} selected="uploads" />
       <Box dir={directionText(appLang)} style={{ marginTop: "100px" }}>
         <Typography variant="h4" paragraph="true" sx={{ mt: "20px" }}>
           {entries}

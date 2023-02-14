@@ -17,7 +17,7 @@ import Spinner from "../components/Spinner";
 import BookSelector from "../components/BookSelector";
 
 import AppLangContext from "../contexts/AppLangContext";
-import {directionText, alignmentText} from "../i18n/languageDirection";
+import {directionText, alignmentText, getAutonym} from "../i18n/languageDirection";
 import {useContext, useState} from "react";
 import i18n from "../i18n";
 
@@ -163,8 +163,11 @@ export default function EntryDetailsPage({setAppLanguage}) {
                         </Grid>
                         <Grid item xs={8} style={{textAlign: alignmentText(appLang)}}>
                             <Grid item>
-                                {entryInfo.language}
-                                {`, ${i18n(appLang, "ADMIN_TEXT_DIRECTION")}`}
+                                {getAutonym(entryInfo.language)} ,
+                                {directionText(entryInfo.language) === "rtl"
+                                    ? i18n(appLang, "ADMIN_TEXT_DIRECTION_RIGHT")
+                                    : i18n(appLang, "ADMIN_TEXT_DIRECTION_LEFT")
+                                }
                                 {entryInfo.script ? `, ${finalScript}` : ""}
                             </Grid>
                         </Grid>
@@ -223,6 +226,7 @@ export default function EntryDetailsPage({setAppLanguage}) {
                             style={{fontWeight: "bold", textAlign: alignmentText(appLang)}}
                         >
                             <Grid item>
+
                                 <span dir={directionText(appLang)}>{i18n(appLang, "ADMIN_DETAILS_CONTENT")}</span>
                             </Grid>
                         </Grid>

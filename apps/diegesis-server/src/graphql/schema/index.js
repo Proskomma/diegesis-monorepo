@@ -283,7 +283,27 @@ const querySchema = gql`
 
         """Is the resource original?"""
         isOriginal: Boolean!
-    }        
+    }    
+    
+    """Resource Element"""
+    input ResourceElement {
+
+        """The Resource Book Code"""
+        bookCode : BookCode
+
+        """The Resource Content"""
+        content : String!
+    }
+
+    """Metadata Element"""
+    input MetadataElement {
+
+        """The Metadata Key"""
+        key : String!
+
+        """The Metadata Value"""
+        value : String!
+    }
     `;
 
 const mutationSchema = gql`
@@ -327,7 +347,14 @@ const mutationSchema = gql`
             """The revision of the entry"""
             revision: String!
         ) : Boolean!
+        createLocalEntry (
+            """All Resources"""
+            resources: [ResourceElement!]!
+            """ All Metadata"""
+            metadata: [MetadataElement!]!
+        ) : Boolean!
     }
 `;
 
 module.exports = {scalarSchema, querySchema, mutationSchema };
+

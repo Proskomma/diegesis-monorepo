@@ -18,5 +18,10 @@
         "englishName":"Spanish",
         "autonym":"español",
         "textDirection":"ltr"
+    },
+    "hi" : {
+        "englishName":"Indian",
+        "autonym":"भारतीय भाषा",
+        "textDirection":"ltr"
     }
 }
