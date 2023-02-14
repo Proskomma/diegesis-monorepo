@@ -8,10 +8,10 @@ WORKDIR /build
 COPY $client_loc/src/ src/
 COPY $client_loc/public/ public/
 COPY $client_loc/package.json .
-COPY $client_loc/yarn.lock .
+# COPY $client_loc/package-lock.json .
 
 # Install
-RUN yarn install
+RUN npm install
 RUN npm run build
 
 #Stage 2: admin client (management) builder
@@ -24,10 +24,10 @@ WORKDIR /build
 COPY $client_loc/src/ src/
 COPY $client_loc/public/ public/
 COPY $client_loc/package.json .
-COPY $client_loc/yarn.lock .
+COPY $client_loc/package-lock.json .
 
 # Install
-RUN yarn install
+RUN npm install
 RUN npm run build
 
 #Stage 3: actual server

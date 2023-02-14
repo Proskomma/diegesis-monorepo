@@ -1,9 +1,15 @@
 const cron = require("node-cron");
-const path = require("path");
-const fse = require('fs-extra');
 const {Worker} = require('node:worker_threads');
 const {cronOptions} = require("./makeConfig.js");
 const {randomInt} = require("node:crypto");
+const {
+    orgEntries,
+    entryIsLocked,
+    entryHasSuccinctError,
+    entryHasGeneratedContent,
+    entryHas,
+    entryHasOriginal
+} = require("./dataLayers/fs");
 
 function doSessionCron(app, frequency) {
     cron.schedule(
@@ -22,29 +28,26 @@ function doRenderCron(config) {
             let nLocked = 0;
             let taskSpecs = [];
             try {
-                for (const orgDir of fse.readdirSync(path.resolve(config.dataPath))) {
-                    const transDir = path.resolve(config.dataPath, orgDir);
-                    if (fse.pathExistsSync(transDir) && fse.lstatSync(transDir).isDirectory()) {
-                        for (const translationId of fse.readdirSync(transDir)) {
-                            for (const revision of fse.readdirSync(path.join(transDir, translationId))) {
-                                if (fse.pathExistsSync(path.join(transDir, translationId, revision, 'succinctError.json'))) {
-                                    continue;
-                                }
-                                if (fse.pathExistsSync(path.join(transDir, translationId, revision, 'lock.json'))) {
-                                    nLocked++;
-                                    continue;
-                                }
-                                if (!fse.pathExistsSync(path.join(transDir, translationId, revision, 'generated'))) {
-                                    if (fse.pathExistsSync(path.join(transDir, translationId, revision, 'original', 'succinct.json'))) {
-                                        taskSpecs.push([orgDir, translationId, revision, 'succinct']);
-                                    }
-                                    if (fse.pathExistsSync(path.join(transDir, translationId, revision, 'original', 'usfmBooks'))) {
-                                        taskSpecs.push([orgDir, translationId, revision, 'usfm']);
-                                    }
-                                    if (fse.pathExistsSync(path.join(transDir, translationId, revision, 'original', 'usxBooks'))) {
-                                        taskSpecs.push([orgDir, translationId, revision, 'usx']);
-                                    }
-                                }
+                let orgs = config.orgs;
+                if (config.localContent) {
+                    orgs.push(config.name);
+                }
+                for (const org of orgs) {
+                    for (const entryRecord of orgEntries(config, org)) {
+                        for (const revision of entryRecord.revisions) {
+                            if (
+                                entryIsLocked(config, org, entryRecord.id, revision) ||
+                                entryHasSuccinctError(config, org, entryRecord.id, revision) ||
+                                entryHasGeneratedContent(config, org, entryRecord.id, revision)
+                            ) {
+                                continue;
+                            }
+                            if (entryHas(config, org, entryRecord.id, revision, "succinct.json")) {
+                                taskSpecs.push([org, entryRecord.id, revision, 'succinct']);
+                            } else if (entryHasOriginal(config, org, entryRecord.id, revision, "usfmBooks")) {
+                                taskSpecs.push([org, entryRecord.id, revision, 'usfm']);
+                            } else if (entryHasOriginal(config, org, entryRecord.id, revision, "usxBooks")) {
+                                taskSpecs.push([org, entryRecord.id, revision, 'usx']);
                             }
                         }
                     }
@@ -61,9 +64,9 @@ function doRenderCron(config) {
             try {
                 for (
                     const taskSpec of taskSpecs
-                    .map(value => ({ value, sort: Math.random() }))
+                    .map(value => ({value, sort: Math.random()}))
                     .sort((a, b) => a.sort - b.sort)
-                    .map(({ value }) => value)
+                    .map(({value}) => value)
                     .slice(0, Math.max(config.nWorkers - nLocked, 0))
                     ) {
                     if (config.verbose) {
@@ -75,8 +78,8 @@ function doRenderCron(config) {
                     const worker = new Worker('./src/lib/makeDownloads.js');
                     worker.on('message', e => config.incidentLogger.info(e));
                     worker.on('error', e => config.incidentLogger.error(e));
-                    const [orgDir, transId, revision, contentType] = taskSpec;
-                    worker.postMessage({dataPath: config.dataPath, orgDir, transId, revision, contentType});
+                    const [org, transId, revision, contentType] = taskSpec;
+                    worker.postMessage({configString: JSON.stringify({dataPath: config.dataPath}), org, transId, revision, contentType});
                 }
             } catch (err) {
                 console.log("makeDownload worker", err.message);

@@ -16,7 +16,6 @@ import {directionText} from "../i18n/languageDirection";
 export default function EntryDownloadPage({setAppLanguage}) {
     const appLang = useContext(AppLangContext);
     const {source, entryId, revision} = useParams();
-
     const [selectedBook, setSelectedBook] = useState("");
 
     const client = useApolloClient();
@@ -61,23 +60,23 @@ export default function EntryDownloadPage({setAppLanguage}) {
 
     const downloadBook = async (downloadType, bookCode) => {
         const downloadTypes = {
-            usfm: {
+            usfmBooks: {
                 mime: "text/plain",
                 suffix: "usfm.txt"
             },
-            usx: {
+            usxBooks: {
                 mime: "text/xml",
                 suffix: "usx.xml"
             },
-            perf: {
+            perfBooks: {
                 mime: "application/json",
                 suffix: "perf.json"
             },
-            simplePerf: {
+            simplePerfBooks: {
                 mime: "application/json",
                 suffix: "simple_perf.json"
             },
-            sofria: {
+            sofriaBooks: {
                 mime: "application/json",
                 suffix: "sofria.json"
             }
@@ -146,6 +145,19 @@ export default function EntryDownloadPage({setAppLanguage}) {
 
     const entryInfo = data.localEntry;
 
+    if (!entryInfo) {
+        return (
+            <Container fixed className="homepage">
+                <Header setAppLanguage={setAppLanguage} selected="list"/>
+                <Box dir={directionText(appLang)} style={{marginTop: "100px"}}>
+                    <Typography variant="h4" paragraph="true" sx={{mt: "20px"}}>
+                        Processing on server - wait a while and hit "refresh"
+                    </Typography>
+                </Box>
+            </Container>
+        );
+    }
+
     let bookCodes = new Set([]);
     for (const downloadType of ["usfm", "usx", "perf", "simplePerf", "sofria"]) {
         entryInfo[`${downloadType}BookCodes`].forEach(b => bookCodes.add(b));
@@ -165,7 +177,7 @@ export default function EntryDownloadPage({setAppLanguage}) {
                     <Typography variant="h5" paragraph="true">{i18n(appLang, "ADMIN_DOWNLOAD_PAGE_TITLE")}</Typography>
                 </Grid>
                 {
-                    entryInfo.canonResources
+                    entryInfo.canonResources && entryInfo.canonResources
                         .map(cro => cro.type)
                         .map(
                             cr => <>
@@ -194,21 +206,22 @@ export default function EntryDownloadPage({setAppLanguage}) {
                         {
                             selectedBook !== "" &&
                             entryInfo.bookResourceTypes
+                                .map(rt => rt.replace("Books", ""))
                                 .map(
-                                    rt => <>
-                                        <Grid item xs={4}>
-                                            {rt}
-                                        </Grid>
-                                        <Grid item xs={8}>
-                                            <Button
-                                                onClick={() => downloadBook(rt, selectedBook)}
-                                                disabled={!entryInfo[`${rt}BookCodes`].includes(selectedBook)}
-                                            >
-                                                <Download/>
-                                            </Button>
-                                        </Grid>
-                                    </>
-                                )
+                                rt => <>
+                                    <Grid item xs={4}>
+                                        {rt}
+                                    </Grid>
+                                    <Grid item xs={8}>
+                                        <Button
+                                            onClick={() => downloadBook(`${rt}Books`, selectedBook)}
+                                            disabled={!entryInfo || !entryInfo[`${rt}BookCodes`] || !entryInfo[`${rt}BookCodes`].includes(selectedBook)}
+                                        >
+                                            <Download/>
+                                        </Button>
+                                    </Grid>
+                                </>
+                            )
                         }
                     </>
                 }

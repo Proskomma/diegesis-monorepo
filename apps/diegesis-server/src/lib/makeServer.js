@@ -32,11 +32,11 @@ async function makeServer(config) {
     // Set up auth if configured
     makeServerAuth(app, config);
 
-    // Delete lock files and maybe generated files and directories
-    makeServerDelete(config);
-
     // Set up orgs
     const {orgsData, orgHandlers} = await makeServerOrgs(config);
+
+    // Delete lock files and maybe generated files and directories
+    makeServerDelete(config);
 
     // Maybe start processing cron
     if (config.processFrequency !== "never") {

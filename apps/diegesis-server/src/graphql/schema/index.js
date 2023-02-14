@@ -199,13 +199,13 @@ const querySchema = gql`
             type: String!
         ): CanonResource
 
-        """Book-level resources"""
+        """Book-level resources for one book"""
         bookResources(
           """The bookCode"""
           bookCode: String!
         ): [BookResource!]!
 
-        """Book-level resource of a given type for the entry, if it exists"""
+        """Book-level resource of a given type for one book, if it exists"""
         bookResource(
           """The bookCode"""
           bookCode: String!

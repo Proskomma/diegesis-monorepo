@@ -1,4 +1,11 @@
-import {Container, Typography, Box, Button, Paper, Grid} from "@mui/material";
+import {
+    Container,
+    Typography,
+    Box,
+    Button,
+    Paper,
+    Grid,
+} from "@mui/material";
 import {useParams, Link as RouterLink} from "react-router-dom";
 import {ArrowBack, AutoStories, Download} from "@mui/icons-material";
 import {gql, useQuery} from "@apollo/client";
@@ -54,7 +61,6 @@ export default function EntryDetailsPage({setAppLanguage}) {
       ${queryString}
     `
     );
-
     if (loading) {
         return <Spinner/>;
     }
@@ -63,9 +69,22 @@ export default function EntryDetailsPage({setAppLanguage}) {
     }
 
     const entryInfo = data.localEntry;
+
+    if (!entryInfo) {
+        return (
+            <Container fixed className="homepage">
+                <Header setAppLanguage={setAppLanguage} selected="list"/>
+                <Box dir={directionText(appLang)} style={{marginTop: "100px"}}>
+                    <Typography variant="h4" paragraph="true" sx={{mt: "20px"}}>
+                        Processing on server - wait a while and hit "refresh"
+                    </Typography>
+                </Box>
+            </Container>
+        );
+    }
     const finalScript = i18n(appLang, "ADMIN_LANGUAGE_SCRIPT", [
-        entryInfo.script,
-    ]);
+            entryInfo.script,
+        ]);
     let bookCodes = [];
     if (entryInfo.bookCodes.length > 0) {
         bookCodes = [...entryInfo.bookCodes];
@@ -74,12 +93,12 @@ export default function EntryDetailsPage({setAppLanguage}) {
     const filteredStatsTab = entryInfo.bookStats.filter((bo) => bo.stat > 0);
 
     let contentTab = [];
-    for (const stat of ["OT", "NT", "DC"]) {
+    for (const stat of ['OT', 'NT', 'DC']) {
         if (entryInfo[`n${stat}`] > 0) {
-            contentTab.push(`${entryInfo[`n${stat}`]} ${stat}`);
+            contentTab.push(`${entryInfo[`n${stat}`]} ${stat}`)
         }
     }
-    const contentString = contentTab.join(", ");
+    const contentString = contentTab.join(', ')
 
     return (
         <Container fixed className="homepage">
@@ -115,9 +134,7 @@ export default function EntryDetailsPage({setAppLanguage}) {
                             style={{fontWeight: "bold", textAlign: alignmentText(appLang)}}
                         >
                             <Grid item>
-                <span dir={directionText(appLang)}>
-                  {i18n(appLang, "ADMIN_DETAILS_ABBREVIATION")}
-                </span>
+                                <span dir={directionText(appLang)}>{i18n(appLang, "ADMIN_DETAILS_ABBREVIATION")}</span>
                             </Grid>
                         </Grid>
                         <Grid item xs={8} style={{textAlign: alignmentText(appLang)}}>
@@ -129,9 +146,7 @@ export default function EntryDetailsPage({setAppLanguage}) {
                             style={{fontWeight: "bold", textAlign: alignmentText(appLang)}}
                         >
                             <Grid item>
-                <span dir={directionText(appLang)}>
-                  {i18n(appLang, "ADMIN_DETAILS_COPYRIGHT")}
-                </span>
+                                <span dir={directionText(appLang)}>{i18n(appLang, "ADMIN_DETAILS_COPYRIGHT")}</span>
                             </Grid>
                         </Grid>
                         <Grid item xs={8} style={{textAlign: alignmentText(appLang)}}>
@@ -143,9 +158,7 @@ export default function EntryDetailsPage({setAppLanguage}) {
                             style={{fontWeight: "bold", textAlign: alignmentText(appLang)}}
                         >
                             <Grid item>
-                <span dir={directionText(appLang)}>
-                  {i18n(appLang, "ADMIN_DETAILS_LANGUAGE")}
-                </span>
+                                <span dir={directionText(appLang)}>{i18n(appLang, "ADMIN_DETAILS_LANGUAGE")}</span>
                             </Grid>
                         </Grid>
                         <Grid item xs={8} style={{textAlign: alignmentText(appLang)}}>
@@ -164,9 +177,7 @@ export default function EntryDetailsPage({setAppLanguage}) {
                             style={{fontWeight: "bold", textAlign: alignmentText(appLang)}}
                         >
                             <Grid item>
-                <span dir={directionText(appLang)}>
-                  {i18n(appLang, "ADMIN_DETAILS_DATA_SOURCE")}
-                </span>
+                                <span dir={directionText(appLang)}>{i18n(appLang, "ADMIN_DETAILS_DATA_SOURCE")}</span>
                             </Grid>
                         </Grid>
                         <Grid item xs={8} style={{textAlign: alignmentText(appLang)}}>
@@ -178,9 +189,7 @@ export default function EntryDetailsPage({setAppLanguage}) {
                             style={{fontWeight: "bold", textAlign: alignmentText(appLang)}}
                         >
                             <Grid item>
-                <span dir={directionText(appLang)}>
-                  {i18n(appLang, "ADMIN_DETAILS_OWNER")}
-                </span>
+                                <span dir={directionText(appLang)}>{i18n(appLang, "ADMIN_DETAILS_OWNER")}</span>
                             </Grid>
                         </Grid>
                         <Grid item xs={8} style={{textAlign: alignmentText(appLang)}}>
@@ -192,9 +201,7 @@ export default function EntryDetailsPage({setAppLanguage}) {
                             style={{fontWeight: "bold", textAlign: alignmentText(appLang)}}
                         >
                             <Grid item>
-                <span dir={directionText(appLang)}>
-                  {i18n(appLang, "ADMIN_DETAILS_ENTRY_ID")}
-                </span>
+                                <span dir={directionText(appLang)}>{i18n(appLang, "ADMIN_DETAILS_ENTRY_ID")}</span>
                             </Grid>
                         </Grid>
                         <Grid item xs={8} style={{textAlign: alignmentText(appLang)}}>
@@ -207,9 +214,7 @@ export default function EntryDetailsPage({setAppLanguage}) {
                         >
                             <Grid item>
                                 {" "}
-                                <span dir={directionText(appLang)}>
-                  {i18n(appLang, "ADMIN_DETAILS_REVISION")}
-                </span>
+                                <span dir={directionText(appLang)}>{i18n(appLang, "ADMIN_DETAILS_REVISION")}</span>
                             </Grid>
                         </Grid>
                         <Grid item xs={8} style={{textAlign: alignmentText(appLang)}}>
@@ -221,9 +226,8 @@ export default function EntryDetailsPage({setAppLanguage}) {
                             style={{fontWeight: "bold", textAlign: alignmentText(appLang)}}
                         >
                             <Grid item>
-                <span dir={directionText(appLang)}>
-                  {i18n(appLang, "ADMIN_DETAILS_CONTENT")}
-                </span>
+
+                                <span dir={directionText(appLang)}>{i18n(appLang, "ADMIN_DETAILS_CONTENT")}</span>
                             </Grid>
                         </Grid>
                         <Grid item xs={8} style={{textAlign: alignmentText(appLang)}}>
@@ -236,9 +240,7 @@ export default function EntryDetailsPage({setAppLanguage}) {
                         >
                             <Grid item>
                                 {" "}
-                                <span dir={directionText(appLang)}>
-                  {i18n(appLang, "ADMIN_DETAILS_CHAPTERS")}
-                </span>
+                                <span dir={directionText(appLang)}>{i18n(appLang, "ADMIN_DETAILS_CHAPTERS")}</span>
                             </Grid>
                         </Grid>
                         <Grid item xs={8} style={{textAlign: alignmentText(appLang)}}>
@@ -250,9 +252,7 @@ export default function EntryDetailsPage({setAppLanguage}) {
                             style={{fontWeight: "bold", textAlign: alignmentText(appLang)}}
                         >
                             <Grid item>
-                <span dir={directionText(appLang)}>
-                  {i18n(appLang, "ADMIN_DETAILS_VERSES")}
-                </span>
+                                <span dir={directionText(appLang)}>{i18n(appLang, "ADMIN_DETAILS_VERSES")}</span>
                             </Grid>
                         </Grid>
                         <Grid item xs={8} style={{textAlign: alignmentText(appLang)}}>
@@ -277,22 +277,23 @@ export default function EntryDetailsPage({setAppLanguage}) {
                             </>
                         )}
                         <>
-                            {selectedBook !== "" &&
-                            filteredStatsTab.map((bo) => (
-                                <>
-                                    <Grid item xs={4} md={2}>
-                                        {i18n(appLang, `STATS_${bo.field}`)}
-                                    </Grid>
-                                    <Grid item xs={8} md={10}>
-                                        {bo.stat}
-                                    </Grid>
-                                </>
-                            ))}
-                            {selectedBook === "" && bookCodes.length > 0 && (
-                                <Typography style={{textAlign: alignmentText(appLang)}}>
-                                    {i18n(appLang, "ADMIN_DETAILS_ALERT")}
-                                </Typography>
+                            {selectedBook !== "" && (
+                                filteredStatsTab.map((bo) => (
+                                    <>
+                                        <Grid item xs={4} md={2}>
+                                            {i18n(appLang, `STATS_${bo.field}`)}
+                                        </Grid>
+                                        <Grid item xs={8} md={10}>
+                                            {bo.stat}
+                                        </Grid>
+                                    </>
+                                ))
                             )}
+                            {selectedBook === "" && bookCodes.length > 0 &&
+                            <Typography style={{textAlign: alignmentText(appLang)}}>
+                                {i18n(appLang, "ADMIN_DETAILS_ALERT")}
+                            </Typography>
+                            }
                         </>
                     </Grid>
                 </Paper>

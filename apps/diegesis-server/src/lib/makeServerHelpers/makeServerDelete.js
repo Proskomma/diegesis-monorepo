@@ -1,23 +1,22 @@
-const path = require("path");
-const fse = require('fs-extra');
+const {
+    orgEntries,
+    unlockEntry,
+    deleteGeneratedEntryContent,
+    deleteSuccinctError,
+} = require("../dataLayers/fs");
 
 function makeServerDelete(config) {
-    for (const org of fse.readdirSync(config.dataPath)) {
-        const orgDir = path.join(config.dataPath, org);
-        if (fse.pathExistsSync(orgDir) && fse.lstatSync(orgDir).isDirectory()) {
-            for (const trans of fse.readdirSync(orgDir)) {
-                const transDir = path.join(orgDir, trans);
-                for (const revision of fse.readdirSync(transDir)) {
-                    const revisionDir = path.join(transDir, revision);
-                    for (
-                        const toRemove of (
-                        config.deleteGenerated ?
-                            ["lock.json", "generated"] :
-                            ["lock.json"]
-                    )
-                        ) {
-                        fse.remove(path.join(revisionDir, toRemove));
-                    }
+    let orgs = config.orgs;
+    if (config.localContent) {
+        orgs.push(config.name);
+    }
+    for (const org of orgs) {
+        for (const entryRecord of orgEntries(config, org)) {
+            for (const revision of entryRecord.revisions) {
+                unlockEntry(config, org, entryRecord.id, revision);
+                deleteSuccinctError(config, org, entryRecord.id, revision);
+                if (config.deleteGenerated) {
+                    deleteGeneratedEntryContent(config, org, entryRecord.id, revision);
                 }
             }
         }
