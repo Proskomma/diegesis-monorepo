@@ -11,9 +11,9 @@ import Spinner from "../components/Spinner";
 import BookSelector from "../components/BookSelector";
 import i18n from "../i18n";
 import AppLangContext from "../contexts/AppLangContext";
-import { directionText } from "../i18n/languageDirection";
+import {directionText} from "../i18n/languageDirection";
 
-export default function EntryDownloadPage({ setAppLanguage }) {
+export default function EntryDownloadPage({setAppLanguage}) {
     const appLang = useContext(AppLangContext);
     const {source, entryId, revision} = useParams();
 
@@ -162,30 +162,30 @@ export default function EntryDownloadPage({ setAppLanguage }) {
             </Typography>
             <Grid container>
                 <Grid item xs={12}>
-                    <Typography variant="h5" paragraph="true">{i18n(appLang,"ADMIN_DOWNLOAD_PAGE_TITLE")}</Typography>
+                    <Typography variant="h5" paragraph="true">{i18n(appLang, "ADMIN_DOWNLOAD_PAGE_TITLE")}</Typography>
                 </Grid>
                 {
                     entryInfo.canonResources
                         .map(cro => cro.type)
                         .map(
-                        cr => <>
-                            <Grid item xs={4}>
-                                <Typography variant="body1" paragraph="true">{cr}</Typography>
-                            </Grid>
-                            <Grid item xs={8}>
+                            cr => <>
+                                <Grid item xs={4}>
+                                    <Typography variant="body1" paragraph="true">{cr}</Typography>
+                                </Grid>
+                                <Grid item xs={8}>
                                     <Button onClick={() => downloadTranslation(cr)}>
                                         <Download/>
                                     </Button>
-                            </Grid>
-                        </>
-
-                    )
+                                </Grid>
+                            </>
+                        )
                 }
                 {
                     bookCodes.size > 0 &&
                     <>
                         <Grid item xs={4} md={2}>
-                            <Typography variant="h5" paragraph="true">{i18n(appLang,"ADMIN_DOWNLOAD_PAGE_STITLE")}</Typography>
+                            <Typography variant="h5"
+                                        paragraph="true">{i18n(appLang, "ADMIN_DOWNLOAD_PAGE_STITLE")}</Typography>
                         </Grid>
                         <Grid item xs={8} md={10}>
                             <BookSelector bookCodes={Array.from(bookCodes)} selectedBook={selectedBook}
@@ -195,20 +195,20 @@ export default function EntryDownloadPage({ setAppLanguage }) {
                             selectedBook !== "" &&
                             entryInfo.bookResourceTypes
                                 .map(
-                                rt => <>
-                                    <Grid item xs={4}>
-                                        {rt}
-                                    </Grid>
-                                    <Grid item xs={8}>
-                                        <Button
-                                            onClick={() => downloadBook(rt, selectedBook)}
-                                            disabled={!entryInfo[`${rt}BookCodes`].includes(selectedBook)}
-                                        >
-                                            <Download/>
-                                        </Button>
-                                    </Grid>
-                                </>
-                            )
+                                    rt => <>
+                                        <Grid item xs={4}>
+                                            {rt}
+                                        </Grid>
+                                        <Grid item xs={8}>
+                                            <Button
+                                                onClick={() => downloadBook(rt, selectedBook)}
+                                                disabled={!entryInfo[`${rt}BookCodes`].includes(selectedBook)}
+                                            >
+                                                <Download/>
+                                            </Button>
+                                        </Grid>
+                                    </>
+                                )
                         }
                     </>
                 }
