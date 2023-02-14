@@ -62,7 +62,6 @@ function doRenderCron(config) {
                 return;
             }
             try {
-                console.log('taskSpecs',taskSpecs)
                 for (
                     const taskSpec of taskSpecs
                     .map(value => ({value, sort: Math.random()}))
