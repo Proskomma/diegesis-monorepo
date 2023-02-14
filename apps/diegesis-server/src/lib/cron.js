@@ -35,8 +35,11 @@ function doRenderCron(config) {
                 for (const org of orgs) {
                     for (const entryRecord of orgEntries(config, org)) {
                         for (const revision of entryRecord.revisions) {
+                            if (entryIsLocked(config, org, entryRecord.id, revision)) {
+                                nLocked++;
+                                continue;
+                            }
                             if (
-                                entryIsLocked(config, org, entryRecord.id, revision) ||
                                 entryHasSuccinctError(config, org, entryRecord.id, revision) ||
                                 entryHasGeneratedContent(config, org, entryRecord.id, revision)
                             ) {
@@ -62,7 +65,6 @@ function doRenderCron(config) {
                 return;
             }
             try {
-                console.log('taskSpecs',taskSpecs)
                 for (
                     const taskSpec of taskSpecs
                     .map(value => ({value, sort: Math.random()}))
