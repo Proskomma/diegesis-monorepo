@@ -1,6 +1,6 @@
 {
   "name": "DEBUGSERVER",
-  "hostName": "0.0.0.0",
+  "hostName": "localhost",
   "port": 1234,
   "debug": true,
   "logAccess": false,
