@@ -6,7 +6,7 @@
   "logAccess": false,
   "logFormat": "dev",
   "useCors": true,
-  "orgs": [],
+  "orgs": ["DBL", "eBible", "DCS", "Vachan"],
   "processFrequency": "1 min",
   "nWorkers": 1,
   "verbose": true,
