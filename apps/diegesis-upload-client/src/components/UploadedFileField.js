@@ -22,19 +22,22 @@ export default function UploadedFileField({ setFileValues, filesValues }) {
     <>
       {filesValues.map((uploadedFile) => {
         return (
-          <Grid item xs={12} md={6} lg={4} key={uploadedFile.name}>
+          <Grid item xs={12} sm={6} md={4} lg={3} key={uploadedFile.name}>
             <Card style={{ marginTop: "5%" }}>
               <CardContent dir={directionText(appLang)}>
                 <Typography sx={{ mb: 1.5 }} color="text.secondary">
-                  {i18n(appLang, "NAME")} : {uploadedFile.name}
+                  {uploadedFile.name}
+                    {" ("}
+                    {`${uploadedFile.content.length} ${i18n(appLang, "BYTES")}`}
+                    {")"}
                 </Typography>
                 <Typography sx={{ mb: 1.5 }} color="text.secondary"  dir={directionText(appLang)}>
-                  {i18n(appLang, "BOOK")} : {`${uploadedFile.content.length} ${i18n(appLang, "BYTES")}`} : {uploadedFile.type} 
+                  {i18n(appLang, "BOOK")}: {uploadedFile.type}
                   <DeleteForeverRounded
                   color="error"
                   onClick={() => deleteFile(uploadedFile.name)}
                   sx={{float:otherDirectionText(appLang)}}
-                ></DeleteForeverRounded>
+                />
                 </Typography>
               </CardContent>
             </Card>

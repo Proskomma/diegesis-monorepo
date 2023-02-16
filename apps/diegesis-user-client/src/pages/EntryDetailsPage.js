@@ -163,7 +163,8 @@ export default function EntryDetailsPage({setAppLanguage}) {
                         </Grid>
                         <Grid item xs={8} style={{textAlign: alignmentText(appLang)}}>
                             <Grid item>
-                                {getAutonym(entryInfo.language)} ,
+                                {getAutonym(entryInfo.language)}
+                                {", "}
                                 {directionText(entryInfo.language) === "rtl"
                                     ? i18n(appLang, "ADMIN_TEXT_DIRECTION_RIGHT")
                                     : i18n(appLang, "ADMIN_TEXT_DIRECTION_LEFT")
