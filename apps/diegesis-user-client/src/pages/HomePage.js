@@ -11,7 +11,7 @@ import {directionText} from "../i18n/languageDirection";
 export default function HomePage({setAppLanguage}) {
   
   const appLang = useContext(AppLangContext);
-  const bigTitle = i18n(appLang,'HOME_BIG_TITLE')
+  const bigTitle = i18n(appLang,'DIEGESIS_TITLE')
   const title = i18n(appLang,'HOME_TITLE')
   const phrase = i18n(appLang,'HOME_PHRASE')
   const content = i18n(appLang,'HOME_CONTENT')

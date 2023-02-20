@@ -11,7 +11,10 @@ const substituteArgs = function (str , args) {
 }
 
 export default function i18n(lang, key, args) {
-  if(!i18nTables[lang]){
+  if(lang === 'debug'){
+    return key
+  }
+  else if(!i18nTables[lang]){
     throw new Error(`NOLANG ${lang}`)
   }
   else if(i18nTables[lang][key]){
