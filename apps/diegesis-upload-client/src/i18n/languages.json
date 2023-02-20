@@ -18,5 +18,9 @@
         "englishName":"Spanish",
         "autonym":"español",
         "textDirection":"ltr"
+    },
+    "debug" : {
+        "englishName":"DEBUG",
+        "autonym":"DEBUG"
     }
 }
