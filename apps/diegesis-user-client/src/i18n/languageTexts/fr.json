@@ -29,13 +29,16 @@
     "ADMIN_DETAILS_OWNER":"Propriétaire",
     "ADMIN_DETAILS_ENTRY_ID":"ID d'entrée",
     "ADMIN_DETAILS_REVISION":"Révision",
-    "ADMIN_TEXT_DIRECTION":"De droite à gauche",
+    "ADMIN_TEXT_DIRECTION_RIGHT":"De droite à gauche",
+    "ADMIN_TEXT_DIRECTION_LEFT":"De gauche à droite",
     "ADMIN_LANGUAGE_SCRIPT":"Script \"{0}\"",
     "ADMIN_DETAILS_CONTENT":"Contenu",
     "ADMIN_DETAILS_CHAPTERS":"Nombre de Chapitres",
     "ADMIN_DETAILS_VERSES":"Nombre de Vers",
     "ADMIN_DETAILS_TITLE":"Ressources du livre",
     "ADMIN_DETAILS_ALERT":"Selectionner un livre",
+    "ADMIN_DOWNLOAD_PAGE_TITLE":"Ressources de niveau Canon",
+    "ADMIN_DOWNLOAD_PAGE_STITLE":"Ressources du livre",
     "STATS_nChapters":"Chapitres",
     "STATS_nVerses":"Vers",
     "STATS_nMorph":"Morph",
@@ -71,5 +74,8 @@
     "pt_LANG":"Portugais",
     "ru_LANG":"Russe",
     "es_LANG":"Espagnol",
-    "sw_LANG":"Swahili"
+    "sw_LANG":"Swahili",
+    "METADATA":"Métadonnées",
+    "RESOURCES":"Ressources",
+    "BLEND_PAGE":"Mélangez vos données"
 }

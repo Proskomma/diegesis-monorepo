@@ -14,7 +14,7 @@ import i18n from "../i18n";
 export default function ListPage({ setAppLanguage }) {
   const appLang = useContext(AppLangContext);
   const [showSettings, setShowSettings] = useState(false);
-  const [searchOrg, setSearchOrg] = useState("TESTACHRAF");
+  const [searchOrg, setSearchOrg] = useState("MMLC");
   const [searchOwner, setSearchOwner] = useState("");
   const [searchType, setSearchType] = useState("");
   const [searchLang, setSearchLang] = useState("");
@@ -62,7 +62,7 @@ export default function ListPage({ setAppLanguage }) {
 
   return (
     <Container fixed className="listpage">
-      <Header setAppLanguage={setAppLanguage} selected="list" />
+      <Header setAppLanguage={setAppLanguage} selected="uploads" />
       <Box dir={directionText(appLang)} style={{ marginTop: "100px" }}>
         <Typography variant="h4" paragraph="true" sx={{ mt: "20px" }}>
           {entries}

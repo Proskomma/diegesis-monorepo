@@ -1,6 +1,6 @@
 {
   "name": "DEBUGSERVER",
-  "hostName": "0.0.0.0",
+  "hostName": "localhost",
   "port": 1234,
   "debug": true,
   "logAccess": false,
@@ -8,7 +8,7 @@
   "useCors": true,
   "orgs": [],
   "processFrequency": "1 min",
-  "nWorkers": 8,
+  "nWorkers": 1,
   "verbose": true,
   "includeMutations": true,
   "sessionTimeoutInMins": 10,

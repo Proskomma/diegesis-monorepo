@@ -12,10 +12,11 @@ import ListPage from "./pages/ListPage";
 import AppLangContext, { AppLangProvider } from "./contexts/AppLangContext";
 import i18n from "./i18n";
 import UploadPage from "./pages/UploadPage";
+import { SnackbarProvider } from "notistack";
 
 function App() {
   const [authed, setAuthed] = useState(true);
-  const appLang = useContext(AppLangContext)
+  const appLang = useContext(AppLangContext);
 
   useEffect(() => {
     const sessionCode = Cookies.get("diegesis-auth");
@@ -56,7 +57,8 @@ function App() {
     console.error(error);
     return (
       <div>
-        {i18n(appLang,"unexpected_error")}<i>{error.message}</i>
+        {i18n(appLang, "unexpected_error")}
+        <i>{error.message}</i>
       </div>
     );
   }
@@ -72,21 +74,23 @@ function App() {
       path: "/uploads/add",
       element: <UploadPage setAppLanguage={setAppLanguage} />,
       errorElement: <ErrorBoundary />,
-    }
+    },
   ]);
   return (
     <ApolloProvider client={client}>
       <ThemeProvider theme={theme}>
-        <AppLangProvider value={appLanguage}>
-          <CssBaseline />
-          {!authed && (
-            <div>
-              You need to authenticate to view this page. Please click{" "}
-              <a href="/login?redirect=/uploads">here</a> to log in
-            </div>
-          )}
-          {authed && <RouterProvider router={router} />}
-        </AppLangProvider>
+        <SnackbarProvider maxSnack={1}>
+          <AppLangProvider value={appLanguage}>
+            <CssBaseline />
+            {!authed && (
+              <div>
+                You need to authenticate to view this page. Please click{" "}
+                <a href="/login?redirect=/uploads">here</a> to log in
+              </div>
+            )}
+            {authed && <RouterProvider router={router} />}
+          </AppLangProvider>
+        </SnackbarProvider>
       </ThemeProvider>
     </ApolloProvider>
   );

@@ -49,6 +49,7 @@
     "proskomma-core": "^0.9.14",
     "proskomma-json-tools": "^0.6.6",
     "proskomma-utils": "^0.8.2",
+    "pure-uuid": "^1.6.2",
     "sha": "^3.0.0",
     "winston": "^3.8.2"
   },

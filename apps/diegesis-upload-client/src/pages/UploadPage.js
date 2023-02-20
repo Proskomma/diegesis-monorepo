@@ -1,19 +1,16 @@
 import React, {useContext, useEffect, useState} from "react";
-import TextField from "@mui/material/TextField";
 import {
-    Alert,
-    Box,
+    Grid,
     Button,
     Container,
+    FormControl,
     FormControlLabel,
     FormLabel,
-    Input,
-    Paper,
     Radio,
     RadioGroup,
-    Snackbar,
-    Stack,
     Typography,
+    TextField,
+    InputLabel,
 } from "@mui/material";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
@@ -21,17 +18,31 @@ import AppLangContext from "../contexts/AppLangContext";
 import i18n from "../i18n";
 import LangSelector from "../components/LangSelector";
 import {directionText} from "../i18n/languageDirection";
+import UploadFormField from "../components/UploadFormField";
+import UploadedFileField from "../components/UploadedFileField";
+import {useSnackbar} from "notistack";
+import {useApolloClient, gql} from "@apollo/client";
 
-const documentTypeRegex = /(text.*)/;
-const scriptRegex = /^[A-Za-z0-9]{1,16}$/;
-const abbreviationRegex = /^[A-Za-z][A-Za-z0-9]+$/;
+const documentSuffixRegex = /^[A-Za-z0-9-_()]+(.txt|.usfm|.sfm)$/;
 const documentRegex = /^\\id ([A-Z1-6]{3})/;
-// const catchTitleRegex = /([A-Z1-6]{3})/;
+const BookRegex = /[a-zA-Z0-9]{3}/;
 
 export default function UploadPage({setAppLanguage}) {
+    const client = useApolloClient();
+
+    async function createEntry(client) {
+        const query = buildQuery()
+        const result = await client.mutate({
+            mutation: gql`
+        ${query}
+      `,
+        });
+    }
+
     const appLang = useContext(AppLangContext);
-    const field_required = i18n(appLang, "FIELD_REQUIRED");
+    const {enqueueSnackbar} = useSnackbar();
     const [uploads, setUploads] = useState([]);
+    const [invalidFields, setInvalidFields] = useState({});
     const [formValues, setFormValues] = useState({
         title: "",
         description: "",
@@ -39,32 +50,53 @@ export default function UploadPage({setAppLanguage}) {
         script: "",
         copyright: "",
         abbreviation: "",
-        textDirection: "",
+        textDirection: "ltr",
     });
     const [fileValues, setFileValues] = useState([]);
-    const [open, setOpen] = useState(false);
-
-    const handleClose = (event, reason) => {
-        if (reason === "clickaway") {
-            return;
-        }
-        setOpen(false);
-    };
 
     const changeHandler = (e) => {
         const {files} = e.target;
         const validFiles = [];
         for (let i = 0; i < files.length; i++) {
             const file = files[i];
-            if (true || file.type.match(documentTypeRegex)) {
+            if (file.name.match(documentSuffixRegex)) {
                 validFiles.push(file);
+            } else {
+                enqueueSnackbar(i18n(appLang, "WRONG_FILES"), {
+                    autoHideDuration: 3000,
+                    variant: "error",
+                });
             }
         }
         setUploads(validFiles);
     };
 
+    function dedupe(elements) {
+        let ret = [];
+        let usedBooks = new Set([]);
+        let ignoredBooks = [];
+        for (const el of elements) {
+            if (!usedBooks.has(el.type)) {
+                ret.push(el);
+                usedBooks.add(el.type);
+            } else {
+                ignoredBooks.push(el.type);
+            }
+        }
+        if (ignoredBooks.length > 0) {
+            enqueueSnackbar(
+                `ignoring duplicate upload for ${ignoredBooks.join(";")}`,
+                {
+                    autoHideDuration: 3000,
+                    variant: "error",
+                }
+            );
+        }
+        return ret;
+    }
+
     useEffect(() => {
-        const newUploadContent = []
+        const newUploadContent = [];
         for (const file of uploads) {
             const fileReader = new FileReader();
             fileReader.onloadend = (e) => {
@@ -74,389 +106,189 @@ export default function UploadPage({setAppLanguage}) {
                     } else {
                         newUploadContent.push({
                             content: result,
-                            type: file.type,
+                            type: result.match(BookRegex)[0],
                             name: file.name,
                         });
-                        setFileValues(newUploadContent);
+                        setFileValues(dedupe([...fileValues, ...newUploadContent]));
                     }
                 }
             };
             fileReader.readAsText(file);
         }
-
     }, [uploads]);
 
-    const formValidators = {
-        title: (str) => {
-            let ret = [];
-            if (str.trim().length === 0) {
-                ret.push(field_required);
-            }
-            if (str.trim().length < 6 || str.trim().length > 64) {
-                ret.push("invalid text length");
-            }
-            return ret;
+    const fields = [
+        {
+            field: "title",
+            i18n: "CONTROLS_TITLE",
+            validations: {required: true, minLength: 6, maxLength: 64},
         },
-        description: (str) => {
-            let ret = [];
-            if (str.trim().length === 0) {
-                ret.push(field_required);
-            }
-            if (str.trim().length < 6 || str.trim().length > 255) {
-                ret.push("invalid text length");
-            }
-            return ret;
+        {
+            field: "description",
+            i18n: "DESCRIPTION",
+            validations: {required: true, minLength: 6, maxLength: 255},
         },
-        script: (str) => {
-            let ret = [];
-            if (str.trim().length === 0) {
-                ret.push(field_required);
-            }
-            if (!str.trim().match(scriptRegex)) {
-                ret.push("invalid text");
-            }
-            return ret;
+        {
+            field: "script",
+            i18n: "SCRIPT",
+            validations: {required: true, regex: /^[A-Za-z0-9]{1,16}$/},
         },
-        copyright: (str) => {
-            let ret = [];
-            if (str.trim().length === 0) {
-                ret.push(field_required);
-            }
-            if (str.trim().length < 6 || str.trim().length > 64) {
-                ret.push("invalid text length");
-            }
-            return ret;
+        {
+            field: "copyright",
+            i18n: "ADMIN_DETAILS_COPYRIGHT",
+            validations: {required: true, minLength: 6, maxLength: 64},
         },
-        abbreviation: (str) => {
-            let ret = [];
-            if (str.trim().length === 0) {
-                ret.push(field_required);
-            }
-            if (!str.trim().match(abbreviationRegex)) {
-                ret.push("invalid text");
-            }
-            return ret;
+        {
+            field: "abbreviation",
+            i18n: "ADMIN_DETAILS_ABBREVIATION",
+            validations: {required: true, regex: /^[A-Za-z][A-Za-z0-9]+$/},
         },
+    ];
+
+    const isValidForm = () => {
+        return Object.values(invalidFields).filter((v) => v).length === 0 && uploads.length > 0;
     };
 
-    const isValidForm = (keys) => {
-        for (const k in keys) {
-            if (!formValidators[k]) {
-                continue;
-            }
-            if (formValidators[k](formValues[k]).length > 0) {
-                return false;
-            }
+    const replacing = (data) => {
+        return data.replace(/"""/g, `'''`);
+    };
+
+    const buildQuery = () => {
+        let gqlBits = [];
+        gqlBits.push("mutation { createLocalEntry(");
+        gqlBits.push("metadata:[");
+        for (const [key, value] of Object.entries(formValues)) {
+            gqlBits.push("{");
+            gqlBits.push(`key: """${replacing(key)}"""`);
+            gqlBits.push(`value:"""${replacing(value)}"""`);
+            gqlBits.push("}");
         }
-        return true;
+        gqlBits.push("]");
+        gqlBits.push("resources:[");
+        for (const resource of fileValues) {
+            gqlBits.push("{");
+            gqlBits.push(`bookCode: """${replacing(resource.type)}"""`);
+            gqlBits.push(`content:"""${replacing(resource.content)}"""`);
+            gqlBits.push("}");
+        }
+        gqlBits.push("]");
+        gqlBits.push(")}");
+        return gqlBits.join("\n");
     };
 
     return (
         <Container fixed className="uploadpage">
-            <Header setAppLanguage={setAppLanguage} selected="list"/>
+            <Header setAppLanguage={setAppLanguage} selected="add"/>
+            <Typography
+                dir={directionText(appLang)}
+                variant="h4"
+                paragraph="true"
+                sx={{mt: "100px"}}
+            >
+                {i18n(appLang, "Add_Document")}
+            </Typography>
             <form>
-                <Box dir={directionText(appLang)} style={{marginTop: "100px"}}>
-                    <Typography variant="h4" paragraph="true" sx={{mt: "20px"}}>
-                        {i18n(appLang, "Add_Document")}
-                    </Typography>
-
-                    <Box
-                        sx={{
-                            display: "flex",
-                            flexDirection: "row",
-                            justifyContent: "space-around",
-                            width: "100%",
-                        }}
-                    >
-                        <Box
-                            sx={{
-                                display: "flex",
-                                flexDirection: "column",
-                                width: "45%",
-                            }}
-                        >
-                            <FormLabel id="demo-radio-buttons-group-label" htmlFor="title">
-                                {i18n(appLang, "CONTROLS_TITLE")}
-                            </FormLabel>
-                            <TextField
-                                fullWidth
-                                name="title"
-                                id="outlined-basic"
-                                onChange={(e) =>
-                                    setFormValues({...formValues, title: e.target.value})
+                <Grid dir={directionText(appLang)} container spacing={2}>
+                    <Grid item xs={12}>
+                        <Typography variant="h5" paragraph="true" sx={{mt: "20px"}}>
+                            {i18n(appLang, "METADATA")}
+                        </Typography>
+                    </Grid>
+                    {
+                        fields.map((f) => (
+                            <UploadFormField
+                                formTextFieldLabel={i18n(appLang, f.i18n)}
+                                name={f.field}
+                                inputValue={formValues[f.field]}
+                                setInputValue={(e) =>
+                                    setFormValues({...formValues, [f.field]: e.target.value})
                                 }
-                                value={formValues.title}
-                                error={formValidators.title(formValues.title).length > 0}
-                                helperText={formValidators.title(formValues.title).join("; ")}
+                                validationSpec={f.validations}
+                                setInvalidFields={setInvalidFields}
+                                invalidFields={invalidFields}
                             />
-                        </Box>
-                        <Box
+                        ))
+                    }
+                    <Grid item xs={12} md={6} lg={4}>
+                        <LangSelector
+                            selectLanguageLabel={i18n(appLang, "LANGUAGE_CODE")}
+                            name="langCode"
+                            langCode={formValues.langCode}
+                            setlangCode={(e) =>
+                                setFormValues({...formValues, langCode: e.target.value})
+                            }
+                        />
+                    </Grid>
+                    <Grid item xs={12} md={6}>
+                        <FormLabel
+                            id="text-direction-group-label"
+                            htmlFor="textDirection"
+                        >
+                            {i18n(appLang, "TEXT_DIRECTION")}
+                        </FormLabel>
+                        <RadioGroup
+                            aria-labelledby="text-direction-group-label"
+                            name="text-direction-buttons-group"
+                            defaultValue="ltr"
+                            onChange={(e) =>
+                                setFormValues({
+                                    ...formValues,
+                                    textDirection: e.target.value,
+                                })
+                            }
+                            value={formValues.textDirection}
                             sx={{
                                 display: "flex",
-                                flexDirection: "column",
-                                width: "45%",
+                                flexDirection: "row",
                             }}
                         >
-                            <FormLabel
-                                id="demo-radio-buttons-group-label"
-                                htmlFor="description"
-                            >
-                                {i18n(appLang, "DESCRIPTION")}
-                            </FormLabel>
-                            <TextField
-                                fullWidth
-                                name="description"
-                                id="outlined-basic"
-                                onChange={(e) =>
-                                    setFormValues({...formValues, description: e.target.value})
-                                }
-                                value={formValues.description}
-                                error={
-                                    formValidators.description(formValues.description).length > 0
-                                }
-                                helperText={formValidators
-                                    .description(formValues.description)
-                                    .join("; ")}
+                            <FormControlLabel
+                                value="ltr"
+                                control={<Radio/>}
+                                label={i18n(appLang, "LTR")}
                             />
-                        </Box>
-                    </Box>
-
-                    <Box
-                        sx={{
-                            display: "flex",
-                            flexDirection: "row",
-                            justifyContent: "space-around",
-                            width: "100%",
-                        }}
-                    >
-                        <Box
-                            sx={{
-                                display: "flex",
-                                flexDirection: "column",
-                                width: "45%",
-                            }}
-                        >
-                            <FormLabel id="demo-radio-buttons-group-label" htmlFor="langCode">
-                                {i18n(appLang, "LANGUAGE_CODE")}
-                            </FormLabel>
-                            <LangSelector
-                                name="langCode"
-                                langCode={formValues.langCode}
-                                setlangCode={(e) =>
-                                    setFormValues({...formValues, langCode: e.target.value})
-                                }
+                            <FormControlLabel
+                                value="rtl"
+                                control={<Radio/>}
+                                label={i18n(appLang, "RTL")}
                             />
-                        </Box>
-                        <Box
-                            sx={{
-                                display: "flex",
-                                flexDirection: "column",
-                                width: "45%",
-                            }}
+                        </RadioGroup>
+                    </Grid>
+                    <Grid item xs={12}>
+                        <Typography variant="h5" paragraph="true" sx={{mt: "20px"}}>
+                            {i18n(appLang, "RESOURCES")}
+                        </Typography>
+                    </Grid>
+                    <Grid item xs={12}>
+                        <InputLabel id="uploadFilesId">
+                            {i18n(appLang, "Upload_documents")}
+                        </InputLabel>
+                        <TextField
+                            labelId="uploadFilesId"
+                            onChange={changeHandler}
+                            type="file"
+                            accept="*/txt,*/usfm,*/sfm"
+                            inputProps={{multiple: true}}
+                        />
+                    </Grid>
+                    <UploadedFileField
+                        setFileValues={setFileValues}
+                        filesValues={fileValues}
+                    />
+                    <Grid item xs={12}>
+                        <Button
+                            type="submit"
+                            variant="contained"
+                            size="large"
+                            style={{marginBottom: "20px", marginTop: "20px"}}
+                            disabled={!isValidForm(formValues)}
+                            onClick={() => createEntry(client)}
                         >
-                            <FormLabel id="demo-radio-buttons-group-label" htmlFor="script">
-                                {i18n(appLang, "SCRIPT")}
-                            </FormLabel>
-                            <TextField
-                                fullWidth
-                                name="script"
-                                id="outlined-basic"
-                                onChange={(e) =>
-                                    setFormValues({...formValues, script: e.target.value})
-                                }
-                                value={formValues.script}
-                                error={formValidators.script(formValues.script).length > 0}
-                                helperText={formValidators.script(formValues.script).join("; ")}
-                            />
-                        </Box>
-                    </Box>
-
-                    <Box
-                        sx={{
-                            display: "flex",
-                            flexDirection: "row",
-                            justifyContent: "space-around",
-                            width: "100%",
-                        }}
-                    >
-                        <Box
-                            sx={{
-                                display: "flex",
-                                flexDirection: "column",
-                                width: "45%",
-                            }}
-                        >
-                            <FormLabel
-                                id="demo-radio-buttons-group-label"
-                                htmlFor="copyright"
-                            >
-                                {i18n(appLang, "ADMIN_DETAILS_COPYRIGHT")}
-                            </FormLabel>
-                            <TextField
-                                fullWidth
-                                name="copyright"
-                                id="outlined-basic"
-                                onChange={(e) =>
-                                    setFormValues({...formValues, copyright: e.target.value})
-                                }
-                                value={formValues.copyright}
-                                error={
-                                    formValidators.copyright(formValues.copyright).length > 0
-                                }
-                                helperText={formValidators
-                                    .copyright(formValues.copyright)
-                                    .join("; ")}
-                            />
-                        </Box>
-                        <Box
-                            sx={{
-                                display: "flex",
-                                flexDirection: "column",
-                                width: "45%",
-                            }}
-                        >
-                            <FormLabel
-                                id="demo-radio-buttons-group-label"
-                                htmlFor="abbreviation"
-                            >
-                                {i18n(appLang, "ADMIN_DETAILS_ABBREVIATION")}
-                            </FormLabel>
-                            <TextField
-                                fullWidth
-                                name="abbreviation"
-                                id="outlined-basic"
-                                onChange={(e) =>
-                                    setFormValues({...formValues, abbreviation: e.target.value})
-                                }
-                                value={formValues.abbreviation}
-                                error={
-                                    formValidators.abbreviation(formValues.abbreviation).length >
-                                    0
-                                }
-                                helperText={formValidators
-                                    .abbreviation(formValues.abbreviation)
-                                    .join("; ")}
-                            />
-                        </Box>
-                    </Box>
-
-                    <Box
-                        sx={{
-                            display: "flex",
-                            flexDirection: "row",
-                            justifyContent: "space-around",
-                            width: "100%",
-                        }}
-                    >
-                        <Box
-                            sx={{
-                                display: "flex",
-                                flexDirection: "column",
-                                width: "45%",
-                            }}
-                        >
-                            <FormLabel
-                                id="demo-radio-buttons-group-label"
-                                htmlFor="textDirection"
-                            >
-                                {i18n(appLang, "TEXT_DIRECTION")}
-                            </FormLabel>
-                            <RadioGroup
-                                aria-labelledby="demo-radio-buttons-group-label"
-                                name="radio-buttons-group"
-                                defaultValue="ltr"
-                                onChange={(e) =>
-                                    setFormValues({
-                                        ...formValues,
-                                        textDirection: e.target.value,
-                                    })
-                                }
-                                value={formValues.textDirection}
-                                sx={{
-                                    display: "flex",
-                                    flexDirection: "row",
-                                }}
-                            >
-                                <FormControlLabel
-                                    value="ltr"
-                                    control={<Radio/>}
-                                    label={i18n(appLang, "LTR")}
-                                />
-                                <FormControlLabel
-                                    value="rtl"
-                                    control={<Radio/>}
-                                    label={i18n(appLang, "RTL")}
-                                />
-                            </RadioGroup>
-                        </Box>
-                        <Box
-                            sx={{
-                                display: "flex",
-                                flexDirection: "column",
-                                width: "45%",
-                            }}
-                        >
-                            <FormLabel
-                                id="demo-radio-buttons-group-label"
-                                htmlFor="textDirection"
-                            >
-                                {i18n(appLang, "Upload_documents")}
-                            </FormLabel>
-                            <br/>
-                            <Input
-                                id="assets"
-                                onChange={changeHandler}
-                                type="file"
-                                accept="*/txt"
-                                inputProps={{multiple: true}}
-                            />
-                        </Box>
-                    </Box>
-                    <Stack spacing={2} sx={{width: "100%"}}>
-                        <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
-                            <Alert
-                                onClose={handleClose}
-                                severity="error"
-                                sx={{
-                                    width: "100%",
-                                    vertical: "bottom",
-                                    horizontal: "center",
-                                }}
-                            >
-                                Not Valid Document!
-                            </Alert>
-                        </Snackbar>
-                    </Stack>
-                </Box>
-                <Button
-                    type="submit"
-                    variant="contained"
-                    size="large"
-                    style={{marginBottom: "20px", marginTop: "20px"}}
-                    disabled={!isValidForm(formValues)}
-                >
-                    {i18n(appLang, "SUBMIT")}
-                </Button>
+                            {i18n(appLang, "SUBMIT")}
+                        </Button>
+                    </Grid>
+                </Grid>
             </form>
-            <Box>
-                <Paper style={{marginTop: "5%"}}>
-                    <>
-                        {
-                            fileValues.map((uploadedFile, idx) => {
-                                return <ul>
-                                    <li>Document {idx + 1} :
-                                        <ul>
-                                            <li>Name : {uploadedFile.name}</li>
-                                            <li>Type : {uploadedFile.type}</li>
-                                            <li>content : {uploadedFile.content}</li>
-                                        </ul>
-                                    </li>
-                                </ul>
-                            })}
-                    </>
-                </Paper>
-            </Box>
-
             <Footer/>
         </Container>
     );
