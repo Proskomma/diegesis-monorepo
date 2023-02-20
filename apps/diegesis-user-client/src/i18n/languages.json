@@ -23,5 +23,10 @@
         "englishName":"Indian",
         "autonym":"भारतीय भाषा",
         "textDirection":"ltr"
+    },
+    "debug" : {
+        "englishName":"DEBUG",
+        "autonym":"DEBUG",
+        "textDirection":"ltr"
     }
 }

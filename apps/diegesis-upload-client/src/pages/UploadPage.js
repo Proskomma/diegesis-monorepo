@@ -23,7 +23,7 @@ import UploadedFileField from "../components/UploadedFileField";
 import {useSnackbar} from "notistack";
 import {useApolloClient, gql} from "@apollo/client";
 
-const documentSuffixRegex = /^[A-Za-z0-9-_()]+(.txt|.usfm|.sfm)$/;
+const documentSuffixRegex = /^[A-Za-z0-9_().-]+(.txt|.usfm|.sfm)$/;
 const documentRegex = /^\\id ([A-Z1-6]{3})/;
 const BookRegex = /[a-zA-Z0-9]{3}/;
 

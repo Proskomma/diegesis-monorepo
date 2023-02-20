@@ -11,6 +11,9 @@ const substituteArgs = function (str , args) {
 }
 
 export default function i18n(lang, key, args) {
+  if(i18nTables[lang] === 'debug'){
+    return 'debug mode'
+  }
   if(!i18nTables[lang]){
     throw new Error(`NOLANG ${lang}`)
   }
