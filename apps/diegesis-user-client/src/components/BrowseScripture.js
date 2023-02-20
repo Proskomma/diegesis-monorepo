@@ -96,7 +96,7 @@ export default function BrowseScripture({pk}) {
             }
         },
         [scriptureData]
-    )
+    );
 
     const docMenuItems = scriptureData.menuQuery && scriptureData.menuQuery.data && scriptureData.menuQuery.data.docSets && scriptureData.menuQuery.data.docSets[0].documents ?
         scriptureData.menuQuery.data.docSets[0].documents.map(d => ({id: d.id, label: docName(d)})) :

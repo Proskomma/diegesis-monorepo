@@ -1,9 +1,9 @@
 import React, {useContext} from 'react';
-import {Container, Typography, Box, Button} from "@mui/material";
-import {ArrowBack} from "@mui/icons-material";
-import {useParams, Link as RouterLink} from "react-router-dom";
-import {gql, useQuery} from "@apollo/client";
-import {Proskomma} from 'proskomma-core';
+import { Container, Typography, Box, Button } from "@mui/material";
+import { ArrowBack } from "@mui/icons-material";
+import { useParams, Link as RouterLink } from "react-router-dom";
+import { gql, useQuery } from "@apollo/client";
+import { Proskomma } from 'proskomma-core';
 import GqlError from "../components/GqlError";
 
 import Header from "../components/Header";
@@ -12,6 +12,7 @@ import Spinner from "../components/Spinner";
 import BrowseScripture from "../components/BrowseScripture";
 import {directionText} from "../i18n/languageDirection";
 import AppLangContext from "../contexts/AppLangContext";
+// const ProskommaRequire = require('proskomma-core');
 
 export default function EntryBrowsePage({setAppLanguage}) {
     const appLang = useContext(AppLangContext);
@@ -46,7 +47,7 @@ export default function EntryBrowsePage({setAppLanguage}) {
     }
 
     const entryInfo = data.localEntry;
-
+    
     if (!entryInfo) {
         return (
             <Container fixed className="homepage">
