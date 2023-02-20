@@ -1,7 +1,7 @@
 import React from 'react';
 import {searchQuery} from '../lib/localSearch';
 import EntriesTable from "./EntriesTable";
-import {gql, useQuery, useApolloClient, InMemoryCache} from "@apollo/client";
+import {gql, useQuery, useApolloClient} from "@apollo/client";
 import GqlLoading from "./GqlLoading";
 import GqlError from "./GqlError";
 import {deleteEntry} from '../lib/tableCallbacks';

@@ -1,12 +1,13 @@
-const {ApolloServer} = require("apollo-server-express");
-const {mergeTypeDefs} = require("@graphql-tools/merge");
+const { ApolloServer } = require("@apollo/server");
+const { expressMiddleware } = require('@apollo/server/express4');
+const { mergeTypeDefs } = require('@graphql-tools/merge')
 const makeResolvers = require("../graphql/resolvers/index.js");
 const {
     scalarSchema,
     querySchema,
     mutationSchema,
 } = require("../graphql/schema/index.js");
-const {doRenderCron} = require("./cron.js");
+const { doRenderCron } = require("./cron.js");
 const makeServerApp = require("./makeServerHelpers/makeServerApp");
 const {
     makeServerAuth,
@@ -52,7 +53,7 @@ async function makeServer(config) {
                 : [scalarSchema, querySchema]
         ),
         resolvers,
-        debug: config.debug,
+        includeStacktraceInErrorResponses: config.debug,
         context: ({req}) => {
             return {
                 auth:
@@ -69,9 +70,19 @@ async function makeServer(config) {
 
     // Start apollo server with app as middleware
     await server.start();
-    server.applyMiddleware({
-        app,
-    });
+
+    // migration to apollo 4. Equivalent to the old "server.applyMiddleware({app})"
+    app.use(
+        expressMiddleware(server, {
+            context: ({req}) => {
+                return {
+                    auth: !req.cookies || !req.cookies["diegesis-auth"] ?
+                        {authenticated: false, msg: "No auth cookie"} :
+                        processSession(req.cookies["diegesis-auth"], app.superusers, app.authSalts)
+                };
+            },
+        }),
+    );
     return app;
 }
 

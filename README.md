@@ -16,25 +16,25 @@ This assumes a fairly standard setup including the monorepo's public and admin R
 
 ### Compile the clients
 
+First install the packages
+```
+cd diegesis-monorepo
+npm install
+```
+
+then compile
 ```
 cd apps/diegesis-user-client
-npm install
 npm run build
 cd ../diegesis-admin-client
-npm install
 npm run build
 ```
 
-### Move to the server directory
-
-```
-cd ../diegesis-server
-npm install
-```
 ### Make your own config file
 
 Start by copying `config/debug_config.json`. You may want to create a `local` directory for this. (That directory is gitignore'd.)
 ```
+cd apps/diegesis-server
 mkdir local
 cp config/debug_config.json local/
 ```
