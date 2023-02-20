@@ -1,16 +1,4 @@
-const path = require("path");
-const fse = require("fs-extra");
 const {GraphQLScalarType, Kind} = require("graphql");
-const {ptBooks} = require("proskomma-utils");
-const {
-    transPath,
-    transParentPath,
-    succinctPath,
-    succinctErrorPath,
-    originalResourcePath,
-    generatedResourcePath,
-    translationDir,
-} = require("../../lib/dataLayers/fs/dataPaths");
 const {
     entryExists,
     entryRevisionExists,
@@ -24,11 +12,11 @@ const {
     entryBookResourceBookCodes,
     entryBookResourceBookCodesForCategory,
     entryBookResourceCategories,
-    originalEntryBookResourceCategories,
-    generatedEntryBookResourceCategories,
     lockEntry,
     writeEntryMetadata,
     unlockEntry,
+    deleteEntry,
+    deleteSuccinctError,
     initializeEmptyEntry,
     initializeEntryBookResourceCategory,
     writeEntryBookResource,
@@ -36,7 +24,6 @@ const {
 
 const UUID = require("pure-uuid");
 const btoa = require("btoa");
-const JSZip = require("jszip");
 
 const generateId = () => btoa(new UUID(4)).substring(0, 12);
 
@@ -168,13 +155,13 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
             org.catalogHasRevisions &&
             entryRevisionExists(
                 config,
-                translationDir(org.name),
+                org.name,
                 entry.id,
                 entry.revision
             )
         ) {
             return false;
-        } else if (entryExists(config, translationDir(org.name), entry.id)) {
+        } else if (entryExists(config, org.name, entry.id)) {
             return false;
         }
         if (org.config) {
@@ -676,15 +663,6 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                 }
                 try {
                     await orgHandlers[args.org].fetchUsfm(orgOb, transOb, config); // Adds owner and revision to transOb
-                    const succinctP = succinctPath(
-                        config.dataPath,
-                        translationDir(orgOb.name),
-                        transOb.id,
-                        transOb.revision
-                    );
-                    if (fse.pathExistsSync(succinctP)) {
-                        fse.unlinkSync(succinctP);
-                    }
                     return true;
                 } catch (err) {
                     console.log(err);
@@ -711,15 +689,6 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                 }
                 try {
                     await orgHandlers[args.org].fetchUsx(orgOb, transOb, config); // Adds owner and revision to transOb
-                    const succinctP = succinctPath(
-                        config.dataPath,
-                        translationDir(orgOb.name),
-                        transOb.id,
-                        transOb.revision
-                    );
-                    if (fse.pathExistsSync(succinctP)) {
-                        fse.unlinkSync(succinctP);
-                    }
                     return true;
                 } catch (err) {
                     console.log(err);
@@ -774,27 +743,8 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                     return false;
                 }
                 try {
-                    let pathDir = transPath(
-                        config.dataPath,
-                        translationDir(orgOb.name),
-                        args.id,
-                        args.revision
-                    );
-                    if (fse.pathExistsSync(pathDir)) {
-                        fse.rmSync(pathDir, {recursive: true});
-                        pathDir = transParentPath(
-                            config.dataPath,
-                            translationDir(orgOb.name),
-                            args.id
-                        );
-                        pathDir = transParentPath(
-                            config.dataPath,
-                            translationDir(orgOb.name),
-                            args.id
-                        );
-                        if (fse.readdirSync(pathDir).length === 0) {
-                            fse.rmSync(pathDir, {recursive: true});
-                        }
+                    if (entryExists(config, orgOb.name, args.id)) {
+                        deleteEntry(config, orgOb.name, args.id, args.revision) 
                         return true;
                     }
                     return false;
@@ -820,13 +770,8 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                 if (!transOb) {
                     return false;
                 }
-                const succinctEP = succinctErrorPath(
-                    config.dataPath,
-                    translationDir(orgOb.name),
-                    transOb.id
-                );
-                if (fse.pathExistsSync(succinctEP)) {
-                    fse.removeSync(succinctEP);
+                if (entryExists(config, orgOb.name, transOb.id)) {
+                    deleteSuccinctError(config, orgOb.name, transOb.id, transOb.revision) 
                     return true;
                 } else {
                     return false;
@@ -869,7 +814,6 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                     initializeEmptyEntry(config, config.name, id, revision);
                     lockEntry(config, config.name, id, revision, "archivist/add");
                     writeEntryMetadata(config, config.name, id, revision, entryMetadata);
-                    unlockEntry(config, config.name, id, revision, "archivist/add");
 
                     initializeEntryBookResourceCategory(
                         config,
