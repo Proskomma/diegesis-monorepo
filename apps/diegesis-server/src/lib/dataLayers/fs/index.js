@@ -63,7 +63,7 @@ const orgEntries = (config, orgName) => {
     }
     const orgP = orgPath(
         config.dataPath,
-        translationDir(orgName === config.name ? "_local" : orgName)
+        translationDir(orgName)
     );
     return fse.readdirSync(
         orgP

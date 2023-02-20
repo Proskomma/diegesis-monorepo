@@ -6,7 +6,7 @@
   "logAccess": false,
   "logFormat": "combined",
   "useCors": false,
-  "orgs": [],
+  "orgs": ["DBL", "eBible", "DCS", "Vachan", "DGS"],
   "processFrequency": "never",
   "verbose": false,
   "includeMutations": false

@@ -312,6 +312,15 @@ function makeConfig(providedConfig) {
         }
         config.orgs = providedConfig.orgs;
     }
+    if ('localContent' in providedConfig) {
+        if (typeof providedConfig.localContent !== 'boolean') {
+            croak(`ERROR: localContent should be boolean, not ${typeof providedConfig.localContent}`);
+        }
+        config.localContent = providedConfig.localContent;
+        if (!config.localContent) {
+            config.orgs = config.orgs.filter(o => o !== config.name);
+        }
+    }
     if (providedConfig.orgsConfig) {
         if (!Array.isArray(providedConfig.orgsConfig)) {
             croak(`ERROR: orgsConfig, if present, should be an array, not '${providedConfig.orgsConfig}'`);
@@ -466,12 +475,6 @@ function makeConfig(providedConfig) {
             croak(`ERROR: verbose should be boolean, not ${typeof providedConfig.verbose}`);
         }
         config.verbose = providedConfig.verbose;
-    }
-    if ('localContent' in providedConfig) {
-        if (typeof providedConfig.localContent !== 'boolean') {
-            croak(`ERROR: localContent should be boolean, not ${typeof providedConfig.localContent}`);
-        }
-        config.localContent = providedConfig.localContent;
     }
     return config;
 }

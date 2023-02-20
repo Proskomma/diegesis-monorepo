@@ -7,9 +7,6 @@ const {
 
 function makeServerDelete(config) {
     let orgs = config.orgs;
-    if (config.localContent) {
-        orgs.push(config.name);
-    }
     for (const org of orgs) {
         for (const entryRecord of orgEntries(config, org)) {
             for (const revision of entryRecord.revisions) {

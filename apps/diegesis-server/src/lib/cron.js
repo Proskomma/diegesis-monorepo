@@ -29,9 +29,6 @@ function doRenderCron(config) {
             let taskSpecs = [];
             try {
                 let orgs = config.orgs;
-                if (config.localContent) {
-                    orgs = [...orgs,config.name];
-                }
                 for (const org of orgs) {
                     for (const entryRecord of orgEntries(config, org)) {
                         for (const revision of entryRecord.revisions) {
