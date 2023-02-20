@@ -47,9 +47,7 @@ export default function EntryBrowsePage({setAppLanguage}) {
     }
 
     const entryInfo = data.localEntry;
-
-    console.log(Proskomma);
-
+    
     if (!entryInfo) {
         return (
             <Container fixed className="homepage">
