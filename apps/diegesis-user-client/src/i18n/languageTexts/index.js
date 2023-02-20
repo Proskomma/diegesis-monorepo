@@ -1,13 +1,13 @@
-import * as en from "./en.json"
-import * as fr from "./fr.json"
-import * as ar from "./ar.json"
-import * as es from "./es.json"
-import * as debug from "./debug.json"
+import * as en from "./en.json";
+import * as fr from "./fr.json";
+import * as ar from "./ar.json";
+import * as es from "./es.json";
+import * as debug from "./debug.json";
 
 export default {
-  en , fr , ar , es , debug
+  en,
+  fr,
+  ar,
+  es,
+  debug,
 };
-
-
-
-

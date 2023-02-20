@@ -26,7 +26,6 @@
     },
     "debug" : {
         "englishName":"DEBUG",
-        "autonym":"DEBUG",
-        "textDirection":"ltr"
+        "autonym":"DEBUG"
     }
 }
