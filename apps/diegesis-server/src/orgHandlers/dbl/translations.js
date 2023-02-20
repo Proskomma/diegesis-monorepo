@@ -1,12 +1,7 @@
 const path = require("path");
 const jszip = require("jszip");
 const {ptBookArray} = require("proskomma-utils");
-<<<<<<< HEAD
 const { DOMParser } = require('@xmldom/xmldom');
-const {transPath, vrsPath} = require('../../lib/dataPaths.js');
-=======
-const DOMParser = require('xmldom').DOMParser;
->>>>>>> dev
 const languageCodes = require('../../lib/languageCodes.json');
 const appRoot = path.resolve(".");
 const {
