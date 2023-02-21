@@ -31,6 +31,12 @@ nvm use 18.14.2
 
 If you don't use NVM, then ensure you have the node version in the `.nvmrc` file.
 
+### MongoDB Pre-requisites
+
+If you are using the MongoDB data layer (default is FS - file system), then install [MongoDB v5](https://www.mongodb.com/docs/v5.0/administration/install-community/) as a service.
+
+We use **MongoDB v5** because that is what is available on Windows and MacOS GitHub build agents, see [Preinstalled software](https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#preinstalled-software).
+
 ### Use the script
 
 go into the folder `scripts` and launch `cleanInstall.sh`!
