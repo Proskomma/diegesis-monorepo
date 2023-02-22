@@ -64,6 +64,7 @@
     "CONTROLS_OT":"OT",
     "CONTROLS_NT":"NT",
     "CONTROLS_DC":"DC",
+    "CONTROLS_SEARCH": "Search",
     "RESOURCE_TYPES":"Resource Types",
     "en_LANG":"English",
     "ar_LANG":"Arabic",

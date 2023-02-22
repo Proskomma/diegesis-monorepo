@@ -1,11 +1,16 @@
-import React, {useState, useEffect} from 'react';
+import React, {useContext, useState, useEffect} from 'react';
+import {Link as RouterLink} from 'react-router-dom';
 import {Typography, Grid, Switch, FormGroup, FormControlLabel, Box, Button} from "@mui/material";
 import {Tune} from '@mui/icons-material';
 import {SofriaRenderFromProskomma} from "proskomma-json-tools";
 import sofria2WebActions from '../renderer/sofria2web';
 import DocSelector from "./DocSelector";
+import AppLangContext from "../contexts/AppLangContext";
+import i18n from "../i18n";
 
-export default function BrowseScripture({pk}) {
+export default function BrowseScripture({pk, ri}) {
+    const appLang = useContext(AppLangContext);
+    const searchTitle = i18n(appLang, "CONTROLS_SEARCH");
 
     const [scriptureData, setScriptureData] = useState({
         docId: null,
@@ -156,7 +161,7 @@ export default function BrowseScripture({pk}) {
 
     return (
         <Grid container>
-            <Grid item xs={12} sm={6} md={4} lg={2}>
+            <Grid item xs={12} sm={4} md={2} lg={2}>
                 <Box sx={{marginRight: "5px"}}>
                     <FormGroup sx={{padding: "10px", backgroundColor: showSettings ? "#ccc" : "inherit"}}>
                         <Button
@@ -282,13 +287,22 @@ export default function BrowseScripture({pk}) {
                     </FormGroup>
                 </Box>
             </Grid>
-            <Grid item xs={12} sm={6} md={8} lg={10}>
+            <Grid item xs={12} sm={4} md={7} lg={8}>
                 <DocSelector
                     docs={docMenuItems}
                     docId={scriptureData.docId}
                     setDocId={setDocId}
                     disabled={!scriptureData.rendered || scriptureData.docId !== scriptureData.renderedDocId || scriptureData.updatedAtts}
                 />
+            </Grid>
+            <Grid item xs={12} sm={4} md={3} lg={2} sx={{ justifySelf: "flex-end" }}>
+                <Button>
+                    <RouterLink
+                        to={`/entry/search/${ri.source}/${ri.entryId}/${ri.revision}`}
+                        style={{textDecoration: "none"}}>
+                        <Typography variant="body1">{searchTitle}</Typography>
+                    </RouterLink>
+                </Button>
             </Grid>
             <Grid item xs={12}>
                 {
