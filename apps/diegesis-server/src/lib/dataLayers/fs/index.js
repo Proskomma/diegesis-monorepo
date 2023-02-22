@@ -11,13 +11,13 @@ const { checkResourceOrigin } = require("../utils");
 // Connection
 
 /**
- * Not used in FS data layer
+ * No implementation required in FS data layer
  * @param {*} [_config] 
  */
 const connect = (_config) => {};
 
 /**
- * Not used in FS data layer
+ * No implementation required in FS data layer
  * @param {*} [_config] 
  */
 const close = (_config) => {};
@@ -500,7 +500,7 @@ const deleteSuccinctError = (config, orgName, transId, transRevision) => {
 const readEntryMetadata = (config, orgName, transId, transRevision) => {
     // Returns JSON
     if (!(typeof orgName === "string")) {
-        throw new Error('orgName should be string in readEntryMetadataJson');
+        throw new Error('orgName should be string in readEntryMetadata');
     }
     const tp = transPath(
         config.dataPath,

@@ -35,6 +35,8 @@ If you don't use NVM, then ensure you have the node version in the `.nvmrc` file
 
 If you are using the MongoDB data layer (default is FS - file system), then install [MongoDB v5](https://www.mongodb.com/docs/v5.0/administration/install-community/) as a service.
 
+To allow integration testing, you'll also need to install the [MongoDB Database Tools](https://www.mongodb.com/docs/database-tools/installation/installation/).
+
 We use **MongoDB v5** because that is what is available on Windows and MacOS GitHub build agents, see [Preinstalled software](https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#preinstalled-software).
 
 ### Use the script

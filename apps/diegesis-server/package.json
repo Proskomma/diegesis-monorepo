@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node src/index.js config/debug_config.json",
     "test": "cross-env NODE_ENV=test jest --testTimeout=30000",
+    "preintegration": "mongoimport --db diegesis_test --collection resources --drop --file src/lib/dataLayers/mongo/test-data/mongodb-diegesis_test-resources.json",
     "integration": "cross-env NODE_ENV=test jest --testPathIgnorePatterns=/node_modules/ --testMatch **/*.integration.js"
   },
   "repository": {
