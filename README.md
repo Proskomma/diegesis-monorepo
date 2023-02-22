@@ -23,6 +23,9 @@ npm run build
 cd ../diegesis-admin-client
 npm install
 npm run build
+cd ../diegesis-upload-client
+npm install
+npm run build
 ```
 
 ### Move to the server directory
