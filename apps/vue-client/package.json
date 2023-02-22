@@ -11,6 +11,7 @@
     "@apollo/client": "^3.7.9",
     "graphql": "^16.6.0",
     "graphql-tag": "^2.12.6",
+    "proskomma-core": "^0.9.15",
     "vue": "^3.2.45",
     "vue-router": "^4.1.6"
   },
