@@ -93,7 +93,7 @@ export default function SearchScripture({pk}) {
 
     return (
         <Grid container>
-            <Grid item xs={12} sm={6} md={4} lg={2}>
+            <Grid item xs={12} sm={6} md={8} lg={10}>
               <DocSelector
                   docs={docMenuItems}
                   docId={docId}
@@ -122,11 +122,10 @@ export default function SearchScripture({pk}) {
                     <ul>
                     {matches.map(match => {
                       return <li>{docMenuItems.find((doc) => doc.id === docId).label + " " + match.c + ":" + match.v}<br />
-                        <p>{match.t.map(token => {
+                        {match.t.map(token => {
                           return token.scopes.length === 1 ? token.scopes[0].includes(searchQuery.toUpperCase()) ?
-                            <b>{token.payload}</b> : token.payload : 
-                            token.payload
-                        })}</p>
+                            <b>{token.payload}</b> : token.payload : token.payload
+                        })}
                       </li>;
                     })}
                   </ul>
