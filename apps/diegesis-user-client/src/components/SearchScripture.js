@@ -73,17 +73,17 @@ export default function SearchScripture({pk}) {
       const singleBookQuery = 
         `{
           document(id: "${docId}" ) {
+            id
             ${queryCore}
           }
         }`;
 
       const bibleQuery = 
       `{
-        docSets {
           documents(sortedBy:"paratext") {
+            id
             ${queryCore}
           }
-        }
       }`;
 
       // Syntax like this should work when querying for multiple strong's numbers
@@ -91,11 +91,25 @@ export default function SearchScripture({pk}) {
 
       const result = pk.gqlQuerySync(searchEntireBible?bibleQuery:singleBookQuery);
 
-      console.log(result);
-
-      setMatches(result.data.document.cvMatching.map(d => (
-        {c: findValueForLabel(d.scopeLabels, /chapter/), v: findValueForLabel(d.scopeLabels, /verse/), t: d.tokens}
-        )));
+      if(searchEntireBible)
+      {
+        let matches = [];
+        result.data.documents.forEach(doc => {
+          doc.cvMatching.map(match => (
+            matches.push({b: docMenuItems.find((d) => d.id === doc.id).label, c: findValueForLabel(match.scopeLabels, /chapter/),
+            v: findValueForLabel(match.scopeLabels, /verse/), t: match.tokens})
+            ))
+        });
+        setMatches(matches);
+      }
+      else
+      {
+        setMatches(result.data.document.cvMatching.map(match => (
+          {b: docMenuItems.find((d) => d.id === docId).label, c: findValueForLabel(match.scopeLabels, /chapter/),
+          v: findValueForLabel(match.scopeLabels, /verse/), t: match.tokens}
+          )));
+      }
+      
     }, [searchQuery, docId, searchEntireBible]);
 
     // This could be some kind of utility function
@@ -144,7 +158,7 @@ export default function SearchScripture({pk}) {
                     <p>{matches.length} occurrences found:</p>
                     <ul>
                     {matches.map(match => {
-                      return <li>{docMenuItems.find((doc) => doc.id === docId).label + " " + match.c + ":" + match.v}<br />
+                      return <li>{match.b + " " + match.c + ":" + match.v}<br />
                         {match.t.map(token => {
                           return token.scopes.length === 1 ? token.scopes[0].includes(searchQuery.toUpperCase()) ?
                             <b>{token.payload}</b> : token.payload : token.payload
