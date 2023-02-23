@@ -1,9 +1,5 @@
 import React, {useContext, useState, useEffect} from 'react';
-import {Typography, TextField, Grid, Switch, FormGroup, FormControlLabel, Box, Button} from "@mui/material";
-import {Tune} from '@mui/icons-material';
-import {SofriaRenderFromProskomma} from "proskomma-json-tools";
-import sofria2WebActions from '../renderer/sofria2web';
-import DocSelector from "./DocSelector";
+import {Typography, TextField, Grid} from "@mui/material";
 import AppLangContext from "../contexts/AppLangContext";
 import i18n from "../i18n";
 
@@ -14,65 +10,37 @@ export default function SearchScripture({pk}) {
 
     const [searchQuery, setSearchQuery] = useState("");
 
-
+    const [matches, setMatches] = useState([]);
+    
     useEffect(() => {
-      const docIdsStruct = pk.gqlQuerySync(
+      const re = /^[HhGg]\d{3,4}$/;
+
+      if(!re.test(searchQuery))
+      {
+        console.log("no match");
+        return;
+      }
+
+      const uCSearchQuery = searchQuery.toUpperCase;
+
+      const strongAtts = "attribute/spanWithAtts/w/strong/0/";
+
+      const query = 
         `{
-          docSets {
-            documents(sortedBy:"paratext") {
-              id
-              headers { key value }
+          documents(sortedBy:"paratext") {
+            cvMatching( withScopes:["${strongAtts}${uCSearchQuery}"]) {
+              scopeLabels text
             }
           }
-        }`);
-      const docId = docIdsStruct.data.docSets[0].documents[0].id; // Just grab Genesis for now
+        }`;
 
-      const seqIdsStruct = pk.gqlQuerySync(
-        `{
-          document(id: "${docId}" ) {
-            sequences {
-              id
-            }
-          }
-        }`);
-      const seqIds = seqIdsStruct.data.document.sequences;
-      const payloads = seqIds.map((seqId) => ( getPayloadsForSequence(docId, seqId.id)));
-      console.log(payloads);
-      // Search the payloads, and match for searchQuery
+        // Syntax like this should work when searching for multiple inputs
+        // cvMatching( withScopes:["${strongAtts}${searchQuery[0]}", "${strongAtts}${searchQuery[1]}"]) {
 
+        const result = pk.gqlQuerySync(query);
 
+        console.log(result);
     }, [searchQuery]);
-
-    const getPayloadsForSequence = (docId, seqId) => {    
-        const payloads = [];
-        const numBlocksStruct = pk.gqlQuerySync(
-          `{
-            document(id: "${docId}" ) {
-              sequence(id: "${seqId}") {
-                nBlocks
-              }                 
-            }   
-          }`);
-        const numBlocks = numBlocksStruct.data.document.sequence.nBlocks;
-        for (let block = 0; block < numBlocks; block++) {
-            const payloadStruct = pk.gqlQuerySync(
-              `{
-                document(id: "${docId}" ) {
-                  sequence(id: "${seqId}") {
-                    blocks(positions: ${block}) {
-                      items {
-                        payload
-                      }
-                    }
-                  }                 
-                }   
-              }`);
-            payloads.push(payloadStruct.data.document.sequence.blocks[0].items);
-        }
-        return payloads;
-    }           
-
-    const matches = [];
 
     return (
         <Grid container>
