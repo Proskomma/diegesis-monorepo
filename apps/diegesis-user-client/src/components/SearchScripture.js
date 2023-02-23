@@ -9,11 +9,13 @@ export default function SearchScripture({pk}) {
     const appLang = useContext(AppLangContext);
     const searchTitle = i18n(appLang, "CONTROLS_SEARCH");
     const allBooksTitle = i18n(appLang, "CONTROLS_ALLBOOKS");
+    const matchAllTitle = i18n(appLang, "CONTROLS_MATCHALL");
 
     const [docId, setDocId] = useState("");
     const [docMenuItems, setDocMenuItems] = useState([]);
     const [searchEntireBible, setSearchEntireBible] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
+    const [matchAll, setMatchAll] = useState(false);
     const [validQuery, setValidQuery] = useState(false);
     const [matches, setMatches] = useState([]);
 
@@ -43,15 +45,26 @@ export default function SearchScripture({pk}) {
     }, []) // this function (likely) only needs to run on initialization. Is this a good way of making such a function?
     
     useEffect(() => {
-      const re = /^[hHgG]\d{3,4}$/; // Strong's number pattern
-
-      if(!re.test(searchQuery))
+      if (searchQuery.length === 0)
       {
         setValidQuery(false);
         setMatches([]);
         return;
       }
 
+      let strongsNums = searchQuery.split(',');
+
+      const re = /^[hHgG]\d{3,4}$/; // Strong's number pattern
+
+      for (let id = 0; id < strongsNums.length; id++) {
+        if(!re.test(strongsNums[id]))
+        {
+          setValidQuery(false);
+          setMatches([]);
+          return;
+        }        
+      }
+      
       if(!docId || docId === "pleaseChoose")
       {
         setMatches([]);
@@ -59,10 +72,18 @@ export default function SearchScripture({pk}) {
       }
 
       setValidQuery(true);
-      const strongAtts = "attribute/spanWithAtts/w/strong/0/";
+      const strongAtts = "attribute/spanWithAtts/w/strong/";
 
+      strongsNums.forEach((num, id) => {
+        strongsNums[id] = "\""+strongAtts+"0/"+num.toUpperCase()+"\"";
+      });
+
+      const scopes = strongsNums.join(", ");
+
+      const matchAllString = matchAll ? "true" : "false";
+      
       const queryCore = 
-      `cvMatching( withScopes:["${strongAtts}${searchQuery.toUpperCase()}"]) {
+      `cvMatching( withScopes:[${scopes}] allScopes:${matchAllString}) {
         scopeLabels
         tokens {
           payload
@@ -86,9 +107,6 @@ export default function SearchScripture({pk}) {
         }
       }`;
 
-      // Syntax like this should work when querying for multiple strong's numbers
-      // cvMatching( withScopes:["${strongAtts}${searchQuery[0]}", "${strongAtts}${searchQuery[1]}"]) {
-
       const result = pk.gqlQuerySync(searchEntireBible?bibleQuery:singleBookQuery);
 
       if(searchEntireBible)
@@ -111,7 +129,7 @@ export default function SearchScripture({pk}) {
           v: findValueForLabel(match.scopeLabels, /verse/), t: match.tokens
         })));
       }
-    }, [searchEntireBible, searchQuery, docId]);
+    }, [searchEntireBible, searchQuery, docId, matchAll]);
 
     // This could be some kind of utility function
     const findValueForLabel = (scopeLabels, label) => {
@@ -120,9 +138,21 @@ export default function SearchScripture({pk}) {
       }
     }
 
+    const isTokenStrongsInQuery = (token) => {
+      const strongsInQuery = searchQuery.toUpperCase().split(',');
+
+      for (let id = 0; id < strongsInQuery.length; id++) {
+        if(token.includes(strongsInQuery[id]))
+        {
+          return true;
+        }
+      }
+      return false;
+    }
+
     return (
       <Grid container>
-        <Grid item xs={12} sm={3} md={2} lg={2}>
+        <Grid item xs={6} sm={3} md={2} lg={1}>
           <DocSelector
             docs={docMenuItems}
             docId={docId}
@@ -130,7 +160,7 @@ export default function SearchScripture({pk}) {
             disabled={searchEntireBible}
           />
         </Grid>
-        <Grid item xs={12} sm={3} md={6} lg={7}>
+        <Grid item xs={6} sm={3} md={3} lg={6}>
           <Checkbox
             checked={searchEntireBible}
             value={searchEntireBible}
@@ -138,11 +168,12 @@ export default function SearchScripture({pk}) {
           />
         {allBooksTitle}
         </Grid>
-        <Grid item xs={12} sm={6} md={4} lg={3}>
+        <Grid item xs={6} sm={3} md={4} lg={3}>
           <TextField
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             label={searchTitle}
+            helperText="H1234,H2345,G3456"
             size="small"
             id="searchOwner"
             variant="filled"
@@ -150,9 +181,17 @@ export default function SearchScripture({pk}) {
             sx={{ display: "flex", marginLeft: "1em" }}
           />
         </Grid>
+        <Grid item xs={6} sm={3} md={3} lg={2}>
+          <Checkbox
+            checked={matchAll}
+            value={matchAll}
+            onChange={(e) => setMatchAll(!matchAll)}
+          />
+        {matchAllTitle}
+        </Grid>
         <Grid item xs={12}>
             {
-              !validQuery ? <p>Enter valid Strong's number in search box...</p> :
+              !validQuery ? <p>Enter valid Strong's number(s) in search box...</p> :
               matches.length === 0 ? <p>There are no occurrences of this Strong's number in the selected book...</p> :
               <div>
                 <p>{matches.length} occurrences found:</p>
@@ -160,7 +199,7 @@ export default function SearchScripture({pk}) {
                   {matches.map(match => {
                     return <li>{match.b + " " + match.c + ":" + match.v}<br />
                       {match.t.map(token => {
-                        return token.scopes.length === 1 ? token.scopes[0].includes(searchQuery.toUpperCase()) ?
+                        return token.scopes.length === 1 ? isTokenStrongsInQuery(token.scopes[0]) ?
                           <b>{token.payload}</b> : token.payload : token.payload
                       })}
                     </li>;

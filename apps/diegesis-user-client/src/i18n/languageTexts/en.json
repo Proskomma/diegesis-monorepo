@@ -66,6 +66,7 @@
     "CONTROLS_DC":"DC",
     "CONTROLS_SEARCH": "Search",
     "CONTROLS_ALLBOOKS": "All books",
+    "CONTROLS_MATCHALL": "Match all",
     "RESOURCE_TYPES":"Resource Types",
     "en_LANG":"English",
     "ar_LANG":"Arabic",
