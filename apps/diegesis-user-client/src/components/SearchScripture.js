@@ -77,8 +77,6 @@ export default function SearchScripture({pk}) {
 
         const result = pk.gqlQuerySync(query);
 
-        console.log(result);
-
         setMatches(result.data.document.cvMatching.map(d => (
           {c: findValueForLabel(d.scopeLabels, /chapter/), v: findValueForLabel(d.scopeLabels, /verse/), t: d.tokens}
           )));
@@ -114,9 +112,9 @@ export default function SearchScripture({pk}) {
             </Grid>
             <Grid item xs={12}>
                 {
-                  !validQuery ? <Typography>Enter valid Strong's number in search box...</Typography> :
+                  !validQuery ? <p>Enter valid Strong's number in search box...</p> :
                   matches.length === 0 ?
-                  <Typography>There are no occurrences of this Strong's number in the selected book...</Typography> :
+                  <p>There are no occurrences of this Strong's number in the selected book...</p> :
                   <div>
                     <p>{matches.length} occurrences found:</p>
                     <ul>
