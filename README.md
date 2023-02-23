@@ -31,6 +31,16 @@ nvm use 18.14.2
 
 If you don't use NVM, then ensure you have the node version in the `.nvmrc` file.
 
+### Use the script
+
+go into the folder `scripts` and launch `cleanInstall.sh`!
+```bash
+cd scripts/
+./cleanInstall.sh
+```
+
+After that you can skip the "Compile the clients" part and go directly to the "Make your own config file" section.
+
 ### Compile the clients
 
 First install the packages

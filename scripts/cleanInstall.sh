@@ -21,5 +21,3 @@ cd ../diegesis-user-client/
 npm run build
 cd ../diegesis-upload-client/
 npm run build
-cd ../diegesis-server/
-
