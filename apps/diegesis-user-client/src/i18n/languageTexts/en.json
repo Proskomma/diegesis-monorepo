@@ -65,6 +65,7 @@
     "CONTROLS_NT":"NT",
     "CONTROLS_DC":"DC",
     "CONTROLS_SEARCH": "Search",
+    "CONTROLS_ALLBOOKS": "All books",
     "RESOURCE_TYPES":"Resource Types",
     "en_LANG":"English",
     "ar_LANG":"Arabic",

@@ -8,6 +8,7 @@ export default function SearchScripture({pk}) {
 
     const appLang = useContext(AppLangContext);
     const searchTitle = i18n(appLang, "CONTROLS_SEARCH");
+    const allBooksTitle = i18n(appLang, "CONTROLS_ALLBOOKS");
 
     const [docId, setDocId] = useState("");
     const [docMenuItems, setDocMenuItems] = useState([]);
@@ -35,7 +36,7 @@ export default function SearchScripture({pk}) {
           }
         }`
       );
-      
+
       setDocId(docSetInfo.data.docSets[0].documents[0].id);
       setDocMenuItems(docSetInfo.data.docSets[0].documents.map(d => ({id: d.id, label: docName(d)})));
 
@@ -50,7 +51,6 @@ export default function SearchScripture({pk}) {
         setMatches([]);
         return;
       }
-
 
       if(!docId || docId === "pleaseChoose")
       {
@@ -70,20 +70,20 @@ export default function SearchScripture({pk}) {
         }
       }`
 
-      const singleBookQuery = 
-        `{
-          document(id: "${docId}" ) {
-            id
-            ${queryCore}
-          }
-        }`;
-
       const bibleQuery = 
       `{
-          documents(sortedBy:"paratext") {
-            id
-            ${queryCore}
-          }
+        documents(sortedBy:"paratext") {
+          id
+          ${queryCore}
+        }
+      }`;
+
+      const singleBookQuery = 
+      `{
+        document(id: "${docId}" ) {
+          id
+          ${queryCore}
+        }
       }`;
 
       // Syntax like this should work when querying for multiple strong's numbers
@@ -96,79 +96,79 @@ export default function SearchScripture({pk}) {
         let matches = [];
         result.data.documents.forEach(doc => {
           doc.cvMatching.map(match => (
-            matches.push({b: docMenuItems.find((d) => d.id === doc.id).label, c: findValueForLabel(match.scopeLabels, /chapter/),
-            v: findValueForLabel(match.scopeLabels, /verse/), t: match.tokens})
-            ))
+            matches.push({
+              b: docMenuItems.find((d) => d.id === doc.id).label, c: findValueForLabel(match.scopeLabels, /chapter/),
+              v: findValueForLabel(match.scopeLabels, /verse/), t: match.tokens
+            })
+          ))
         });
         setMatches(matches);
       }
       else
       {
-        setMatches(result.data.document.cvMatching.map(match => (
-          {b: docMenuItems.find((d) => d.id === docId).label, c: findValueForLabel(match.scopeLabels, /chapter/),
-          v: findValueForLabel(match.scopeLabels, /verse/), t: match.tokens}
-          )));
+        setMatches(result.data.document.cvMatching.map(match => ({
+          b: docMenuItems.find((d) => d.id === docId).label, c: findValueForLabel(match.scopeLabels, /chapter/),
+          v: findValueForLabel(match.scopeLabels, /verse/), t: match.tokens
+        })));
       }
-      
-    }, [searchQuery, docId, searchEntireBible]);
+    }, [searchEntireBible, searchQuery, docId]);
 
     // This could be some kind of utility function
-    const findValueForLabel = (scopeLabels, label) => {      
+    const findValueForLabel = (scopeLabels, label) => {
       for (var i=0; i<scopeLabels.length; i++) {
         if (label.test(scopeLabels[i])) return scopeLabels[i].replace(/\D/g,'');
       }
     }
 
     return (
-        <Grid container>
-            <Grid item xs={12} sm={3} md={2} lg={2}>
-              <DocSelector
-                  docs={docMenuItems}
-                  docId={docId}
-                  setDocId={setDocId}
-                  disabled={searchEntireBible}
-              />
-            </Grid>
-            <Grid item xs={12} sm={3} md={6} lg={7}>
-              <Checkbox
-                  checked={searchEntireBible}
-                  value={searchEntireBible}
-                  onChange={(e) => setSearchEntireBible(!searchEntireBible)}
-              />
-              All books
-            </Grid>
-            <Grid item xs={12} sm={6} md={4} lg={3}>
-              <TextField
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                label={searchTitle}
-                size="small"
-                id="searchOwner"
-                variant="filled"
-                color="primary"
-                sx={{ display: "flex", marginLeft: "1em" }}
-              />
-            </Grid>
-            <Grid item xs={12}>
-                {
-                  !validQuery ? <p>Enter valid Strong's number in search box...</p> :
-                  matches.length === 0 ?
-                  <p>There are no occurrences of this Strong's number in the selected book...</p> :
-                  <div>
-                    <p>{matches.length} occurrences found:</p>
-                    <ul>
-                    {matches.map(match => {
-                      return <li>{match.b + " " + match.c + ":" + match.v}<br />
-                        {match.t.map(token => {
-                          return token.scopes.length === 1 ? token.scopes[0].includes(searchQuery.toUpperCase()) ?
-                            <b>{token.payload}</b> : token.payload : token.payload
-                        })}
-                      </li>;
-                    })}
-                  </ul>
-                  </div>                  
-                }
-            </Grid>
+      <Grid container>
+        <Grid item xs={12} sm={3} md={2} lg={2}>
+          <DocSelector
+            docs={docMenuItems}
+            docId={docId}
+            setDocId={setDocId}
+            disabled={searchEntireBible}
+          />
         </Grid>
+        <Grid item xs={12} sm={3} md={6} lg={7}>
+          <Checkbox
+            checked={searchEntireBible}
+            value={searchEntireBible}
+            onChange={(e) => setSearchEntireBible(!searchEntireBible)}
+          />
+        {allBooksTitle}
+        </Grid>
+        <Grid item xs={12} sm={6} md={4} lg={3}>
+          <TextField
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            label={searchTitle}
+            size="small"
+            id="searchOwner"
+            variant="filled"
+            color="primary"
+            sx={{ display: "flex", marginLeft: "1em" }}
+          />
+        </Grid>
+        <Grid item xs={12}>
+            {
+              !validQuery ? <p>Enter valid Strong's number in search box...</p> :
+              matches.length === 0 ? <p>There are no occurrences of this Strong's number in the selected book...</p> :
+              <div>
+                <p>{matches.length} occurrences found:</p>
+                <ul>
+                  {matches.map(match => {
+                    return <li>{match.b + " " + match.c + ":" + match.v}<br />
+                      {match.t.map(token => {
+                        return token.scopes.length === 1 ? token.scopes[0].includes(searchQuery.toUpperCase()) ?
+                          <b>{token.payload}</b> : token.payload : token.payload
+                      })}
+                    </li>;
+                  })}
+                </ul>
+              </div>
+            }
+        </Grid>
+      </Grid>
     )
 }
