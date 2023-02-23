@@ -1,5 +1,5 @@
 import React, {useContext, useState, useEffect} from 'react';
-import {Typography, TextField, Grid} from "@mui/material";
+import {TextField, Grid, Checkbox} from "@mui/material";
 import AppLangContext from "../contexts/AppLangContext";
 import i18n from "../i18n";
 import DocSelector from "./DocSelector";
@@ -11,6 +11,7 @@ export default function SearchScripture({pk}) {
 
     const [docId, setDocId] = useState("");
     const [docMenuItems, setDocMenuItems] = useState([]);
+    const [searchEntireBible, setSearchEntireBible] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [validQuery, setValidQuery] = useState(false);
     const [matches, setMatches] = useState([]);
@@ -59,28 +60,43 @@ export default function SearchScripture({pk}) {
 
       setValidQuery(true);
       const strongAtts = "attribute/spanWithAtts/w/strong/0/";
-      const query = 
+
+      const queryCore = 
+      `cvMatching( withScopes:["${strongAtts}${searchQuery.toUpperCase()}"]) {
+        scopeLabels
+        tokens {
+          payload
+          scopes( startsWith: "${strongAtts}")
+        }
+      }`
+
+      const singleBookQuery = 
         `{
           document(id: "${docId}" ) {
-            cvMatching( withScopes:["${strongAtts}${searchQuery.toUpperCase()}"]) {
-              scopeLabels
-              tokens {
-                payload
-                scopes( startsWith: "attribute/spanWithAtts/w/strong")
-              }
-            }
+            ${queryCore}
           }
         }`;
 
-        // Syntax like this should work when querying for multiple strong's numbers
-        // cvMatching( withScopes:["${strongAtts}${searchQuery[0]}", "${strongAtts}${searchQuery[1]}"]) {
+      const bibleQuery = 
+      `{
+        docSets {
+          documents(sortedBy:"paratext") {
+            ${queryCore}
+          }
+        }
+      }`;
 
-        const result = pk.gqlQuerySync(query);
+      // Syntax like this should work when querying for multiple strong's numbers
+      // cvMatching( withScopes:["${strongAtts}${searchQuery[0]}", "${strongAtts}${searchQuery[1]}"]) {
 
-        setMatches(result.data.document.cvMatching.map(d => (
-          {c: findValueForLabel(d.scopeLabels, /chapter/), v: findValueForLabel(d.scopeLabels, /verse/), t: d.tokens}
-          )));
-    }, [searchQuery, docId]);
+      const result = pk.gqlQuerySync(searchEntireBible?bibleQuery:singleBookQuery);
+
+      console.log(result);
+
+      setMatches(result.data.document.cvMatching.map(d => (
+        {c: findValueForLabel(d.scopeLabels, /chapter/), v: findValueForLabel(d.scopeLabels, /verse/), t: d.tokens}
+        )));
+    }, [searchQuery, docId, searchEntireBible]);
 
     // This could be some kind of utility function
     const findValueForLabel = (scopeLabels, label) => {      
@@ -91,14 +107,23 @@ export default function SearchScripture({pk}) {
 
     return (
         <Grid container>
-            <Grid item xs={12} sm={6} md={8} lg={10}>
+            <Grid item xs={12} sm={3} md={2} lg={2}>
               <DocSelector
                   docs={docMenuItems}
                   docId={docId}
                   setDocId={setDocId}
+                  disabled={searchEntireBible}
               />
             </Grid>
-            <Grid item xs={12} sm={6} md={4} lg={2}>
+            <Grid item xs={12} sm={3} md={6} lg={7}>
+              <Checkbox
+                  checked={searchEntireBible}
+                  value={searchEntireBible}
+                  onChange={(e) => setSearchEntireBible(!searchEntireBible)}
+              />
+              All books
+            </Grid>
+            <Grid item xs={12} sm={6} md={4} lg={3}>
               <TextField
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
