@@ -358,6 +358,7 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
 
     const queryResolver = {
         Query: {
+            name: root => config.name,
             orgs: () => {
                 return Object.values(orgsData);
             },

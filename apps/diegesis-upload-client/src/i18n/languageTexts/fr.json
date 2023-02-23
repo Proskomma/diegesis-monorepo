@@ -97,5 +97,6 @@
     "ERROR_TOO_SHORT":"Champ trop court !",
     "ERROR_TOO_LONG":"Champ trop long !",
     "ERROR_REGEX":"Le champ ne correspond pas à l'expression régulière !",
-    "BYTES":"OCTETS"
+    "BYTES":"OCTETS",
+    "LOADING":"Chargement"
 }

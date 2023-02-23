@@ -10,6 +10,9 @@ const scalarSchema = gql`
 const querySchema = gql`
     type Query {
 
+        """The server name"""
+        name: String!
+
         """A list of organizations from which this server can serve data"""
         orgs: [Org!]!
 
