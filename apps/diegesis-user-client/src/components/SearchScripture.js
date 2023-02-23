@@ -50,7 +50,8 @@ export default function SearchScripture({pk}) {
         return;
       }
 
-      if(!docId)
+
+      if(!docId || docId === "pleaseChoose")
       {
         setMatches([]);
         return;
@@ -62,7 +63,11 @@ export default function SearchScripture({pk}) {
         `{
           document(id: "${docId}" ) {
             cvMatching( withScopes:["${strongAtts}${searchQuery.toUpperCase()}"]) {
-              scopeLabels text
+              scopeLabels
+              tokens {
+                payload
+                scopes( startsWith: "attribute/spanWithAtts/w/strong")
+              }
             }
           }
         }`;
@@ -72,8 +77,10 @@ export default function SearchScripture({pk}) {
 
         const result = pk.gqlQuerySync(query);
 
+        console.log(result);
+
         setMatches(result.data.document.cvMatching.map(d => (
-          {c: findValueForLabel(d.scopeLabels, /chapter/), v: findValueForLabel(d.scopeLabels, /verse/), t: d.text}
+          {c: findValueForLabel(d.scopeLabels, /chapter/), v: findValueForLabel(d.scopeLabels, /verse/), t: d.tokens}
           )));
     }, [searchQuery, docId]);
 
@@ -115,7 +122,11 @@ export default function SearchScripture({pk}) {
                     <ul>
                     {matches.map(match => {
                       return <li>{docMenuItems.find((doc) => doc.id === docId).label + " " + match.c + ":" + match.v}<br />
-                        {match.t}
+                        <p>{match.t.map(token => {
+                          return token.scopes.length === 1 ? token.scopes[0].includes(searchQuery.toUpperCase()) ?
+                            <b>{token.payload}</b> : token.payload : 
+                            token.payload
+                        })}</p>
                       </li>;
                     })}
                   </ul>
