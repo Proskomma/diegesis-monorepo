@@ -72,10 +72,10 @@ export default function SearchScripture({pk}) {
       }
 
       setValidQuery(true);
-      const strongAtts = "attribute/spanWithAtts/w/strong/";
+      const strongAtts = "attribute/spanWithAtts/w/strong/0/";
 
       strongsNums.forEach((num, id) => {
-        strongsNums[id] = "\""+strongAtts+"0/"+num.toUpperCase()+"\"";
+        strongsNums[id] = "\""+strongAtts+num.toUpperCase()+"\"";
       });
 
       const scopes = strongsNums.join(", ");
@@ -152,7 +152,7 @@ export default function SearchScripture({pk}) {
 
     return (
       <Grid container>
-        <Grid item xs={6} sm={3} md={2} lg={1}>
+        <Grid item xs={6} sm={3} md={2} lg={2}>
           <DocSelector
             docs={docMenuItems}
             docId={docId}
@@ -160,7 +160,7 @@ export default function SearchScripture({pk}) {
             disabled={searchEntireBible}
           />
         </Grid>
-        <Grid item xs={6} sm={3} md={3} lg={6}>
+        <Grid item xs={6} sm={3} md={3} lg={5}>
           <Checkbox
             checked={searchEntireBible}
             value={searchEntireBible}
@@ -174,11 +174,6 @@ export default function SearchScripture({pk}) {
             onChange={(e) => setSearchQuery(e.target.value)}
             label={searchTitle}
             helperText="H1234,H2345,G3456"
-            size="small"
-            id="searchOwner"
-            variant="filled"
-            color="primary"
-            sx={{ display: "flex", marginLeft: "1em" }}
           />
         </Grid>
         <Grid item xs={6} sm={3} md={3} lg={2}>
