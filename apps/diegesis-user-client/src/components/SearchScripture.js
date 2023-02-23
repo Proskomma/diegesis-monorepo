@@ -46,6 +46,13 @@ export default function SearchScripture({pk}) {
       if(!re.test(searchQuery))
       {
         setValidQuery(false);
+        setMatches([]);
+        return;
+      }
+
+      if(!docId)
+      {
+        setMatches([]);
         return;
       }
 
@@ -66,20 +73,27 @@ export default function SearchScripture({pk}) {
         const result = pk.gqlQuerySync(query);
 
         setMatches(result.data.document.cvMatching.map(d => (
-          {c: d.scopeLabels[1].replace(/\D/g,''), v: d.scopeLabels[2].replace(/\D/g,''), t: d.text}
+          {c: findValueForLabel(d.scopeLabels, /chapter/), v: findValueForLabel(d.scopeLabels, /verse/), t: d.text}
           )));
-    }, [searchQuery]);
+    }, [searchQuery, docId]);
+
+    // This could be some kind of utility function
+    const findValueForLabel = (scopeLabels, label) => {      
+      for (var i=0; i<scopeLabels.length; i++) {
+        if (label.test(scopeLabels[i])) return scopeLabels[i].replace(/\D/g,'');
+      }
+    }
 
     return (
         <Grid container>
-            <Grid item xs={12} sm={4} md={7} lg={8}>
+            <Grid item xs={12} sm={6} md={4} lg={2}>
               <DocSelector
                   docs={docMenuItems}
                   docId={docId}
                   setDocId={setDocId}
               />
             </Grid>
-            <Grid item xs={12} sm={4} md={3} lg={2}>
+            <Grid item xs={12} sm={6} md={4} lg={2}>
               <TextField
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -96,7 +110,16 @@ export default function SearchScripture({pk}) {
                   !validQuery ? <Typography>Enter valid Strong's number in search box...</Typography> :
                   matches.length === 0 ?
                   <Typography>There are no occurrences of this Strong's number in the selected book...</Typography> :
-                  <Typography>Results found, but we'll have to work on how to display them...</Typography>
+                  <div>
+                    <p>{matches.length} occurrences found:</p>
+                    <ul>
+                    {matches.map(match => {
+                      return <li>{docMenuItems.find((doc) => doc.id === docId).label + " " + match.c + ":" + match.v}<br />
+                        {match.t}
+                      </li>;
+                    })}
+                  </ul>
+                  </div>                  
                 }
             </Grid>
         </Grid>
