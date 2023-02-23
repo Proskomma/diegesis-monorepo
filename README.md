@@ -18,8 +18,8 @@ This assumes a fairly standard setup including the monorepo's public and admin R
 
 If you are MacOS or Linux and have NVM, in the repository root run:
 ```bash
-nvm install
-nvm use
+nvm install 18
+nvm use 18
 ```
 It will get the node version from the repository `.nvmrc` file.
 
