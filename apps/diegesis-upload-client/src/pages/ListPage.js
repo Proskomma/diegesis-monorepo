@@ -71,7 +71,7 @@ export default function ListPage({ setAppLanguage }) {
           {i18n(appLang, "LIST_PAGE_ENTRIES")}
           {" ("}
           {(name.length > 0) && name}
-          {(name.length === 0) && "Loading"}
+          {(name.length === 0) && i18n(appLang, "LOADING")}
           {")"}
           <Button onClick={() => setShowSettings(!showSettings)}>
             <Tune />
