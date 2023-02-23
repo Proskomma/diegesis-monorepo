@@ -107,7 +107,6 @@ export default function ListViewController({searchTerms}) {
                     <Grid item xs={6} sm={4} md={2}>
                         <FormGroup>
                             <FormControlLabel
-                                // sx={{fontSize:'5pt'}}
                                 labelPlacement="bottom"
                                 control={
                                     <Checkbox
