@@ -4,8 +4,10 @@
   "description": "A New Apollo-based Server for Diegesis",
   "main": "src/index.js",
   "scripts": {
+    "start": "node src/index.js config/debug_config.json",
     "test": "cross-env NODE_ENV=test jest --testTimeout=30000",
-    "start": "node src/index.js config/debug_config.json"
+    "preintegration": "mongoimport --db diegesis_test --collection resources --drop --file src/lib/dataLayers/mongo/test-data/mongodb-diegesis_test-resources.json",
+    "integration": "cross-env NODE_ENV=test jest --testPathIgnorePatterns=/node_modules/ --testMatch **/*.integration.js"
   },
   "repository": {
     "type": "git",
@@ -42,6 +44,7 @@
     "graphql-tag": "^2.12.6",
     "helmet": "^6.0.1",
     "jszip": "^3.10.1",
+    "mongodb": "^5.0.1",
     "morgan": "^1.10.0",
     "node-cron": "^3.0.2",
     "os": "^0.1.2",
@@ -55,6 +58,10 @@
   },
   "jest": {
     "testEnvironment": "node",
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      ".integration.js"
+    ],
     "coveragePathIgnorePatterns": [
       "/node_modules/"
     ],

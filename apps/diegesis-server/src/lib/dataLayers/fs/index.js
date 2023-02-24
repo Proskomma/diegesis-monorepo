@@ -1,19 +1,26 @@
 const fse = require('fs-extra');
+const path = require("path");
 const {
     orgPath,
     transPath,
     transParentPath,
     translationDir
 } = require("./dataPaths.js");
-const path = require("path");
+const { checkResourceOrigin } = require("../utils");
 
-// Utils
+// Connection
 
-const checkResourceOrigin = v => {
-    if (["original", "generated"].includes(v)) {
-        throw new Error(`Resource origin should be 'original' or 'generated', not '${v}'`);
-    }
-}
+/**
+ * No implementation required in FS data layer
+ * @param {*} [_config] 
+ */
+const connect = (_config) => {};
+
+/**
+ * No implementation required in FS data layer
+ * @param {*} [_config] 
+ */
+const close = (_config) => {};
 
 // Orgs
 
@@ -493,7 +500,7 @@ const deleteSuccinctError = (config, orgName, transId, transRevision) => {
 const readEntryMetadata = (config, orgName, transId, transRevision) => {
     // Returns JSON
     if (!(typeof orgName === "string")) {
-        throw new Error('orgName should be string in readEntryMetadataJson');
+        throw new Error('orgName should be string in readEntryMetadata');
     }
     const tp = transPath(
         config.dataPath,
@@ -617,6 +624,8 @@ const writeEntryResource = (config, orgName, transId, transRevision, resourceOri
 }
 
 module.exports = {
+    connect,
+    close,
     initializeOrg,
     orgExists,
     orgEntries,
