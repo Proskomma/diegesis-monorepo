@@ -97,5 +97,6 @@
     "ERROR_TOO_SHORT":"Field too short !",
     "ERROR_TOO_LONG":"Field too long !",
     "ERROR_REGEX":"Field not match regex !",
-    "BYTES":"Bytes"
+    "BYTES":"Bytes",
+    "LOADING":"Loading"
 }

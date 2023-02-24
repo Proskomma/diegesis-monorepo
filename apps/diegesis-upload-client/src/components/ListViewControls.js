@@ -109,7 +109,7 @@ export default function ListViewController({searchTerms,searchIcons}) {
                 [i18n(appLang, "STATS_nOccurrences") ,"occurrences"],
             ].map(
                 i =>
-                    <Grid item xs={6} sm={4} md={1}>
+                    <Grid item xs={6} sm={4} md={2}>
                         <FormGroup>
                             <FormControlLabel
                                 labelPlacement="bottom"
