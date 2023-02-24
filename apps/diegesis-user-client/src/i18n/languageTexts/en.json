@@ -65,6 +65,8 @@
     "CONTROLS_NT":"NT",
     "CONTROLS_DC":"DC",
     "CONTROLS_SEARCH": "Search",
+    "CONTROLS_SEARCHQUERY": "Search query",
+    "CONTROLS_RUNSEARCH": "Run search",
     "CONTROLS_ALLBOOKS": "All books",
     "CONTROLS_MATCHALL": "Match all",
     "RESOURCE_TYPES":"Resource Types",

@@ -296,11 +296,10 @@ export default function BrowseScripture({pk, ri}) {
                 />
             </Grid>
             <Grid item xs={12} sm={4} md={3} lg={2} sx={{ justifySelf: "flex-end" }}>
-                <Button>
+                <Button variant="contained">
                     <RouterLink
-                        to={`/entry/search/${ri.source}/${ri.entryId}/${ri.revision}`}
-                        style={{textDecoration: "none"}}>
-                        <Typography variant="body1">{searchTitle}</Typography>
+                        to={`/entry/search/${ri.source}/${ri.entryId}/${ri.revision}`}>
+                            {searchTitle}
                     </RouterLink>
                 </Button>
             </Grid>

@@ -1,5 +1,5 @@
 import React, {useContext, useState, useEffect} from 'react';
-import {TextField, Grid, Checkbox} from "@mui/material";
+import {Button, TextField, Grid, Checkbox} from "@mui/material";
 import AppLangContext from "../contexts/AppLangContext";
 import i18n from "../i18n";
 import DocSelector from "./DocSelector";
@@ -7,7 +7,8 @@ import DocSelector from "./DocSelector";
 export default function SearchScripture({pk}) {
 
     const appLang = useContext(AppLangContext);
-    const searchTitle = i18n(appLang, "CONTROLS_SEARCH");
+    const searchQueryTitle = i18n(appLang, "CONTROLS_SEARCHQUERY");
+    const runSearchTitle = i18n(appLang, "CONTROLS_RUNSEARCH");
     const allBooksTitle = i18n(appLang, "CONTROLS_ALLBOOKS");
     const matchAllTitle = i18n(appLang, "CONTROLS_MATCHALL");
 
@@ -17,6 +18,7 @@ export default function SearchScripture({pk}) {
     const [searchQuery, setSearchQuery] = useState("");
     const [matchAll, setMatchAll] = useState(false);
     const [validQuery, setValidQuery] = useState(false);
+    const [searchFinished, setSearchFinished] = useState(false);
     const [matches, setMatches] = useState([]);
 
     const docName = d => {
@@ -45,6 +47,8 @@ export default function SearchScripture({pk}) {
     }, []) // this function (likely) only needs to run on initialization. Is this a good way of making such a function?
     
     useEffect(() => {
+      setSearchFinished(false);
+
       if (searchQuery.length === 0)
       {
         setValidQuery(false);
@@ -59,8 +63,7 @@ export default function SearchScripture({pk}) {
       for (let id = 0; id < strongsNums.length; id++) {
         if(!re.test(strongsNums[id]))
         {
-          setValidQuery(false);
-          setMatches([]);
+          setValidQuery(false);          
           return;
         }        
       }
@@ -72,6 +75,18 @@ export default function SearchScripture({pk}) {
       }
 
       setValidQuery(true);
+      
+    }, [searchEntireBible, searchQuery, docId, matchAll]);
+
+    const runSearch = () => {
+      setMatches([]);
+
+      if(!validQuery)
+      {
+        return;
+      }
+
+      let strongsNums = searchQuery.split(',');
       const strongAtts = "attribute/spanWithAtts/w/strong/0/";
 
       strongsNums.forEach((num, id) => {
@@ -129,7 +144,9 @@ export default function SearchScripture({pk}) {
           v: findValueForLabel(match.scopeLabels, /verse/), t: match.tokens
         })));
       }
-    }, [searchEntireBible, searchQuery, docId, matchAll]);
+
+      setSearchFinished(true);
+    }
 
     // This could be some kind of utility function
     const findValueForLabel = (scopeLabels, label) => {
@@ -152,7 +169,7 @@ export default function SearchScripture({pk}) {
 
     return (
       <Grid container>
-        <Grid item xs={6} sm={3} md={2} lg={2}>
+        <Grid item xs={6} sm={8} md={2} lg={2}>
           <DocSelector
             docs={docMenuItems}
             docId={docId}
@@ -160,7 +177,7 @@ export default function SearchScripture({pk}) {
             disabled={searchEntireBible}
           />
         </Grid>
-        <Grid item xs={6} sm={3} md={3} lg={5}>
+        <Grid item xs={6} sm={4} md={2} lg={2}>
           <Checkbox
             checked={searchEntireBible}
             value={searchEntireBible}
@@ -168,15 +185,15 @@ export default function SearchScripture({pk}) {
           />
         {allBooksTitle}
         </Grid>
-        <Grid item xs={6} sm={3} md={4} lg={3}>
+        <Grid item xs={6} sm={8} md={4} lg={4}>
           <TextField
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            label={searchTitle}
+            label={searchQueryTitle}
             helperText="H1234,H2345,G3456"
           />
         </Grid>
-        <Grid item xs={6} sm={3} md={3} lg={2}>
+        <Grid item xs={6} sm={4} md={2} lg={2}>
           <Checkbox
             checked={matchAll}
             value={matchAll}
@@ -184,10 +201,18 @@ export default function SearchScripture({pk}) {
           />
         {matchAllTitle}
         </Grid>
+        <Grid item xs={12} sm={2} md={2} lg={2} sx={{ justifySelf: "flex-end" }}>
+          <Button
+            variant="contained"
+            onClick={() => runSearch()}>
+              {runSearchTitle}
+          </Button>
+        </Grid>
         <Grid item xs={12}>
             {
               !validQuery ? <p>Enter valid Strong's number(s) in search box...</p> :
-              matches.length === 0 ? <p>There are no occurrences of this Strong's number in the selected book...</p> :
+              !searchFinished ? <p>Valid query detected. Click 'run search' to perform search</p> :
+              matches.length === 0 ? <p>There are no occurrences of this/these Strong's number(s) in the selected scope...</p> :
               <div>
                 <p>{matches.length} occurrences found:</p>
                 <ul>
