@@ -9,12 +9,12 @@ import GqlError from "../components/GqlError";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import Spinner from "../components/Spinner";
-import BrowseScripture from "../components/BrowseScripture";
+import SearchScripture from "../components/SearchScripture";
 import {directionText} from "../i18n/languageDirection";
 import AppLangContext from "../contexts/AppLangContext";
 // const ProskommaRequire = require('proskomma-core');
 
-export default function EntryBrowsePage({setAppLanguage}) {
+export default function EntrySearchPage({setAppLanguage}) {
     const appLang = useContext(AppLangContext);
     const {source, entryId, revision} = useParams();
 
@@ -94,7 +94,7 @@ export default function EntryBrowsePage({setAppLanguage}) {
         <Box style={{marginTop: "100px"}}>
             <Typography variant="h4" paragraph="true" sx={{mt: "20px"}}>
                 <Button>
-                    <RouterLink to={`/entry/details/${source}/${entryId}/${revision}`}><ArrowBack/></RouterLink>
+                    <RouterLink to={`/entry/browse/${source}/${entryId}/${revision}`}><ArrowBack/></RouterLink>
                 </Button>
                 {entryInfo && entryInfo.title}
                 {!entryInfo && "Loading..."}
@@ -102,7 +102,7 @@ export default function EntryBrowsePage({setAppLanguage}) {
             {
                 entryInfo &&
                 entryInfo.canonResource &&
-                entryInfo.canonResource.content && <BrowseScripture pk={pk} ri={{source: source, entryId: entryId, revision: revision}}/>
+                entryInfo.canonResource.content && <SearchScripture pk={pk}/>
             }
             {
                 (!entryInfo || !entryInfo.canonResource || !entryInfo.canonResource.content) &&
