@@ -77,5 +77,18 @@
     "sw_LANG":"Swahili",
     "METADATA":"Metadata",
     "RESOURCES":"Resources",
-    "BLEND_PAGE":"Blend Your Data"
+    "BLEND_PAGE":"Blend Your Data",
+    "BROWSE_PAGE_TITLES":"Titles",
+    "BROWSE_PAGE_HEADINGS":"Headings",
+    "BROWSE_PAGE_INTRODUCTIONS":"Introductions",
+    "BROWSE_PAGE_FOOTNOTES":"Cross Refs",
+    "BROWSE_PAGE_XREFS":"Cross Refs",
+    "BROWSE_PAGE_PARA_STYLES":"Para Styles",
+    "BROWSE_PAGE_CHAR_STYLES":"Char Styles",
+    "BROWSE_PAGE_CHAPTER_NUMBERS":"Chapter N°s",
+    "BROWSE_PAGE_VERSE_NUMBERS":"Verse N°s",
+    "BROWSE_PAGE_WORD_INFO":"Word Info",
+    "BROWSE_PAGE_PROCESSING":"Processing",
+    "BROWSE_PAGE_CURRENTLY_WARNING":"Unable to render this new translation at present as server is currently processing the new data: please try again in a few minutes.",
+    "BROWSE_PAGE_YET_WARNING":"Unable to render this new translation at present as server has not yet processed the new data: please try again in a few minutes."    
 }

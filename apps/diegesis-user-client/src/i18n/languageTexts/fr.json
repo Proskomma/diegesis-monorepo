@@ -77,5 +77,18 @@
     "sw_LANG":"Swahili",
     "METADATA":"Métadonnées",
     "RESOURCES":"Ressources",
-    "BLEND_PAGE":"Mélangez vos données"
+    "BLEND_PAGE":"Mélangez vos données",
+    "BROWSE_PAGE_TITLES":"Titres",
+    "BROWSE_PAGE_HEADINGS":"Rubriques",
+    "BROWSE_PAGE_INTRODUCTIONS":"Introductions",
+    "BROWSE_PAGE_FOOTNOTES":"Notes de bas de page",
+    "BROWSE_PAGE_XREFS":"Références croisées",
+    "BROWSE_PAGE_PARA_STYLES":"styles de paragraphes",
+    "BROWSE_PAGE_CHAR_STYLES":"styles de caractères",
+    "BROWSE_PAGE_CHAPTER_NUMBERS":"Numéros de chapitres",
+    "BROWSE_PAGE_VERSE_NUMBERS":"Numéros de versets",
+    "BROWSE_PAGE_WORD_INFO":"informations sur les mots",
+    "BROWSE_PAGE_PROCESSING":"Traitement",
+    "BROWSE_PAGE_CURRENTLY_WARNING":"Impossible de rendre cette nouvelle traduction pour le moment, car le serveur traite actuellement les nouvelles données : veuillez réessayer dans quelques minutes.",
+    "BROWSE_PAGE_YET_WARNING":"Impossible de rendre cette nouvelle traduction pour le moment car le serveur n'a pas encore traité les nouvelles données : veuillez réessayer dans quelques minutes."    
 }

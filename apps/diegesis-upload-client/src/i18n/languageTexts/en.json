@@ -98,5 +98,6 @@
     "ERROR_TOO_LONG":"Field too long !",
     "ERROR_REGEX":"Field not match regex !",
     "BYTES":"Bytes",
-    "LOADING":"Loading"
+    "LOADING":"Loading",
+    "SELECT_FILE_TYPE":"Please select the type of resources to add"
 }

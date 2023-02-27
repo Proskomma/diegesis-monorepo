@@ -33,7 +33,7 @@
     "ADMIN_TEXT_DIRECTION_LEFT":"من اليسار إلى اليمين",
     "ADMIN_LANGUAGE_SCRIPT":"كتابة \"{0}\"",
     "ADMIN_DETAILS_CONTENT":"المحتوى",
-    "ADMIN_DETAILS_CHAPTERS":"عدد الفصول",
+    "ADMIN_DETAILS_CHAPTERS":" جميع عدد الفصول" ,
     "ADMIN_DETAILS_VERSES":"عدد الآيات",
     "ADMIN_DETAILS_TITLE":"موارد الكتاب",
     "ADMIN_DETAILS_ALERT":"إختر كتابا",
@@ -77,5 +77,18 @@
     "sw_LANG":"السواحيلية",
     "METADATA":"البيانات الوصفية",
     "RESOURCES":"الموارد",
-    "BLEND_PAGE":"امزج بياناتك"
+    "BLEND_PAGE":"امزج بياناتك",
+    "BROWSE_PAGE_TITLES":"العناوين",
+    "BROWSE_PAGE_HEADINGS":"عناوين الصفحات",
+    "BROWSE_PAGE_INTRODUCTIONS":"المقدمات",
+    "BROWSE_PAGE_FOOTNOTES":"الحواشي",
+    "BROWSE_PAGE_XREFS":"المراجع",
+    "BROWSE_PAGE_PARA_STYLES":"أنماط الفقرة",
+    "BROWSE_PAGE_CHAR_STYLES":"أنماط الحروف",
+    "BROWSE_PAGE_CHAPTER_NUMBERS":"أرقام الفصول",
+    "BROWSE_PAGE_VERSE_NUMBERS":"أعداد الآيات",
+    "BROWSE_PAGE_WORD_INFO":"معلومات على الكلمات",
+    "BROWSE_PAGE_PROCESSING":"معالجة",
+    "BROWSE_PAGE_CURRENTLY_WARNING":"يتعذرتقديم هذه الترجمة الجديدة في الوقت الحالي حيث يقوم الخادم حاليًا بمعالجة البيانات الجديدة: يرجى المحاولة مرة أخرى في غضون بضع دقائق.",
+    "BROWSE_PAGE_YET_WARNING":"يتعذر تقديم هذه الترجمة الجديدة في الوقت الحالي لأن الخادم لم يعالج البيانات الجديدة بعد: يرجى المحاولة مرة أخرى في غضون بضع دقائق"    
  }

@@ -3,13 +3,13 @@ import { useContext } from "react";
 import AppLangContext from "../contexts/AppLangContext";
 import i18n from "../i18n";
 import languagesList from "../i18n/languagesList.json";
-import { directionText } from "../i18n/languageDirection";
+import { directionText, setFontFamily } from "../i18n/languageDirection";
 
 export default function LangSelector({langCode,setlangCode,selectLanguageLabel,}) {
   const appLang = useContext(AppLangContext);
   return (
     <>
-      <InputLabel id="selectLabel" htmlFor="langCode">
+      <InputLabel id="selectLabel" htmlFor="langCode" style={{ fontFamily : setFontFamily(appLang)}}>
         {selectLanguageLabel}
       </InputLabel>
       <Select
