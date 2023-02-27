@@ -1,23 +1,18 @@
 const {Proskomma} = require('proskomma-core');
-const {PerfRenderFromProskomma, render, mergeActions} = require('proskomma-json-tools');
-const {ptBooks} = require('proskomma-utils');
 const {parentPort} = require("node:worker_threads");
 const {
     lockEntry,
     unlockEntry,
     readEntryMetadata,
     writeEntryMetadata,
-    entryHasGenerated,
-    entryHas,
-    initializeEntryBookResourceCategory,
-    entryBookResourcesForCategory,
-    readEntryResource,
-    readEntryBookResource,
-    writeEntryResource,
-    writeEntryBookResource,
     writeSuccinctError,
 } = require('./dataLayers/fs');
-const documentStatsActions = require("./documentStatsActions");
+const getSuccinct = require("./makeDownloadsHelpers/makeSuccinct");
+const doScripturePerf = require("./makeDownloadsHelpers/doScripturePerf")
+const doScriptureSimplePerf = require("./makeDownloadsHelpers/doScriptureSimplePerf")
+const doScriptureStats = require("./makeDownloadsHelpers/doScriptureStats");
+const doScriptureSofria = require("./makeDownloadsHelpers/doScriptureSofria");
+const makeAggregateStats = require("./makeDownloadsHelpers/makeAggregateStats");
 
 const verbose = false;
 
@@ -103,21 +98,21 @@ function doScriptureDownloads({configString, org, transId, revision, contentType
                 doScriptureStats({org, pk, metadata, doc, docSetId, stats, verbose});
             }
             doScriptureSofria({config, org, pk, metadata, doc, docSetId, verbose});
-            try {
-                makeAggregateStats(stats);
-                const newMetadata = {...metadata, stats};
-                writeEntryMetadata(config, org, metadata.id, metadata.revision, newMetadata);
-            } catch
-                (err) {
-                parentPort.postMessage({
-                    generatedBy: 'cron',
-                    context: {
-                        docSetId,
-                        making: "augmented metadata.json"
-                    },
-                    message: err.message,
-                });
-            }
+        }
+        try {
+            makeAggregateStats(stats);
+            const newMetadata = {...metadata, stats};
+            writeEntryMetadata(config, org, metadata.id, metadata.revision, newMetadata);
+        } catch
+            (err) {
+            parentPort.postMessage({
+                generatedBy: 'cron',
+                context: {
+                    docSetId,
+                    making: "augmented metadata.json"
+                },
+                message: err.message,
+            });
         }
         // The end!
         unlockEntry(config, org, transId, revision);
@@ -135,290 +130,6 @@ function doScriptureDownloads({configString, org, transId, revision, contentType
         };
         parentPort.postMessage(succinctError);
         unlockEntry(config, org, transId, revision);
-    }
-}
-
-function getSuccinct({config, org, pk, metadata, contentType, stats}) {
-    if (entryHas(config, org, metadata.id, metadata.revision, "succinct.json")) {
-        // Load existing succinct and extract book stats info from it
-        const succinct = readEntryResource(config, org, metadata.id, metadata.revision, "succinct.json");
-        pk.loadSuccinctDocSet(succinct);
-        const docSetTags = pk.gqlQuerySync('{docSets { tagsKv {key value} } }').data.docSets[0].tagsKv;
-        for (const kv of docSetTags) {
-            if (["nOT", "nNT", "nDC"].includes(kv.key)) {
-                stats[kv.key] = kv.value;
-            }
-        }
-    } else {
-        // Load books, calculate section stats from books and add this and other tags to docSet, then export succinct
-        const bookResources = entryBookResourcesForCategory(config, org, metadata.id, metadata.revision, `${contentType}Books`);
-        const bookContent = bookResources.map(r => readEntryBookResource(config, org, metadata.id, metadata.revision, `${contentType}Books`, r));
-        pk.importDocuments(
-            {
-                source: org,
-                project: metadata.id,
-                revision: metadata.revision,
-            },
-            contentType,
-            bookContent,
-        );
-        const docSet = pk.gqlQuerySync('{docSets { id documents { bookCode: header(id: "bookCode") sequences {type} } } }').data.docSets[0];
-        const docSetId = docSet.id;
-        const docSetBookCodes = docSet.documents.map(d => d.bookCode);
-        for (const bookCode of docSetBookCodes) {
-            for (const section of ['ot', 'nt', 'dc']) {
-                if (ptBooks[bookCode].categories.includes(section)) {
-                    stats[`n${section.toUpperCase()}`]++;
-                }
-            }
-        }
-        let metadataTags = `"title:${metadata.title}" "copyright:${metadata.copyright}" "language:${metadata.languageCode}" """owner:${metadata.owner}"""`;
-        metadataTags += ` "nOT:${stats.nOT}" "nNT:${stats.nNT}" "nDC:${stats.nDC}"`;
-        if (metadata.textDirection) {
-            metadataTags += ` "direction:${metadata.textDirection}"`;
-        }
-        if (metadata.script) {
-            metadataTags += ` "script:${metadata.script}"`;
-        }
-        pk.gqlQuerySync(`mutation { addDocSetTags(docSetId: "${docSetId}", tags: [${metadataTags}]) }`);
-        if (entryHas(config, org, metadata.id, metadata.revision, "versification.vrs")) {
-            vrsContent = readEntryResource(config, org, metadata.id, metadata.revision, "versification.vrs");
-            pk.gqlQuerySync(`mutation { setVerseMapping(docSetId: "${docSetId}" vrsSource: """${vrsContent}""")}`);
-        }
-        const succinct = pk.serializeSuccinct(docSetId);
-        writeEntryResource(config, org, metadata.id, metadata.revision, "generated", "succinct.json", succinct);
-    }
-    if (verbose) {
-        parentPort.postMessage({
-                org,
-                transId: metadata.id,
-                revision: metadata.revision,
-                status: "getSuccinct"
-            }
-        )
-    }
-}
-
-function doScripturePerf({config, org, pk, metadata, doc, docSetId, verbose}) {
-    // Make Perf, also simplePerf and stats which are derived from the perf
-    try {
-        const docResult = pk.gqlQuerySync(`{ document(id: """${doc.id}""") { bookCode: header(id:"bookCode") perf } }`).data.document;
-        if (!entryHasGenerated(config, org, metadata.id, metadata.revision, "perfBooks")) {
-            initializeEntryBookResourceCategory(
-                config,
-                org,
-                metadata.id,
-                metadata.revision,
-                "generated",
-                "perfBooks"
-            );
-        }
-        writeEntryBookResource(
-            config,
-            org,
-            metadata.id,
-            metadata.revision,
-            "perfBooks",
-            `${doc.book}.json`,
-            JSON.parse(docResult.perf)
-        );
-        if (verbose) {
-            parentPort.postMessage({
-                    org,
-                    transId: metadata.id,
-                    revision: metadata.revision,
-                    book: doc.book,
-                    status: "perf"
-                }
-            )
-        }
-    } catch (err) {
-        parentPort.postMessage({
-            generatedBy: 'cron',
-            context: {
-                docSetId,
-                doc: doc.id,
-                book: doc.book,
-                making: "perf"
-            },
-            message: err.message,
-        });
-        return false;
-    }
-    return true;
-}
-
-function doScriptureSimplePerf({config, org, pk, metadata, doc, docSetId, verbose}) {
-    try {
-        const cl = new PerfRenderFromProskomma(
-            {
-                proskomma: pk,
-                actions: mergeActions(
-                    [
-                        render.perfToPerf.renderActions.justTheBibleActions,
-                        render.perfToPerf.renderActions.identityActions
-                    ]
-                ),
-            },
-        );
-        const output = {};
-
-        cl.renderDocument(
-            {
-                docId: doc.id,
-                config: {},
-                output,
-            },
-        );
-        const mergedText = render.perfToPerf.transforms.mergePerfText.code({perf: output.perf}).perf;
-        if (!entryHasGenerated(config, org, metadata.id, metadata.revision, "simplePerfBooks")) {
-            initializeEntryBookResourceCategory(
-                config,
-                org,
-                metadata.id,
-                metadata.revision,
-                "generated",
-                "simplePerfBooks"
-            );
-        }
-        writeEntryBookResource(
-            config,
-            org,
-            metadata.id,
-            metadata.revision,
-            "simplePerfBooks",
-            `${doc.book}.json`,
-            mergedText
-        );
-        if (verbose) {
-            parentPort.postMessage({
-                org,
-                transId: metadata.id,
-                revision: metadata.revision,
-                book: doc.book,
-                status: "simplePerf"
-            })
-        };
-    } catch (err) {
-        parentPort.postMessage({
-            generatedBy: 'cron',
-            context: {
-                docSetId,
-                doc: doc.id,
-                book: doc.book,
-                making: "simplePerf"
-            },
-            message: err.message,
-        });
-    }
-}
-
-function doScriptureStats({org, pk, metadata, doc, docSetId, stats, verbose}) {
-    try {
-        const cl = new PerfRenderFromProskomma(
-            {
-                proskomma: pk,
-                actions: documentStatsActions,
-            },
-        );
-        const output = {};
-
-        cl.renderDocument(
-            {
-                docId: doc.id,
-                config: {},
-                output,
-            },
-        );
-        stats.documents[doc.book] = output;
-        if (verbose) {
-            parentPort.postMessage({
-                org,
-                transId: metadata.id,
-                revision: metadata.revision,
-                book: doc.book,
-                status: "stats"
-            })
-        };
-    } catch (err) {
-        if (verbose) {
-            parentPort.postMessage({
-                generatedBy: 'cron',
-                context: {
-                    docSetId,
-                    doc: doc.id,
-                    book: doc.book,
-                    making: "stats"
-                },
-                message: err.message,
-            });
-        }
-    }
-}
-
-function doScriptureSofria({config, org, pk, metadata, doc, docSetId, verbose}) {
-    try {
-        const docResult = pk.gqlQuerySync(`{document(id: """${doc.id}""") { bookCode: header(id:"bookCode") sofria } }`).data.document;
-        if (!entryHasGenerated(config, org, metadata.id, metadata.revision, "sofriaBooks")) {
-            initializeEntryBookResourceCategory(
-                config,
-                org,
-                metadata.id,
-                metadata.revision,
-                "generated",
-                "sofriaBooks"
-            );
-        }
-        writeEntryBookResource(
-            config,
-            org,
-            metadata.id,
-            metadata.revision,
-            "sofriaBooks",
-            `${doc.book}.json`,
-            JSON.parse(docResult.sofria)
-        );
-        if (verbose) {
-            parentPort.postMessage({
-                org,
-                transId: metadata.id,
-                revision: metadata.revision,
-                book: doc.book,
-                status: "sofria"
-            });
-        }
-    } catch (err) {
-        parentPort.postMessage({
-            generatedBy: 'cron',
-            context: {
-                docSetId,
-                doc: doc.id,
-                book: doc.book,
-                making: "sofria"
-            },
-            message: err.message,
-        });
-    }
-}
-
-function makeAggregateStats(stats) {
-    for (const bookStats of Object.values(stats.documents)) {
-        for (const stat of [
-            "nChapters",
-            "nVerses",
-            "nIntroductions",
-            "nHeadings",
-            "nFootnotes",
-            "nXrefs",
-            "nStrong",
-            "nLemma",
-            "nGloss",
-            "nContent",
-            "nMorph",
-            "nOccurrences",
-        ]) {
-            stats[stat] += bookStats[stat];
-        }
     }
 }
 
