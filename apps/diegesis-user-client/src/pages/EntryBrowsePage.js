@@ -1,6 +1,6 @@
 import React, { useContext, useState } from "react";
-import { Container, Typography, Box, Button, Fade, Modal } from "@mui/material";
-import { ArrowBack, ArrowForward, Download } from "@mui/icons-material";
+import { Container, Typography, Box, Button} from "@mui/material";
+import { ArrowBack, ArrowForward } from "@mui/icons-material";
 import { useParams, Link as RouterLink } from "react-router-dom";
 import { gql, useQuery } from "@apollo/client";
 import { Proskomma } from "proskomma-core";
@@ -15,6 +15,7 @@ import AppLangContext from "../contexts/AppLangContext";
 import i18n from "../i18n";
 import SearchModal from "../components/SearchModal";
 import PrintModal from "../components/PrintModal";
+import PrintIcon from '@mui/icons-material/Print';
 
 export default function EntryBrowsePage({ setAppLanguage }) {
   const appLang = useContext(AppLangContext);
@@ -136,7 +137,7 @@ export default function EntryBrowsePage({ setAppLanguage }) {
           </Button>
           <SearchModal openSearchModal={openSearchModal} handleCloseSearchModal={handleCloseSearchModal} pk={pk}/>
           <Button onClick={handleOpenPrintModal}>
-            <Download color="primary" sx={{ fontSize: 30 }} />
+            <PrintIcon color="primary"sx={{ fontSize: 30 }}/>
           </Button>
           <PrintModal openPrintModal={openPrintModal} handleClosePrintModal={handleClosePrintModal} pk={pk}/>
         </Typography>

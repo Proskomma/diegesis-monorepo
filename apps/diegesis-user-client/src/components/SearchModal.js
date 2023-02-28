@@ -20,20 +20,16 @@ const style = {
   top: "50%",
   left: "50%",
   transform: "translate(-50%, -50%)",
-  width: "50%",
+  width: "60%",
   bgcolor: "background.paper",
   border: "2px solid #000",
   boxShadow: 24,
   p: 4,
   overflow: "auto",
-  maxHeight: '95%'
+  maxHeight: "95%",
 };
 
-export default function SearchModal({
-  openSearchModal,
-  handleCloseSearchModal,
-  pk,
-}) {
+export default function SearchModal({openSearchModal,handleCloseSearchModal,pk,}) {
   const appLang = useContext(AppLangContext);
 
   const searchQueryTitle = i18n(appLang, "CONTROLS_SEARCHQUERY");
@@ -261,21 +257,33 @@ export default function SearchModal({
                 sx={{ justifySelf: "flex-end" }}
               >
                 <Button variant="contained" onClick={() => runSearch()}>
-                  {runSearchTitle}
+                  <span style={{ fontFamily: setFontFamily(appLang) }}>
+                    {runSearchTitle}
+                  </span>
                 </Button>
               </Grid>
               <Grid item xs={12}>
                 {!validQuery ? (
-                  <p>{i18n(appLang, "SEARCH_NOT_VALID_QUERY")}</p>
+                  <span style={{ fontFamily: setFontFamily(appLang) }}>
+                    {i18n(appLang, "SEARCH_NOT_VALID_QUERY")}
+                  </span>
                 ) : !searchFinished ? (
-                  <p>{i18n(appLang, "SEARCH_VALID_QUERY")}</p>
+                  <span style={{ fontFamily: setFontFamily(appLang) }}>
+                    {i18n(appLang, "SEARCH_VALID_QUERY")}
+                  </span>
                 ) : matches.length === 0 ? (
-                  <p>{i18n(appLang, "SEARCH_NO_OCCURENCES")}</p>
+                  <span style={{ fontFamily: setFontFamily(appLang) }}>
+                    {i18n(appLang, "SEARCH_NO_OCCURENCES")}
+                  </span>
                 ) : (
                   <div>
                     <p>
-                      {i18n(appLang, "SEARCH_OCCURENCES_FOUND")} :{" "}
-                      {matches.length}{" "}
+                      <span
+                        style={{ fontFamily: setFontFamily(appLang) }}
+                      >
+                        {i18n(appLang, "SEARCH_OCCURENCES_FOUND")}
+                      </span>{" "}
+                      : {matches.length}{" "}
                     </p>
                     <ul>
                       {matches.map((match) => {
