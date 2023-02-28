@@ -91,8 +91,6 @@ export default function PrintModal({
       });
     }
   };
-  console.log("w:", pageFormat.width);
-  console.log("h:", pageFormat.height);
 
   const docName = (d) => {
     return (

@@ -7,6 +7,7 @@ import DocSelector from "./DocSelector";
 import AppLangContext from "../contexts/AppLangContext";
 import { directionText, setFontFamily } from '../i18n/languageDirection';
 import i18n from "../i18n";
+import {renderers} from '../renderer/render2react'
 
 export default function BrowseScripture({pk}) {
     const appLang = useContext(AppLangContext);
@@ -41,6 +42,8 @@ export default function BrowseScripture({pk}) {
 
     useEffect(
         () => {
+            if (!scriptureData.menuQuery || !scriptureData.docId )
+              {return }
             let newDocId;
             let menuQuery = scriptureData.menuQuery;
             if (!scriptureData.docId) {
@@ -61,7 +64,7 @@ export default function BrowseScripture({pk}) {
             if (newDocId !== scriptureData.renderedDocId || scriptureData.updatedAtts) {
                 const renderer = new SofriaRenderFromProskomma({
                     proskomma: pk,
-                    actions: sofria2WebActions,
+                    actions: sofria2WebActions
                 });
 
                 const config = {
@@ -74,10 +77,12 @@ export default function BrowseScripture({pk}) {
                     showParaStyles: scriptureData.showParaStyles,
                     showCharacterMarkup: scriptureData.showCharacterMarkup,
                     showChapterLabels: scriptureData.showChapterLabels,
-                    showVersesLabels: scriptureData.showVersesLabels
+                    showVersesLabels: scriptureData.showVersesLabels,
+                    renderers
                 };
                 const output = {};
                 try {
+                    console.log('Rendering')
                     renderer.renderDocument(
                         {
                             docId: newDocId,
@@ -101,7 +106,6 @@ export default function BrowseScripture({pk}) {
         },
         [scriptureData]
     );
-
     const docMenuItems = scriptureData.menuQuery && scriptureData.menuQuery.data && scriptureData.menuQuery.data.docSets && scriptureData.menuQuery.data.docSets[0].documents ?
         scriptureData.menuQuery.data.docSets[0].documents.map(d => ({id: d.id, label: docName(d)})) :
         [];
