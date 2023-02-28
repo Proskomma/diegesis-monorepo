@@ -14,6 +14,7 @@ import ListPage from "./pages/ListPage";
 import BlendPage from "./pages/BlendPage";
 import EntryDetailsPage from "./pages/EntryDetailsPage";
 import EntryBrowsePage from "./pages/EntryBrowsePage";
+import EntrySearchPage from "./pages/EntrySearchPage";
 import EntryDownloadPage from "./pages/EntryDownloadPage";
 import { AppLangProvider } from "./contexts/AppLangContext";
 
@@ -70,6 +71,11 @@ function App() {
         {
             path: "/entry/browse/:source/:entryId/:revision",
             element: <EntryBrowsePage setAppLanguage={setAppLanguage}/>,
+            errorElement: <ErrorBoundary/>
+        },
+        {
+            path: "/entry/search/:source/:entryId/:revision",
+            element: <EntrySearchPage setAppLanguage={setAppLanguage}/>,
             errorElement: <ErrorBoundary/>
         },
         {

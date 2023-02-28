@@ -58,28 +58,32 @@ export default function EntryBrowsePage({ setAppLanguage }) {
       return <ArrowForward />;
     }
   };
-
+  
   if (!entryInfo) {
-    return (
-      <Container fixed className="homepage">
-        <Header setAppLanguage={setAppLanguage} selected="list" />
-        <Box dir={directionText(appLang)} style={{ marginTop: "100px" }}>
-          <Typography variant="h4" paragraph="true" sx={{ mt: "20px" }}>
-            <Button>
-              <RouterLink
-                to={`/entry/details/${source}/${entryId}/${revision}`}
-              >
-                {setArrow(appLang)}
-              </RouterLink>
-            </Button>
-            {i18n(appLang, "BROWSE_PAGE_PROCESSING")}
-          </Typography>
-          <Typography paragraph="true">
-            {i18n(appLang, "BROWSE_PAGE_CURRENTLY_WARNING")}.
-          </Typography>
+    return <Container fixed className="homepage">
+        <Header selected="list"/>
+        <Box dir={directionText(appLang)} style={{marginTop: "100px"}}>
+            <Typography variant="h4" paragraph="true" sx={{mt: "20px"}}>
+                <Button>
+                    <RouterLink to={`/entry/details/${source}/${entryId}/${revision}`}>{setArrow(appLang)}</RouterLink>
+                </Button>
+                {entryInfo && entryInfo.title}
+                {!entryInfo && "Loading..."}
+            </Typography>
+            {
+                entryInfo &&
+                entryInfo.canonResource &&
+                entryInfo.canonResource.content && <BrowseScripture pk={pk} ri={{source: source, entryId: entryId, revision: revision}}/>
+            }
+            {
+                (!entryInfo || !entryInfo.canonResource || !entryInfo.canonResource.content) &&
+                <Typography paragraph="true">
+                    {i18n(appLang, "BROWSE_PAGE_CURRENTLY_WARNING")}
+                </Typography>
+            }
+            <Footer/>
         </Box>
       </Container>
-    );
   }
 
   const pk = new Proskomma([
