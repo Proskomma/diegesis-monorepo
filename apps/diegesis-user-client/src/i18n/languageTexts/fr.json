@@ -64,6 +64,10 @@
     "CONTROLS_OT":"AT",
     "CONTROLS_NT":"NT",
     "CONTROLS_DC":"DC",
+    "CONTROLS_SEARCHQUERY": "Rechercher la requête",
+    "CONTROLS_RUNSEARCH": "Lancer la recherche",
+    "CONTROLS_ALLBOOKS": "Tous les livres",
+    "CONTROLS_MATCHALL": "Tout correspondre",
     "RESOURCE_TYPES":"Types de ressources",
     "en_LANG":"Anglais",
     "ar_LANG":"Arabe",
@@ -90,5 +94,9 @@
     "BROWSE_PAGE_WORD_INFO":"informations sur les mots",
     "BROWSE_PAGE_PROCESSING":"Traitement",
     "BROWSE_PAGE_CURRENTLY_WARNING":"Impossible de rendre cette nouvelle traduction pour le moment, car le serveur traite actuellement les nouvelles données : veuillez réessayer dans quelques minutes.",
-    "BROWSE_PAGE_YET_WARNING":"Impossible de rendre cette nouvelle traduction pour le moment car le serveur n'a pas encore traité les nouvelles données : veuillez réessayer dans quelques minutes."    
+    "BROWSE_PAGE_YET_WARNING":"Impossible de rendre cette nouvelle traduction pour le moment car le serveur n'a pas encore traité les nouvelles données : veuillez réessayer dans quelques minutes.",
+    "SEARCH_NOT_VALID_QUERY":"Entrez un ou plusieurs numéros valides dans la zone de recherche...",
+    "SEARCH_VALID_QUERY":"Requête valide détectée. Cliquez sur 'lancer la recherche' pour effectuer la recherche",
+    "SEARCH_NO_OCCURENCES":"Il n'y a pas d'occurrences de ce(s) numéro(s) dans le cadre sélectionné...",
+    "SEARCH_OCCURENCES_FOUND":"occurrences trouvées" 
 }

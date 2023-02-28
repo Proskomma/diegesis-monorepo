@@ -5,14 +5,13 @@ import {
   FormGroup,
   FormControlLabel,
   Button,
-  InputLabel,
 } from "@mui/material";
 import { useContext } from "react";
 import i18n from "../i18n";
 import OrgSelector from "./OrgSelector";
 import SortSelector from "./SortSelector";
 import AppLangContext from "../contexts/AppLangContext";
-import { directionText, setFontFamily } from "../i18n/languageDirection";
+import { directionText } from "../i18n/languageDirection";
 
 export default function ListViewController({ searchTerms }) {
   const appLang = useContext(AppLangContext);

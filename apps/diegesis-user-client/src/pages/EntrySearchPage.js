@@ -1,6 +1,6 @@
 import React, {useContext} from 'react';
 import { Container, Typography, Box, Button } from "@mui/material";
-import { ArrowBack } from "@mui/icons-material";
+import { ArrowBack, ArrowForward } from "@mui/icons-material";
 import { useParams, Link as RouterLink } from "react-router-dom";
 import { gql, useQuery } from "@apollo/client";
 import { Proskomma } from 'proskomma-core';
@@ -88,13 +88,22 @@ export default function EntrySearchPage({setAppLanguage}) {
     if (entryInfo?.canonResource?.content) {
         pk.loadSuccinctDocSet(JSON.parse(entryInfo.canonResource.content));
     }
+    
+    const setArrow = (lang) => {
+        if (directionText(lang) === "ltr") {
+          return <ArrowBack color="primary"/>;
+        }
+        if (directionText(lang) === "rtl") {
+          return <ArrowForward color="primary"/>;
+        }
+    };
 
     return <Container fixed className="homepage">
         <Header selected="list"/>
         <Box style={{marginTop: "100px"}}>
             <Typography variant="h4" paragraph="true" sx={{mt: "20px"}}>
                 <Button>
-                    <RouterLink to={`/entry/browse/${source}/${entryId}/${revision}`}><ArrowBack/></RouterLink>
+                    <RouterLink to={`/entry/browse/${source}/${entryId}/${revision}`}>{setArrow(appLang)}</RouterLink>
                 </Button>
                 {entryInfo && entryInfo.title}
                 {!entryInfo && "Loading..."}

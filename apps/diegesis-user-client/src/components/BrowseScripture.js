@@ -1,5 +1,4 @@
 import React, {useContext, useState, useEffect} from 'react';
-import {Link as RouterLink} from 'react-router-dom';
 import {Typography, Grid, Switch, FormGroup, FormControlLabel, Box, Button} from "@mui/material";
 import {Tune} from '@mui/icons-material';
 import {SofriaRenderFromProskomma} from "proskomma-json-tools";
@@ -9,9 +8,8 @@ import AppLangContext from "../contexts/AppLangContext";
 import { directionText, setFontFamily } from '../i18n/languageDirection';
 import i18n from "../i18n";
 
-export default function BrowseScripture({pk, ri}) {
+export default function BrowseScripture({pk}) {
     const appLang = useContext(AppLangContext);
-    const searchTitle = i18n(appLang, "CONTROLS_SEARCH");
 
     const [scriptureData, setScriptureData] = useState({
         docId: null,
@@ -295,14 +293,6 @@ export default function BrowseScripture({pk, ri}) {
                     setDocId={setDocId}
                     disabled={!scriptureData.rendered || scriptureData.docId !== scriptureData.renderedDocId || scriptureData.updatedAtts}
                 />
-            </Grid>
-            <Grid item xs={12} sm={4} md={3} lg={2} sx={{ justifySelf: "flex-end" }}>
-                <Button variant="contained">
-                    <RouterLink
-                        to={`/entry/search/${ri.source}/${ri.entryId}/${ri.revision}`}>
-                            {searchTitle}
-                    </RouterLink>
-                </Button>
             </Grid>
             <Grid item xs={12}>
                 {

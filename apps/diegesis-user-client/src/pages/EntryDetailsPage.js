@@ -70,10 +70,10 @@ export default function EntryDetailsPage({ setAppLanguage }) {
 
   const setArrow = (lang) => {
     if (directionText(lang) === "ltr") {
-      return <ArrowBack />;
+      return <ArrowBack color="primary"/>;
     }
     if (directionText(lang) === "rtl") {
-      return <ArrowForward/>;
+      return <ArrowForward color="primary"/>;
     }
   };
 
@@ -120,12 +120,12 @@ export default function EntryDetailsPage({ setAppLanguage }) {
           {entryInfo.title}
           <Button>
             <RouterLink to={`/entry/browse/${source}/${entryId}/${revision}`}>
-              <AutoStories />
+              <AutoStories color="primary"/>
             </RouterLink>
           </Button>
           <Button>
             <RouterLink to={`/entry/download/${source}/${entryId}/${revision}`}>
-              <Download />
+              <Download color="primary"/>
             </RouterLink>
           </Button>
         </Typography>

@@ -1,11 +1,11 @@
-import React, { useContext } from "react";
-import { Container, Typography, Box, Button } from "@mui/material";
-import { ArrowBack, ArrowForward } from "@mui/icons-material";
+import React, { useContext, useState } from "react";
+import { Container, Typography, Box, Button, Fade, Modal } from "@mui/material";
+import { ArrowBack, ArrowForward, Download } from "@mui/icons-material";
 import { useParams, Link as RouterLink } from "react-router-dom";
 import { gql, useQuery } from "@apollo/client";
 import { Proskomma } from "proskomma-core";
 import GqlError from "../components/GqlError";
-
+import SearchIcon from "@mui/icons-material/Search";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import Spinner from "../components/Spinner";
@@ -13,11 +13,20 @@ import BrowseScripture from "../components/BrowseScripture";
 import { directionText, setFontFamily } from "../i18n/languageDirection";
 import AppLangContext from "../contexts/AppLangContext";
 import i18n from "../i18n";
-// const ProskommaRequire = require('proskomma-core');
+import SearchModal from "../components/SearchModal";
+import PrintModal from "../components/PrintModal";
 
 export default function EntryBrowsePage({ setAppLanguage }) {
   const appLang = useContext(AppLangContext);
   const { source, entryId, revision } = useParams();
+
+  const [openSearchModal, setOpenSearchModal] = useState(false);
+  const handleOpenSearchModal = () => setOpenSearchModal(true);
+  const handleCloseSearchModal = () => setOpenSearchModal(false);
+
+  const [openPrintModal, setOpenPrintModal] = useState(false);
+  const handleOpenPrintModal = () => setOpenPrintModal(true);
+  const handleClosePrintModal = () => setOpenPrintModal(false);
 
   const queryString = `query {
             localEntry(
@@ -52,38 +61,34 @@ export default function EntryBrowsePage({ setAppLanguage }) {
 
   const setArrow = (lang) => {
     if (directionText(lang) === "ltr") {
-      return <ArrowBack />;
+      return <ArrowBack color="primary" />;
     }
     if (directionText(lang) === "rtl") {
-      return <ArrowForward />;
+      return <ArrowForward color="primary" />;
     }
   };
-  
+
   if (!entryInfo) {
-    return <Container fixed className="homepage">
-        <Header selected="list"/>
-        <Box dir={directionText(appLang)} style={{marginTop: "100px"}}>
-            <Typography variant="h4" paragraph="true" sx={{mt: "20px"}}>
-                <Button>
-                    <RouterLink to={`/entry/details/${source}/${entryId}/${revision}`}>{setArrow(appLang)}</RouterLink>
-                </Button>
-                {entryInfo && entryInfo.title}
-                {!entryInfo && "Loading..."}
-            </Typography>
-            {
-                entryInfo &&
-                entryInfo.canonResource &&
-                entryInfo.canonResource.content && <BrowseScripture pk={pk} ri={{source: source, entryId: entryId, revision: revision}}/>
-            }
-            {
-                (!entryInfo || !entryInfo.canonResource || !entryInfo.canonResource.content) &&
-                <Typography paragraph="true">
-                    {i18n(appLang, "BROWSE_PAGE_CURRENTLY_WARNING")}
-                </Typography>
-            }
-            <Footer/>
+    return (
+      <Container fixed className="homepage">
+        <Header selected="list" />
+        <Box dir={directionText(appLang)} style={{ marginTop: "100px" }}>
+          <Typography variant="h4" paragraph="true" sx={{ mt: "20px" }}>
+            <Button>
+              <RouterLink
+                to={`/entry/details/${source}/${entryId}/${revision}`}
+              >
+                {setArrow(appLang)}
+              </RouterLink>
+            </Button>
+            {i18n(appLang, "PROCESSING")}
+          </Typography>
+          <Typography paragraph="true">
+            {i18n(appLang, "BROWSE_PAGE_CURRENTLY_WARNING")}
+          </Typography>
         </Box>
       </Container>
+    );
   }
 
   const pk = new Proskomma([
@@ -117,7 +122,7 @@ export default function EntryBrowsePage({ setAppLanguage }) {
           variant="h4"
           paragraph="true"
           sx={{ mt: "20px" }}
-          style={{ fontFamily : setFontFamily(appLang)}}
+          style={{ fontFamily: setFontFamily(appLang) }}
         >
           <Button>
             <RouterLink to={`/entry/details/${source}/${entryId}/${revision}`}>
@@ -126,6 +131,14 @@ export default function EntryBrowsePage({ setAppLanguage }) {
           </Button>
           {entryInfo && entryInfo.title}
           {!entryInfo && "Loading..."}
+          <Button onClick={handleOpenSearchModal}>
+              <SearchIcon color="primary" sx={{ fontSize: 30 }} />
+          </Button>
+          <SearchModal openSearchModal={openSearchModal} handleCloseSearchModal={handleCloseSearchModal} pk={pk}/>
+          <Button onClick={handleOpenPrintModal}>
+            <Download color="primary" sx={{ fontSize: 30 }} />
+          </Button>
+          <PrintModal openPrintModal={openPrintModal} handleClosePrintModal={handleClosePrintModal} pk={pk}/>
         </Typography>
         {entryInfo &&
           entryInfo.canonResource &&
@@ -133,7 +146,10 @@ export default function EntryBrowsePage({ setAppLanguage }) {
         {(!entryInfo ||
           !entryInfo.canonResource ||
           !entryInfo.canonResource.content) && (
-          <Typography paragraph="true" style={{ fontFamily : setFontFamily(appLang)}}>
+          <Typography
+            paragraph="true"
+            style={{ fontFamily: setFontFamily(appLang) }}
+          >
             {i18n(appLang, "BROWSE_PAGE_YET_WARNING")}
           </Typography>
         )}
