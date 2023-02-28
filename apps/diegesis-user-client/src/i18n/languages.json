@@ -23,12 +23,6 @@
         "textDirection":"ltr",
         "fontFamily":"Roboto , serif"
     },
-    "hi" : {
-        "englishName":"Indian",
-        "autonym":"भारतीय भाषा",
-        "textDirection":"ltr",
-        "fontFamily":"Roboto, serif"
-    },
     "debug" : {
         "englishName":"DEBUG",
         "autonym":"DEBUG",
