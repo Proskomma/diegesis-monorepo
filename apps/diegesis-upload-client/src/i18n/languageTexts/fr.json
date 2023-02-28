@@ -98,5 +98,6 @@
     "ERROR_TOO_LONG":"Champ trop long !",
     "ERROR_REGEX":"Le champ ne correspond pas à l'expression régulière !",
     "BYTES":"OCTETS",
-    "LOADING":"Chargement"
+    "LOADING":"Chargement",
+    "SELECT_FILE_TYPE":"Veuillez sélectionner le type de ressources a ajouter"
 }

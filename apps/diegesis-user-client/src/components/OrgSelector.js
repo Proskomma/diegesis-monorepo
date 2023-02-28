@@ -2,7 +2,7 @@ import { Select, MenuItem } from "@mui/material";
 import { useContext } from "react";
 import AppLangContext from "../contexts/AppLangContext";
 import i18n from "../i18n";
-import { directionText } from "../i18n/languageDirection";
+import { directionText, setFontFamily } from "../i18n/languageDirection";
 
 export default function OrgSelector({orgs, searchOrg, setSearchOrg}) {
 
@@ -22,6 +22,7 @@ export default function OrgSelector({orgs, searchOrg, setSearchOrg}) {
                 key="all"
                 value="all"
                 dir={directionText(appLang)} 
+                style={{ fontFamily : setFontFamily(appLang)}}
             >
                 {i18n(appLang, "CONTROLS_ALL")}
             </MenuItem>
@@ -30,6 +31,7 @@ export default function OrgSelector({orgs, searchOrg, setSearchOrg}) {
                     dir={directionText(appLang)} 
                     key={index}
                     value={option}
+                    style={{ fontFamily : setFontFamily(appLang)}}
                 >
                     {option}
                 </MenuItem>

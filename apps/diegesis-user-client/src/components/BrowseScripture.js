@@ -1,16 +1,16 @@
 import React, {useContext, useState, useEffect} from 'react';
-import {Link as RouterLink} from 'react-router-dom';
 import {Typography, Grid, Switch, FormGroup, FormControlLabel, Box, Button} from "@mui/material";
 import {Tune} from '@mui/icons-material';
 import {SofriaRenderFromProskomma} from "proskomma-json-tools";
 import sofria2WebActions from '../renderer/sofria2web';
 import DocSelector from "./DocSelector";
 import AppLangContext from "../contexts/AppLangContext";
+import { directionText, setFontFamily } from '../i18n/languageDirection';
 import i18n from "../i18n";
+import {renderers} from '../renderer/render2react'
 
-export default function BrowseScripture({pk, ri}) {
+export default function BrowseScripture({pk}) {
     const appLang = useContext(AppLangContext);
-    const searchTitle = i18n(appLang, "CONTROLS_SEARCH");
 
     const [scriptureData, setScriptureData] = useState({
         docId: null,
@@ -62,7 +62,7 @@ export default function BrowseScripture({pk, ri}) {
             if (newDocId !== scriptureData.renderedDocId || scriptureData.updatedAtts) {
                 const renderer = new SofriaRenderFromProskomma({
                     proskomma: pk,
-                    actions: sofria2WebActions,
+                    actions: sofria2WebActions
                 });
 
                 const config = {
@@ -75,7 +75,8 @@ export default function BrowseScripture({pk, ri}) {
                     showParaStyles: scriptureData.showParaStyles,
                     showCharacterMarkup: scriptureData.showCharacterMarkup,
                     showChapterLabels: scriptureData.showChapterLabels,
-                    showVersesLabels: scriptureData.showVersesLabels
+                    showVersesLabels: scriptureData.showVersesLabels,
+                    renderers
                 };
                 const output = {};
                 try {
@@ -102,7 +103,6 @@ export default function BrowseScripture({pk, ri}) {
         },
         [scriptureData]
     );
-
     const docMenuItems = scriptureData.menuQuery && scriptureData.menuQuery.data && scriptureData.menuQuery.data.docSets && scriptureData.menuQuery.data.docSets[0].documents ?
         scriptureData.menuQuery.data.docSets[0].documents.map(d => ({id: d.id, label: docName(d)})) :
         [];
@@ -160,10 +160,10 @@ export default function BrowseScripture({pk, ri}) {
     });
 
     return (
-        <Grid container>
+        <Grid container dir={directionText(appLang)} style={{ fontFamily : setFontFamily(appLang)}}>
             <Grid item xs={12} sm={4} md={2} lg={2}>
                 <Box sx={{marginRight: "5px"}}>
-                    <FormGroup sx={{padding: "10px", backgroundColor: showSettings ? "#ccc" : "inherit"}}>
+                    <FormGroup sx={{padding: "10px",backgroundColor: showSettings ? "#ccc" : "inherit"}}>
                         <Button
                             onClick={() => setShowSettings(!showSettings)}
                         >
@@ -171,7 +171,7 @@ export default function BrowseScripture({pk, ri}) {
                         </Button>
                         {
                             showSettings &&
-                            <>
+                            <Box style={{ fontFamily : setFontFamily(appLang)}}>
                                 <FormControlLabel
                                     control={<Switch
                                         checked={scriptureData.showTitles}
@@ -179,9 +179,9 @@ export default function BrowseScripture({pk, ri}) {
                                         size="small"
                                         onChange={() => toggleTitles()}
                                         inputProps={{'aria-label': 'controlled'}}
-                                        disabled={!scriptureData.rendered || scriptureData.docId !== scriptureData.renderedDocId || scriptureData.updatedAtts}
+                                        disabledIntroductions={!scriptureData.rendered || scriptureData.docId !== scriptureData.renderedDocId || scriptureData.updatedAtts}
                                     />}
-                                    label="Titles"
+                                    label={i18n(appLang,"BROWSE_PAGE_TITLES")}
                                 />
                                 <FormControlLabel
                                     control={<Switch
@@ -192,7 +192,7 @@ export default function BrowseScripture({pk, ri}) {
                                         inputProps={{'aria-label': 'controlled'}}
                                         disabled={!scriptureData.rendered || scriptureData.docId !== scriptureData.renderedDocId || scriptureData.updatedAtts}
                                     />}
-                                    label="Headings"
+                                    label={i18n(appLang,"BROWSE_PAGE_HEADINGS")}
                                 />
                                 <FormControlLabel
                                     control={<Switch
@@ -203,7 +203,7 @@ export default function BrowseScripture({pk, ri}) {
                                         inputProps={{'aria-label': 'controlled'}}
                                         disabled={!scriptureData.rendered || scriptureData.docId !== scriptureData.renderedDocId || scriptureData.updatedAtts}
                                     />}
-                                    label="Introductions"
+                                    label={i18n(appLang,"BROWSE_PAGE_INTRODUCTIONS")}
                                 />
                                 <FormControlLabel
                                     control={<Switch
@@ -214,7 +214,7 @@ export default function BrowseScripture({pk, ri}) {
                                         inputProps={{'aria-label': 'controlled'}}
                                         disabled={!scriptureData.rendered || scriptureData.docId !== scriptureData.renderedDocId || scriptureData.updatedAtts}
                                     />}
-                                    label="Footnotes"
+                                    label={i18n(appLang,"BROWSE_PAGE_FOOTNOTES")}
                                 />
                                 <FormControlLabel
                                     control={<Switch
@@ -225,7 +225,7 @@ export default function BrowseScripture({pk, ri}) {
                                         inputProps={{'aria-label': 'controlled'}}
                                         disabled={!scriptureData.rendered || scriptureData.docId !== scriptureData.renderedDocId || scriptureData.updatedAtts}
                                     />}
-                                    label="Cross Refs"
+                                    label={i18n(appLang,"BROWSE_PAGE_XREFS")}
                                 />
                                 <FormControlLabel
                                     control={<Switch
@@ -236,7 +236,7 @@ export default function BrowseScripture({pk, ri}) {
                                         inputProps={{'aria-label': 'controlled'}}
                                         disabled={!scriptureData.rendered || scriptureData.docId !== scriptureData.renderedDocId || scriptureData.updatedAtts}
                                     />}
-                                    label="Para Styles"
+                                    label={i18n(appLang,"BROWSE_PAGE_PARA_STYLES")}
                                 />
                                 <FormControlLabel
                                     control={<Switch
@@ -247,7 +247,7 @@ export default function BrowseScripture({pk, ri}) {
                                         inputProps={{'aria-label': 'controlled'}}
                                         disabled={!scriptureData.rendered || scriptureData.docId !== scriptureData.renderedDocId || scriptureData.updatedAtts}
                                     />}
-                                    label="Char Styles"
+                                    label={i18n(appLang,"BROWSE_PAGE_CHAR_STYLES")}
                                 />
                                 <FormControlLabel
                                     control={<Switch
@@ -258,7 +258,7 @@ export default function BrowseScripture({pk, ri}) {
                                         inputProps={{'aria-label': 'controlled'}}
                                         disabled={!scriptureData.rendered || scriptureData.docId !== scriptureData.renderedDocId || scriptureData.updatedAtts}
                                     />}
-                                    label="Chapter N°s"
+                                    label={i18n(appLang,"BROWSE_PAGE_CHAPTER_NUMBERS")}
                                 />
                                 <FormControlLabel
                                     control={<Switch
@@ -269,7 +269,7 @@ export default function BrowseScripture({pk, ri}) {
                                         inputProps={{'aria-label': 'controlled'}}
                                         disabled={!scriptureData.rendered || scriptureData.docId !== scriptureData.renderedDocId || scriptureData.updatedAtts}
                                     />}
-                                    label="Verse N°s"
+                                    label={i18n(appLang,"BROWSE_PAGE_VERSE_NUMBERS")}
                                 />
                                 <FormControlLabel
                                     control={<Switch
@@ -280,9 +280,9 @@ export default function BrowseScripture({pk, ri}) {
                                         inputProps={{'aria-label': 'controlled'}}
                                         disabled={!scriptureData.rendered || scriptureData.docId !== scriptureData.renderedDocId || scriptureData.updatedAtts}
                                     />}
-                                    label="Word Info"
+                                    label={i18n(appLang,"BROWSE_PAGE_WORD_INFO")}
                                 />
-                            </>
+                            </Box>
                         }
                     </FormGroup>
                 </Box>
@@ -294,14 +294,6 @@ export default function BrowseScripture({pk, ri}) {
                     setDocId={setDocId}
                     disabled={!scriptureData.rendered || scriptureData.docId !== scriptureData.renderedDocId || scriptureData.updatedAtts}
                 />
-            </Grid>
-            <Grid item xs={12} sm={4} md={3} lg={2} sx={{ justifySelf: "flex-end" }}>
-                <Button variant="contained">
-                    <RouterLink
-                        to={`/entry/search/${ri.source}/${ri.entryId}/${ri.revision}`}>
-                            {searchTitle}
-                    </RouterLink>
-                </Button>
             </Grid>
             <Grid item xs={12}>
                 {

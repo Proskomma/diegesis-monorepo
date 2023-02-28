@@ -5,7 +5,7 @@ import Footer from "../components/Footer";
 import AppLangContext from "../contexts/AppLangContext";
 import { useContext } from "react";
 import i18n from "../i18n";
-import {directionText} from "../i18n/languageDirection";
+import {directionText, setFontFamily} from "../i18n/languageDirection";
 
 export default function WhoPage({setAppLanguage}) {
 
@@ -27,15 +27,15 @@ export default function WhoPage({setAppLanguage}) {
     return <Container fixed className="whopage">
         <Header setAppLanguage={setAppLanguage} selected="who" />
         <Box dir={directionText(appLang)} style={{marginTop: "100px"}}>
-            <Typography variant="h4" paragraph="true" sx={{mt: "20px"}}>{title}</Typography>
-            <Typography variant="h6" paragraph="true">{subtitle}</Typography>
-            <Typography variant="body1" paragraph="true">{paragraph}</Typography>
-            <Typography variant="body1" paragraph="true" sx={indentSx}>- {digital}</Typography>
-            <Typography variant="body1" paragraph="true" sx={indentSx}>- {door}</Typography>
-            <Typography variant="body1" paragraph="true" sx={indentSx}>- {bible}</Typography>
-            <Typography variant="body1" paragraph="true" sx={indentSx}>- {vachan}</Typography>
-            <Typography variant="h6" paragraph="true">{sSubtitle}</Typography>
-            <Typography variant="body1" paragraph="true">{sParagraph} <a
+            <Typography variant="h4" paragraph="true" sx={{mt: "20px"}} style={{ fontFamily : setFontFamily(appLang)}}>{title}</Typography>
+            <Typography variant="h6" paragraph="true" style={{ fontFamily : setFontFamily(appLang)}}>{subtitle}</Typography>
+            <Typography variant="body1" paragraph="true" style={{ fontFamily : setFontFamily(appLang)}}>{paragraph}</Typography>
+            <Typography variant="body1" paragraph="true" sx={indentSx} style={{ fontFamily : setFontFamily(appLang)}}>- {digital}</Typography>
+            <Typography variant="body1" paragraph="true" sx={indentSx} style={{ fontFamily : setFontFamily(appLang)}}>- {door}</Typography>
+            <Typography variant="body1" paragraph="true" sx={indentSx} style={{ fontFamily : setFontFamily(appLang)}}>- {bible}</Typography>
+            <Typography variant="body1" paragraph="true" sx={indentSx} style={{ fontFamily : setFontFamily(appLang)}}>- {vachan}</Typography>
+            <Typography variant="h6" paragraph="true" style={{ fontFamily : setFontFamily(appLang)}}>{sSubtitle}</Typography>
+            <Typography variant="body1" paragraph="true" style={{ fontFamily : setFontFamily(appLang)}}>{sParagraph} <a
                 href="http://mvh.bible" target="_blank" rel="noreferrer">MVH Solutions</a>.</Typography>
             <Footer/>
         </Box>

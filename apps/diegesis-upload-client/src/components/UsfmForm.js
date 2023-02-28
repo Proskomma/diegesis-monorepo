@@ -1,6 +1,6 @@
 import AppLangContext from "../contexts/AppLangContext";
 import i18n from "../i18n";
-import { directionText } from "../i18n/languageDirection";
+import { directionText, setFontFamily } from "../i18n/languageDirection";
 import React, { useContext, useEffect, useState } from "react";
 import {
   Grid,
@@ -178,7 +178,7 @@ export default function UsfmForm() {
     <form>
       <Grid dir={directionText(appLang)} container spacing={2}>
         <Grid item xs={12}>
-          <Typography variant="h5" paragraph="true" sx={{ mt: "20px" }}>
+          <Typography variant="h5" paragraph="true" sx={{ mt: "20px" }} style={{ fontFamily : setFontFamily(appLang)}}>
             {i18n(appLang, "METADATA")}
           </Typography>
         </Grid>
@@ -206,7 +206,7 @@ export default function UsfmForm() {
           />
         </Grid>
         <Grid item xs={12} md={6}>
-          <FormLabel id="text-direction-group-label" htmlFor="textDirection">
+          <FormLabel id="text-direction-group-label" htmlFor="textDirection" style={{ fontFamily : setFontFamily(appLang)}}>
             {i18n(appLang, "TEXT_DIRECTION")}
           </FormLabel>
           <RadioGroup
@@ -229,6 +229,7 @@ export default function UsfmForm() {
               value="ltr"
               control={<Radio />}
               label={i18n(appLang, "LTR")}
+              style={{ fontFamily : setFontFamily(appLang)}}
             />
             <FormControlLabel
               value="rtl"
@@ -238,12 +239,12 @@ export default function UsfmForm() {
           </RadioGroup>
         </Grid>
         <Grid item xs={12}>
-          <Typography variant="h5" paragraph="true" sx={{ mt: "20px" }}>
+          <Typography variant="h5" paragraph="true" sx={{ mt: "20px" }} style={{ fontFamily : setFontFamily(appLang)}}>
             {i18n(appLang, "RESOURCES")}
           </Typography>
         </Grid>
         <Grid item xs={12}>
-          <InputLabel id="uploadFilesId">
+          <InputLabel id="uploadFilesId" style={{ fontFamily : setFontFamily(appLang)}}>
             {i18n(appLang, "Upload_documents")}
           </InputLabel>
           <TextField
@@ -263,7 +264,7 @@ export default function UsfmForm() {
             type="submit"
             variant="contained"
             size="large"
-            style={{ marginBottom: "20px", marginTop: "20px" }}
+            style={{ marginBottom: "20px", marginTop: "20px",fontFamily : setFontFamily(appLang) }}
             disabled={!isValidForm(formValues)}
             onClick={() => createEntry(client)}
           >
