@@ -42,8 +42,6 @@ export default function BrowseScripture({pk}) {
 
     useEffect(
         () => {
-            if (!scriptureData.menuQuery || !scriptureData.docId )
-              {return }
             let newDocId;
             let menuQuery = scriptureData.menuQuery;
             if (!scriptureData.docId) {
@@ -82,7 +80,6 @@ export default function BrowseScripture({pk}) {
                 };
                 const output = {};
                 try {
-                    console.log('Rendering')
                     renderer.renderDocument(
                         {
                             docId: newDocId,

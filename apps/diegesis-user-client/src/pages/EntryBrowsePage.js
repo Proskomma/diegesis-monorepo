@@ -139,7 +139,11 @@ export default function EntryBrowsePage({ setAppLanguage }) {
           <Button onClick={handleOpenPrintModal}>
             <PrintIcon color="primary"sx={{ fontSize: 30 }}/>
           </Button>
-          <PrintModal openPrintModal={openPrintModal} handleClosePrintModal={handleClosePrintModal} pk={pk}/>
+          <PrintModal
+              openPrintModal={openPrintModal}
+              handleClosePrintModal={handleClosePrintModal}
+              pk={pk}
+          />
         </Typography>
         {entryInfo &&
           entryInfo.canonResource &&
