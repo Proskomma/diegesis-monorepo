@@ -26,7 +26,7 @@ import {
 import sofria2WebActions from "../renderer/sofria2web";
 import PrintIcon from "@mui/icons-material/Print";
 
-const style = {
+const printModalStyle = {
     position: "absolute",
     top: "50%",
     left: "50%",
@@ -40,11 +40,13 @@ const style = {
     maxHeight: "95%",
 };
 
-export default function PrintModal({
-                                       openPrintModal,
-                                       handleClosePrintModal,
-                                       pk,
-                                   }) {
+export default function PrintModal(
+    {
+        openPrintModal,
+        handleClosePrintModal,
+        pk,
+    }
+) {
     const appLang = useContext(AppLangContext);
 
     const [scriptureData, setScriptureData] = useState({
@@ -58,36 +60,56 @@ export default function PrintModal({
         showCharacterMarkup: true,
         showChapterLabels: true,
         showVersesLabels: true,
-        updatedAtts: false,
-    });
-    const [pageFormat, setPageFormat] = useState({
-        width: null,
-        height: null,
     });
 
-    const chooseFormat = (e) => {
-        if (e === "A4") {
-            setPageFormat({
-                ...pageFormat,
-                width: 210,
-                height: 297,
-            });
+    const pageFormats = {
+        A4P: {
+            label: "A4 Portrait",
+            orientation: "portrait",
+            width: "210mm",
+            height: "297mm"
+        },
+        A4L: {
+            label: "A4 Landscape",
+            orientation: "landscape",
+            width: "297mm",
+            height: "210mm"
+        },
+        A5P: {
+            label: "A5 Portrait",
+            orientation: "portrait",
+            width: "148.5mm",
+            height: "210mm"
+        },
+        USLP: {
+            label: "US Letter Portrait",
+            orientation: "portrait",
+            width: "8.5in",
+            height: "11in"
+        },
+        USLL: {
+            label: "US Letter Landscape",
+            orientation: "landscape",
+            width: "11in",
+            height: "8.5in"
+        },
+        TRP: {
+            label: "Trade Portrait",
+            orientation: "portrait",
+            width: "6in",
+            height: "9in"
+        },
+        CQP: {
+            label: "Crown Quarto Portrait",
+            orientation: "portrait",
+            width: "189mm",
+            height: "246mm"
         }
-        if (e === "A5") {
-            setPageFormat({
-                ...pageFormat,
-                width: 148,
-                height: 210,
-            });
-        }
-        if (e === "us letter") {
-            setPageFormat({
-                ...pageFormat,
-                width: 215.9,
-                height: 279.4,
-            });
-        }
-    };
+    }
+
+    const [formatData, setFormatData] = useState({
+        pageFormat: "A4P"
+    });
 
     const doRender = () => {
         const docQuery = pk.gqlQuerySync(
@@ -133,75 +155,19 @@ export default function PrintModal({
         return output.paras;
     };
 
-    const toggleTitles = () =>
-        setScriptureData({
-            ...scriptureData,
-            showTitles: !scriptureData.showTitles,
-            updatedAtts: true,
-        });
-    const toggleHeadings = () =>
-        setScriptureData({
-            ...scriptureData,
-            showHeadings: !scriptureData.showHeadings,
-            updatedAtts: true,
-        });
-    const toggleIntroductions = () =>
-        setScriptureData({
-            ...scriptureData,
-            showIntroductions: !scriptureData.showIntroductions,
-            updatedAtts: true,
-        });
-    const toggleFootnotes = () =>
-        setScriptureData({
-            ...scriptureData,
-            showFootnotes: !scriptureData.showFootnotes,
-            updatedAtts: true,
-        });
-    const toggleXrefs = () =>
-        setScriptureData({
-            ...scriptureData,
-            showXrefs: !scriptureData.showXrefs,
-            updatedAtts: true,
-        });
-    const toggleParaStyles = () =>
-        setScriptureData({
-            ...scriptureData,
-            showParaStyles: !scriptureData.showParaStyles,
-            updatedAtts: true,
-        });
-    const toggleCharacterMarkup = () =>
-        setScriptureData({
-            ...scriptureData,
-            showCharacterMarkup: !scriptureData.showCharacterMarkup,
-            updatedAtts: true,
-        });
-    const toggleChapterLabels = () =>
-        setScriptureData({
-            ...scriptureData,
-            showChapterLabels: !scriptureData.showChapterLabels,
-            updatedAtts: true,
-        });
-    const toggleVersesLabels = () =>
-        setScriptureData({
-            ...scriptureData,
-            showVersesLabels: !scriptureData.showVersesLabels,
-            updatedAtts: true,
-        });
-    const toggleWordAtts = () =>
-        setScriptureData({
-            ...scriptureData,
-            showVersesLabels: !scriptureData.showWordAtts,
-            updatedAtts: true,
-        });
+    const toggleScriptureToggle = field => {
+        const newData = {...scriptureData};
+        newData[field] = !scriptureData[field];
+        setScriptureData(newData);
+    }
 
-    const setFloat = (lang) => {
-        if (alignmentText(lang) === "right") {
-            return "left";
-        }
-        if (alignmentText(lang) === "left") {
-            return "right";
-        }
-    };
+    const setFormatValue = (field, value) => {
+        const newData = {...formatData};
+        newData[field] = value;
+        setFormatData(newData);
+    }
+
+    const floatDirection = (lang) => alignmentText(lang) === "right" ? "left" : "right";
 
     const onPrintClick = () => {
         const paras = doRender();
@@ -209,6 +175,21 @@ export default function PrintModal({
         newPage.document.head.innerHTML = "<title>Diegesis PDF Preview</title>";
         newPage.document.body.innerHTML = paras;
     };
+
+    const ScriptureSwitchField =
+        ({fieldName, labelKey}) => <FormControlLabel
+            control={
+                <Switch
+                    checked={scriptureData[fieldName]}
+                    color="secondary"
+                    size="small"
+                    onChange={() => toggleScriptureToggle(fieldName)}
+                    inputProps={{"aria-label": "controlled"}}
+                />
+            }
+            label={i18n(appLang, labelKey)}
+        />
+
     return (
         <>
             <Modal
@@ -225,7 +206,7 @@ export default function PrintModal({
                 }}
             >
                 <Fade in={openPrintModal}>
-                    <Box sx={style}>
+                    <Box sx={printModalStyle}>
                         <Typography variant="h4" sx={{textAlign: "center"}}>
                             Print Page
                         </Typography>
@@ -234,243 +215,89 @@ export default function PrintModal({
                             dir={directionText(appLang)}
                             style={{fontFamily: setFontFamily(appLang)}}
                         >
-                            <Grid sx={{display: "flex", flexDirection: "row"}}>
-                                <FormGroup
-                                    sx={{
-                                        margin: "10%",
-                                        float: 'left',
-                                        display: 'flex',
-                                        flexDirection: 'column'
-                                    }}
-                                >
-                                    <Box style={{fontFamily: setFontFamily(appLang)}}>
-                                        <FormControlLabel
-                                            control={
-                                                <Switch
-                                                    checked={scriptureData.showTitles}
-                                                    color="secondary"
-                                                    size="small"
-                                                    onChange={() => toggleTitles()}
-                                                    inputProps={{"aria-label": "controlled"}}
-                                                    disabledIntroductions={
-                                                        !scriptureData.rendered ||
-                                                        scriptureData.docId !==
-                                                        scriptureData.renderedDocId ||
-                                                        scriptureData.updatedAtts
-                                                    }
-                                                />
-                                            }
-                                            label={i18n(appLang, "BROWSE_PAGE_TITLES")}
-                                        />
-                                        <FormControlLabel
-                                            control={
-                                                <Switch
-                                                    checked={scriptureData.showHeadings}
-                                                    color="secondary"
-                                                    size="small"
-                                                    onChange={() => toggleHeadings()}
-                                                    inputProps={{"aria-label": "controlled"}}
-                                                    disabled={
-                                                        !scriptureData.rendered ||
-                                                        scriptureData.docId !==
-                                                        scriptureData.renderedDocId ||
-                                                        scriptureData.updatedAtts
-                                                    }
-                                                />
-                                            }
-                                            label={i18n(appLang, "BROWSE_PAGE_HEADINGS")}
-                                        />
-                                        <FormControlLabel
-                                            control={
-                                                <Switch
-                                                    checked={scriptureData.showIntroductions}
-                                                    color="secondary"
-                                                    size="small"
-                                                    onChange={() => toggleIntroductions()}
-                                                    inputProps={{"aria-label": "controlled"}}
-                                                    disabled={
-                                                        !scriptureData.rendered ||
-                                                        scriptureData.docId !==
-                                                        scriptureData.renderedDocId ||
-                                                        scriptureData.updatedAtts
-                                                    }
-                                                />
-                                            }
-                                            label={i18n(appLang, "BROWSE_PAGE_INTRODUCTIONS")}
-                                        />
-                                        <FormControlLabel
-                                            control={
-                                                <Switch
-                                                    checked={scriptureData.showFootnotes}
-                                                    color="secondary"
-                                                    size="small"
-                                                    onChange={() => toggleFootnotes()}
-                                                    inputProps={{"aria-label": "controlled"}}
-                                                    disabled={
-                                                        !scriptureData.rendered ||
-                                                        scriptureData.docId !==
-                                                        scriptureData.renderedDocId ||
-                                                        scriptureData.updatedAtts
-                                                    }
-                                                />
-                                            }
-                                            label={i18n(appLang, "BROWSE_PAGE_FOOTNOTES")}
-                                        />
-                                        <FormControlLabel
-                                            control={
-                                                <Switch
-                                                    checked={scriptureData.showXrefs}
-                                                    color="secondary"
-                                                    size="small"
-                                                    onChange={() => toggleXrefs()}
-                                                    inputProps={{"aria-label": "controlled"}}
-                                                    disabled={
-                                                        !scriptureData.rendered ||
-                                                        scriptureData.docId !==
-                                                        scriptureData.renderedDocId ||
-                                                        scriptureData.updatedAtts
-                                                    }
-                                                />
-                                            }
-                                            label={i18n(appLang, "BROWSE_PAGE_XREFS")}
-                                        />
-                                        <FormControlLabel
-                                            control={
-                                                <Switch
-                                                    checked={scriptureData.showParaStyles}
-                                                    color="secondary"
-                                                    size="small"
-                                                    onChange={() => toggleParaStyles()}
-                                                    inputProps={{"aria-label": "controlled"}}
-                                                    disabled={
-                                                        !scriptureData.rendered ||
-                                                        scriptureData.docId !==
-                                                        scriptureData.renderedDocId ||
-                                                        scriptureData.updatedAtts
-                                                    }
-                                                />
-                                            }
-                                            label={i18n(appLang, "BROWSE_PAGE_PARA_STYLES")}
-                                        />
-                                        <FormControlLabel
-                                            control={
-                                                <Switch
-                                                    checked={scriptureData.showCharacterMarkup}
-                                                    color="secondary"
-                                                    size="small"
-                                                    onChange={() => toggleCharacterMarkup()}
-                                                    inputProps={{"aria-label": "controlled"}}
-                                                    disabled={
-                                                        !scriptureData.rendered ||
-                                                        scriptureData.docId !==
-                                                        scriptureData.renderedDocId ||
-                                                        scriptureData.updatedAtts
-                                                    }
-                                                />
-                                            }
-                                            label={i18n(appLang, "BROWSE_PAGE_CHAR_STYLES")}
-                                        />
-                                        <FormControlLabel
-                                            control={
-                                                <Switch
-                                                    checked={scriptureData.showChapterLabels}
-                                                    color="secondary"
-                                                    size="small"
-                                                    onChange={() => toggleChapterLabels()}
-                                                    inputProps={{"aria-label": "controlled"}}
-                                                    disabled={
-                                                        !scriptureData.rendered ||
-                                                        scriptureData.docId !==
-                                                        scriptureData.renderedDocId ||
-                                                        scriptureData.updatedAtts
-                                                    }
-                                                />
-                                            }
-                                            label={i18n(appLang, "BROWSE_PAGE_CHAPTER_NUMBERS")}
-                                        />
-                                        <FormControlLabel
-                                            control={
-                                                <Switch
-                                                    checked={scriptureData.showVersesLabels}
-                                                    color="secondary"
-                                                    size="small"
-                                                    onChange={() => toggleVersesLabels()}
-                                                    inputProps={{"aria-label": "controlled"}}
-                                                    disabled={
-                                                        !scriptureData.rendered ||
-                                                        scriptureData.docId !==
-                                                        scriptureData.renderedDocId ||
-                                                        scriptureData.updatedAtts
-                                                    }
-                                                />
-                                            }
-                                            label={i18n(appLang, "BROWSE_PAGE_VERSE_NUMBERS")}
-                                        />
-                                        <FormControlLabel
-                                            control={
-                                                <Switch
-                                                    checked={scriptureData.showWordAtts}
-                                                    color="secondary"
-                                                    size="small"
-                                                    onChange={() => toggleWordAtts()}
-                                                    inputProps={{"aria-label": "controlled"}}
-                                                    disabled={
-                                                        !scriptureData.rendered ||
-                                                        scriptureData.docId !==
-                                                        scriptureData.renderedDocId ||
-                                                        scriptureData.updatedAtts
-                                                    }
-                                                />
-                                            }
-                                            label={i18n(appLang, "BROWSE_PAGE_WORD_INFO")}
-                                        />
-                                    </Box>
+                            <Grid item>
+                                <FormGroup>
+                                    <FormLabel
+                                        id="included-content-group-label"
+                                        style={{fontFamily: setFontFamily(appLang)}}
+                                    >
+                                        Included Content
+                                    </FormLabel>
+                                    <ScriptureSwitchField
+                                        fieldName="showTitles"
+                                        labelKey="BROWSE_PAGE_TITLES"
+                                    />
+                                    <ScriptureSwitchField
+                                        fieldName="showHeadings"
+                                        labelKey="BROWSE_PAGE_HEADINGS"
+                                    />
+                                    <ScriptureSwitchField
+                                        fieldName="showIntroductions"
+                                        labelKey="BROWSE_PAGE_INTRODUCTIONS"
+                                    />
+                                    <ScriptureSwitchField
+                                        fieldName="showFootnotes"
+                                        labelKey="BROWSE_PAGE_FOOTNOTES"
+                                    />
+                                    <ScriptureSwitchField
+                                        fieldName="showXrefs"
+                                        labelKey="BROWSE_PAGE_XREFS"
+                                    />
+                                    <ScriptureSwitchField
+                                        fieldName="showParaStyles"
+                                        labelKey="BROWSE_PAGE_PARA_STYLES"
+                                    />
+                                    <ScriptureSwitchField
+                                        fieldName="showCharacterMarkup"
+                                        labelKey="BROWSE_PAGE_CHAR_STYLES"
+                                    />
+                                    <ScriptureSwitchField
+                                        fieldName="showChapterLabels"
+                                        labelKey="BROWSE_PAGE_CHAPTER_NUMBERS"
+                                    />
+                                    <ScriptureSwitchField
+                                        fieldName="showVersesLabels"
+                                        labelKey="BROWSE_PAGE_VERSE_NUMBERS"
+                                    />
+                                    <ScriptureSwitchField
+                                        fieldName="showWordAtts"
+                                        labelKey="BROWSE_PAGE_WORD_INFO"
+                                    />
                                 </FormGroup>
-                                <FormGroup
-                                    sx={{
-                                        margin: "10%",
-                                    }}
-                                >
-                                    <Box>
-                                        <FormLabel
-                                            id="text-direction-group-label"
-                                            style={{fontFamily: setFontFamily(appLang)}}
-                                        >
-                                            Select a Format :
-                                        </FormLabel>
-                                        <RadioGroup
-                                            aria-labelledby="text-direction-group-label"
-                                            name="text-direction-buttons-group"
-                                            onChange={(e) => chooseFormat(e.target.value)}
-                                            sx={{
-                                                display: "flex",
-                                                flexDirection: "column",
-                                            }}
-                                        >
-                                            <FormControlLabel
-                                                value="A4"
-                                                control={<Radio/>}
-                                                label="Format A4"
-                                                style={{fontFamily: setFontFamily(appLang)}}
-                                            />
-                                            <FormControlLabel
-                                                value="A5"
-                                                control={<Radio/>}
-                                                label="Format A5"
-                                                style={{fontFamily: setFontFamily(appLang)}}
-                                            />
-                                            <FormControlLabel
-                                                value="us letter"
-                                                control={<Radio/>}
-                                                label="Format US letter"
-                                                style={{fontFamily: setFontFamily(appLang)}}
-                                            />
-                                        </RadioGroup>
-                                    </Box>
+                            </Grid>
+                            <Grid item>
+                                <FormGroup>
+                                    <FormLabel
+                                        id="page-format-group-label"
+                                        style={{fontFamily: setFontFamily(appLang)}}
+                                    >
+                                        Page Format
+                                    </FormLabel>
+                                    <RadioGroup
+                                        aria-labelledby="page-format-group-label"
+                                        name="page-format-buttons-group"
+                                        defaultValue="A4P"
+                                        onChange={(e) => setFormatValue('pageFormat', e.target.value)}
+                                        sx={{
+                                            display: "flex",
+                                            flexDirection: "column",
+                                        }}
+                                    >
+                                        {
+                                            Object.entries(pageFormats)
+                                                .map((pf, n) => <FormControlLabel
+                                                    key={n}
+                                                    value={pf[0]}
+                                                    control={<Radio/>}
+                                                    label={pf[1].label}
+                                                    style={{fontFamily: setFontFamily(appLang)}}
+                                                />)
+                                        }
+                                    </RadioGroup>
                                 </FormGroup>
                             </Grid>
                         </Grid>
-                        <Button onClick={onPrintClick} sx={{float: setFloat(appLang)}}>
+                        <Button onClick={onPrintClick} sx={{float: floatDirection(appLang)}}>
                             <PrintIcon color="primary" sx={{fontSize: 50}}/>
                         </Button>
                     </Box>
