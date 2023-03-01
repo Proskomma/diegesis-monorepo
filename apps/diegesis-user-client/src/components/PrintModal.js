@@ -110,7 +110,7 @@ export default function PrintModal(
 
     const [formatData, setFormatData] = useState({
         pageFormat: "A4P",
-        nColumns: 2
+        nColumns: 1
     });
 
     const doRender = () => {
