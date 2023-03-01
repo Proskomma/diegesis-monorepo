@@ -91,7 +91,7 @@ const orgEntries = async (config, orgName) => {
     if (!(typeof orgName === "string")) {
         throw new Error("orgName should be string in orgEntries");
     }
-    const entries = await _getResourcesCollection(config)
+    const entries = await _getMetadataCollection(config)
         .aggregate([
             // Find all records with `source` field set to orgName.
             {
@@ -514,8 +514,8 @@ const entryExists = async (config, orgName, transId, transRevision) => {
  * @returns true if entry exists, false otherwise
  */
 const entryRevisionExists = async (config, orgName, transId) => {
-    const resources = _getResourcesCollection(config);
-    const entry = await resources.findOne({
+    const metadata = _getMetadataCollection(config);
+    const entry = await metadata.findOne({
         source: orgName,
         id: transId,
     });
@@ -652,8 +652,8 @@ const readEntryMetadata = async (config, orgName, transId, transRevision) => {
     if (!(typeof orgName === "string")) {
         throw new Error("orgName should be string in readEntryMetadata");
     }
-    const resources = _getResourcesCollection(config);
-    const entry = await resources.findOne({
+    const metadata = _getMetadataCollection(config);
+    const entry = await metadata.findOne({
         source: orgName,
         id: transId,
         revision: transRevision,
@@ -747,13 +747,13 @@ const _getDb = (config) => {
 };
 
 /**
- * Get the MongoDB resources collection.
+ * Get the MongoDB metadata collection.
  * @param {Configuration} config
  * @returns a MongoDB collection
  */
-const _getResourcesCollection = (config) => {
+const _getMetadataCollection = (config) => {
     const db = _getDb(config);
-    const resources = db.collection("resources");
+    const resources = db.collection("metadata");
     return resources;
 };
 
