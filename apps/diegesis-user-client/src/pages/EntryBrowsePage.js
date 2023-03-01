@@ -29,7 +29,9 @@ export default function EntryBrowsePage({ setAppLanguage }) {
   const handleOpenPrintModal = () => setOpenPrintModal(true);
   const handleClosePrintModal = () => setOpenPrintModal(false);
 
-  const queryString = `query {
+    const [docId, setDocId] = useState(null);
+
+    const queryString = `query {
             localEntry(
               source: """%source%"""
               id: """%entryId%"""
@@ -143,11 +145,12 @@ export default function EntryBrowsePage({ setAppLanguage }) {
               openPrintModal={openPrintModal}
               handleClosePrintModal={handleClosePrintModal}
               pk={pk}
+              docId={docId}
           />
         </Typography>
         {entryInfo &&
           entryInfo.canonResource &&
-          entryInfo.canonResource.content && <BrowseScripture pk={pk} />}
+          entryInfo.canonResource.content && <BrowseScripture pk={pk} docId={docId} setDocId={setDocId}/>}
         {(!entryInfo ||
           !entryInfo.canonResource ||
           !entryInfo.canonResource.content) && (

@@ -9,11 +9,10 @@ import { directionText, setFontFamily } from '../i18n/languageDirection';
 import i18n from "../i18n";
 import {renderers} from '../renderer/render2react'
 
-export default function BrowseScripture({pk}) {
+export default function BrowseScripture({pk, docId, setDocId}) {
     const appLang = useContext(AppLangContext);
 
     const [scriptureData, setScriptureData] = useState({
-        docId: null,
         menuQuery: null,
         renderedDocId: null,
         rendered: null,
@@ -44,7 +43,7 @@ export default function BrowseScripture({pk}) {
         () => {
             let newDocId;
             let menuQuery = scriptureData.menuQuery;
-            if (!scriptureData.docId) {
+            if (!docId) {
                 menuQuery = pk.gqlQuerySync(
                     `{
                docSets {
@@ -57,7 +56,7 @@ export default function BrowseScripture({pk}) {
                 );
                 newDocId = menuQuery.data.docSets[0].documents[0].id;
             } else {
-                newDocId = scriptureData.docId;
+                newDocId = docId;
             }
             if (newDocId !== scriptureData.renderedDocId || scriptureData.updatedAtts) {
                 const renderer = new SofriaRenderFromProskomma({
@@ -93,21 +92,22 @@ export default function BrowseScripture({pk}) {
                 }
                 setScriptureData({
                     ...scriptureData,
-                    docId: newDocId,
                     renderedDocId: newDocId,
                     menuQuery,
                     rendered: output.paras,
                     updatedAtts: false,
                 });
+                if (docId !== newDocId) {
+                    setDocId(newDocId);
+                }
             }
         },
-        [scriptureData]
+        [scriptureData, docId]
     );
     const docMenuItems = scriptureData.menuQuery && scriptureData.menuQuery.data && scriptureData.menuQuery.data.docSets && scriptureData.menuQuery.data.docSets[0].documents ?
         scriptureData.menuQuery.data.docSets[0].documents.map(d => ({id: d.id, label: docName(d)})) :
         [];
 
-    const setDocId = newId => setScriptureData({...scriptureData, docId: newId});
     const toggleWordAtts = () => setScriptureData({
         ...scriptureData,
         showWordAtts: !scriptureData.showWordAtts,
@@ -179,7 +179,7 @@ export default function BrowseScripture({pk}) {
                                         size="small"
                                         onChange={() => toggleTitles()}
                                         inputProps={{'aria-label': 'controlled'}}
-                                        disabledIntroductions={!scriptureData.rendered || scriptureData.docId !== scriptureData.renderedDocId || scriptureData.updatedAtts}
+                                        disabled={!scriptureData.rendered || docId !== scriptureData.renderedDocId || scriptureData.updatedAtts}
                                     />}
                                     label={i18n(appLang,"BROWSE_PAGE_TITLES")}
                                 />
@@ -190,7 +190,7 @@ export default function BrowseScripture({pk}) {
                                         size="small"
                                         onChange={() => toggleHeadings()}
                                         inputProps={{'aria-label': 'controlled'}}
-                                        disabled={!scriptureData.rendered || scriptureData.docId !== scriptureData.renderedDocId || scriptureData.updatedAtts}
+                                        disabled={!scriptureData.rendered || docId !== scriptureData.renderedDocId || scriptureData.updatedAtts}
                                     />}
                                     label={i18n(appLang,"BROWSE_PAGE_HEADINGS")}
                                 />
@@ -201,7 +201,7 @@ export default function BrowseScripture({pk}) {
                                         size="small"
                                         onChange={() => toggleIntroductions()}
                                         inputProps={{'aria-label': 'controlled'}}
-                                        disabled={!scriptureData.rendered || scriptureData.docId !== scriptureData.renderedDocId || scriptureData.updatedAtts}
+                                        disabled={!scriptureData.rendered || docId !== scriptureData.renderedDocId || scriptureData.updatedAtts}
                                     />}
                                     label={i18n(appLang,"BROWSE_PAGE_INTRODUCTIONS")}
                                 />
@@ -212,7 +212,7 @@ export default function BrowseScripture({pk}) {
                                         size="small"
                                         onChange={() => toggleFootnotes()}
                                         inputProps={{'aria-label': 'controlled'}}
-                                        disabled={!scriptureData.rendered || scriptureData.docId !== scriptureData.renderedDocId || scriptureData.updatedAtts}
+                                        disabled={!scriptureData.rendered || docId !== scriptureData.renderedDocId || scriptureData.updatedAtts}
                                     />}
                                     label={i18n(appLang,"BROWSE_PAGE_FOOTNOTES")}
                                 />
@@ -223,7 +223,7 @@ export default function BrowseScripture({pk}) {
                                         size="small"
                                         onChange={() => toggleXrefs()}
                                         inputProps={{'aria-label': 'controlled'}}
-                                        disabled={!scriptureData.rendered || scriptureData.docId !== scriptureData.renderedDocId || scriptureData.updatedAtts}
+                                        disabled={!scriptureData.rendered || docId !== scriptureData.renderedDocId || scriptureData.updatedAtts}
                                     />}
                                     label={i18n(appLang,"BROWSE_PAGE_XREFS")}
                                 />
@@ -234,7 +234,7 @@ export default function BrowseScripture({pk}) {
                                         size="small"
                                         onChange={() => toggleParaStyles()}
                                         inputProps={{'aria-label': 'controlled'}}
-                                        disabled={!scriptureData.rendered || scriptureData.docId !== scriptureData.renderedDocId || scriptureData.updatedAtts}
+                                        disabled={!scriptureData.rendered || docId !== scriptureData.renderedDocId || scriptureData.updatedAtts}
                                     />}
                                     label={i18n(appLang,"BROWSE_PAGE_PARA_STYLES")}
                                 />
@@ -245,7 +245,7 @@ export default function BrowseScripture({pk}) {
                                         size="small"
                                         onChange={() => toggleCharacterMarkup()}
                                         inputProps={{'aria-label': 'controlled'}}
-                                        disabled={!scriptureData.rendered || scriptureData.docId !== scriptureData.renderedDocId || scriptureData.updatedAtts}
+                                        disabled={!scriptureData.rendered || docId !== scriptureData.renderedDocId || scriptureData.updatedAtts}
                                     />}
                                     label={i18n(appLang,"BROWSE_PAGE_CHAR_STYLES")}
                                 />
@@ -256,7 +256,7 @@ export default function BrowseScripture({pk}) {
                                         size="small"
                                         onChange={() => toggleChapterLabels()}
                                         inputProps={{'aria-label': 'controlled'}}
-                                        disabled={!scriptureData.rendered || scriptureData.docId !== scriptureData.renderedDocId || scriptureData.updatedAtts}
+                                        disabled={!scriptureData.rendered || docId !== scriptureData.renderedDocId || scriptureData.updatedAtts}
                                     />}
                                     label={i18n(appLang,"BROWSE_PAGE_CHAPTER_NUMBERS")}
                                 />
@@ -267,7 +267,7 @@ export default function BrowseScripture({pk}) {
                                         size="small"
                                         onChange={() => toggleVersesLabels()}
                                         inputProps={{'aria-label': 'controlled'}}
-                                        disabled={!scriptureData.rendered || scriptureData.docId !== scriptureData.renderedDocId || scriptureData.updatedAtts}
+                                        disabled={!scriptureData.rendered || docId !== scriptureData.renderedDocId || scriptureData.updatedAtts}
                                     />}
                                     label={i18n(appLang,"BROWSE_PAGE_VERSE_NUMBERS")}
                                 />
@@ -278,7 +278,7 @@ export default function BrowseScripture({pk}) {
                                         size="small"
                                         onChange={() => toggleWordAtts()}
                                         inputProps={{'aria-label': 'controlled'}}
-                                        disabled={!scriptureData.rendered || scriptureData.docId !== scriptureData.renderedDocId || scriptureData.updatedAtts}
+                                        disabled={!scriptureData.rendered || docId !== scriptureData.renderedDocId || scriptureData.updatedAtts}
                                     />}
                                     label={i18n(appLang,"BROWSE_PAGE_WORD_INFO")}
                                 />
@@ -290,14 +290,14 @@ export default function BrowseScripture({pk}) {
             <Grid item xs={12} sm={4} md={7} lg={8}>
                 <DocSelector
                     docs={docMenuItems}
-                    docId={scriptureData.docId}
+                    docId={docId}
                     setDocId={setDocId}
-                    disabled={!scriptureData.rendered || scriptureData.docId !== scriptureData.renderedDocId || scriptureData.updatedAtts}
+                    disabled={!scriptureData.rendered || docId !== scriptureData.renderedDocId || scriptureData.updatedAtts}
                 />
             </Grid>
             <Grid item xs={12}>
                 {
-                    scriptureData.rendered && scriptureData.docId === scriptureData.renderedDocId ?
+                    scriptureData.rendered && docId === scriptureData.renderedDocId ?
                         <>{scriptureData.rendered}</> :
                         <Typography>Loading...</Typography>
                 }

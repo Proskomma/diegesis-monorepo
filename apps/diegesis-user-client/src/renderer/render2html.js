@@ -261,7 +261,7 @@ const getStyles = (type, subType) => {
 }
 
 function InlineElement(props) {
-        return `<div
+        return `<span
             style={{
                 ...props.style,
                 paddingLeft: "0.5em",
@@ -273,7 +273,7 @@ function InlineElement(props) {
             onClick={toggleDisplay}
         >
             ${props.children}
-        </div>`
+        </span>`
 /* if not display
     } else {
         return `<span

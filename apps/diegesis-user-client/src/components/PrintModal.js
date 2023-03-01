@@ -45,6 +45,7 @@ export default function PrintModal(
         openPrintModal,
         handleClosePrintModal,
         pk,
+        docId
     }
 ) {
     const appLang = useContext(AppLangContext);
@@ -108,21 +109,14 @@ export default function PrintModal(
     }
 
     const [formatData, setFormatData] = useState({
-        pageFormat: "A4P"
+        pageFormat: "A4P",
+        nColumns: 2
     });
 
     const doRender = () => {
-        const docQuery = pk.gqlQuerySync(
-            `{
-               docSets {
-                 documents {
-                   id
-                   headers { key value }
-                 }
-               }
-            }`
-        );
-        const docId = docQuery.data.docSets[0].documents[0].id;
+        if (!docId) {
+            return;
+        }
         const renderer = new SofriaRenderFromProskomma({
             proskomma: pk,
             actions: sofria2WebActions,
@@ -169,13 +163,89 @@ export default function PrintModal(
 
     const floatDirection = (lang) => alignmentText(lang) === "right" ? "left" : "right";
 
+    const css = `
+        @page {
+            size: %pageWidth% %pageHeight%;
+            margin-top: 20mm;
+            margin-left: 20mm;
+            margin-bottom: 30mm;
+
+            @footnote {
+                float:bottom;
+                border-top: black 1px solid;
+                padding-top: 2mm;
+                font-size: 8pt;
+            }
+
+            @bottom-center {
+                content: counter(page);
+            }
+
+            @top-center {
+                content: element(heading);
+            }
+
+            @top-right {
+                content: none;
+            }
+        }
+
+        @page :blank {
+            @bottom-center {
+                content: none;
+            }
+
+            @top-center {
+                content: none;
+            }
+
+            @top-right {
+                content: none;
+            }
+
+        }
+
+        @page :right {
+            margin-left: 30mm;
+            margin-right: 20mm;
+        }
+
+        @page :left {
+            margin-right: 30mm;
+            margin-left: 20mm;
+        }
+        
+        #paras {
+            columns: %nColumns%
+        }
+        h1, h2, h3, h4, h5 {
+            columns: 1
+        }
+        `.replace(
+        '%pageWidth%',
+        pageFormats[formatData.pageFormat].width
+    ).replace(
+        '%pageHeight%',
+        pageFormats[formatData.pageFormat].height
+    ).replace(
+        '%nColumns%',
+        formatData.nColumns
+    );
+
+
     const onPrintClick = () => {
         const paras = doRender();
         const newPage = window.open();
-        newPage.document.head.innerHTML = "<title>Diegesis PDF Preview</title>";
-        newPage.document.body.innerHTML = paras;
-    };
-
+        newPage.document.body.innerHTML = `<div id="paras">${paras}</div>`;
+        const headContent = "<title>Diegesis PDF Preview</title>";
+        newPage.document.head.innerHTML = headContent;
+        const script = document.createElement('script');
+        script.src = 'http://localhost:1234/static/pagedjs_0_4_0.js';
+        newPage.document.head.appendChild(script);
+        const style = document.createElement('style');
+        style.innerHTML = css;
+        newPage.document.head.appendChild(style);
+    }
     const ScriptureSwitchField =
         ({fieldName, labelKey}) => <FormControlLabel
             control={
@@ -268,14 +338,14 @@ export default function PrintModal(
                             <Grid item>
                                 <FormGroup>
                                     <FormLabel
-                                        id="page-format-group-label"
+                                        id="page-size-group-label"
                                         style={{fontFamily: setFontFamily(appLang)}}
                                     >
-                                        Page Format
+                                        Page Size
                                     </FormLabel>
                                     <RadioGroup
-                                        aria-labelledby="page-format-group-label"
-                                        name="page-format-buttons-group"
+                                        aria-labelledby="page-size-group-label"
+                                        name="page-size-buttons-group"
                                         defaultValue="A4P"
                                         onChange={(e) => setFormatValue('pageFormat', e.target.value)}
                                         sx={{
@@ -290,6 +360,37 @@ export default function PrintModal(
                                                     value={pf[0]}
                                                     control={<Radio/>}
                                                     label={pf[1].label}
+                                                    style={{fontFamily: setFontFamily(appLang)}}
+                                                />)
+                                        }
+                                    </RadioGroup>
+                                </FormGroup>
+                            </Grid>
+                            <Grid item>
+                                <FormGroup>
+                                    <FormLabel
+                                        id="page-columns-group-label"
+                                        style={{fontFamily: setFontFamily(appLang)}}
+                                    >
+                                        Columns
+                                    </FormLabel>
+                                    <RadioGroup
+                                        aria-labelledby="page-columns-group-label"
+                                        name="page-columns-buttons-group"
+                                        defaultValue="1"
+                                        onChange={(e) => setFormatValue('nColumns', e.target.value)}
+                                        sx={{
+                                            display: "flex",
+                                            flexDirection: "column",
+                                        }}
+                                    >
+                                        {
+                                            [1, 2, 3]
+                                                .map((nc, n) => <FormControlLabel
+                                                    key={n}
+                                                    value={nc}
+                                                    control={<Radio/>}
+                                                    label={`${nc}`}
                                                     style={{fontFamily: setFontFamily(appLang)}}
                                                 />)
                                         }
