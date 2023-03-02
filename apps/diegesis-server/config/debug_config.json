@@ -14,6 +14,10 @@
   "sessionTimeoutInMins": 10,
   "staticPaths": [
     {
+      "path": "./src/static",
+      "url": "/static"
+    },
+    {
       "path": "../diegesis-admin-client/build",
       "url": "/admin"
     },

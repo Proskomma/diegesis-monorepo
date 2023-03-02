@@ -36,6 +36,10 @@ const renderStyles = {
         "usfm:ip": {
             textIndent: "1.5em"
         },
+        "usfm:ipi": {
+            paddingLeft: "1.5em",
+            textIndent: "1.5em"
+        },
         "usfm:io": {
             paddingLeft: "1.5em"
         },
@@ -79,6 +83,10 @@ const renderStyles = {
             fontStyle: "italic",
         },
         "usfm:ms": {
+            fontSize: "large",
+            fontWeight: "bold",
+        },
+        "usfm:ms2": {
             fontWeight: "bold",
         },
         "usfm:mt": {
