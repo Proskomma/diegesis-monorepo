@@ -240,7 +240,9 @@ export default function PrintModal(
         const headContent = "<title>Diegesis PDF Preview</title>";
         newPage.document.head.innerHTML = headContent;
         const script = document.createElement('script');
-        script.src = 'http://localhost:1234/static/pagedjs_0_4_0.js';
+        const url = `${window.location.protocol}//${window.location.host}/static/pagedjs_0_4_0.js`;
+        console.log(url);
+        script.src = url;
         newPage.document.head.appendChild(script);
         const style = document.createElement('style');
         style.innerHTML = css;
