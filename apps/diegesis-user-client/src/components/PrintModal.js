@@ -9,22 +9,19 @@ import {
     Modal,
     Radio,
     RadioGroup,
-    Switch,
     Typography,
 } from "@mui/material";
 import Backdrop from "@mui/material/Backdrop";
-import {SofriaRenderFromProskomma} from "proskomma-json-tools";
+import PrintIcon from "@mui/icons-material/Print";
 import {useContext, useState} from "react";
 import AppLangContext from "../contexts/AppLangContext";
-import i18n from "../i18n";
-import {renderers} from '../renderer/render2html';
+import ScriptureSwitchField from "./ScriptureSwitchField";
 import {
     directionText,
     setFontFamily,
     alignmentText,
 } from "../i18n/languageDirection";
-import sofria2WebActions from "../renderer/sofria2web";
-import PrintIcon from "@mui/icons-material/Print";
+import printModalResources from "../lib/printModalResources";
 
 const printModalStyle = {
     position: "absolute",
@@ -63,97 +60,10 @@ export default function PrintModal(
         showVersesLabels: true,
     });
 
-    const pageFormats = {
-        A4P: {
-            label: "A4 Portrait",
-            orientation: "portrait",
-            width: "210mm",
-            height: "297mm"
-        },
-        A4L: {
-            label: "A4 Landscape",
-            orientation: "landscape",
-            width: "297mm",
-            height: "210mm"
-        },
-        A5P: {
-            label: "A5 Portrait",
-            orientation: "portrait",
-            width: "148.5mm",
-            height: "210mm"
-        },
-        USLP: {
-            label: "US Letter Portrait",
-            orientation: "portrait",
-            width: "8.5in",
-            height: "11in"
-        },
-        USLL: {
-            label: "US Letter Landscape",
-            orientation: "landscape",
-            width: "11in",
-            height: "8.5in"
-        },
-        TRP: {
-            label: "Trade Portrait",
-            orientation: "portrait",
-            width: "6in",
-            height: "9in"
-        },
-        CQP: {
-            label: "Crown Quarto Portrait",
-            orientation: "portrait",
-            width: "189mm",
-            height: "246mm"
-        }
-    }
-
     const [formatData, setFormatData] = useState({
         pageFormat: "A4P",
         nColumns: 1
     });
-
-    const doRender = () => {
-        if (!docId) {
-            return;
-        }
-        const renderer = new SofriaRenderFromProskomma({
-            proskomma: pk,
-            actions: sofria2WebActions,
-        });
-
-        const config = {
-            showWordAtts: scriptureData.showWordAtts,
-            showTitles: scriptureData.showTitles,
-            showHeadings: scriptureData.showHeadings,
-            showIntroductions: scriptureData.showIntroductions,
-            showFootnotes: scriptureData.showFootnotes,
-            showXrefs: scriptureData.showXrefs,
-            showParaStyles: scriptureData.showParaStyles,
-            showCharacterMarkup: scriptureData.showCharacterMarkup,
-            showChapterLabels: scriptureData.showChapterLabels,
-            showVersesLabels: scriptureData.showVersesLabels,
-            renderers
-        };
-        const output = {};
-        try {
-            renderer.renderDocument({
-                docId,
-                config,
-                output,
-            });
-        } catch (err) {
-            console.log("Renderer", err);
-            throw err;
-        }
-        return output.paras;
-    };
-
-    const toggleScriptureToggle = field => {
-        const newData = {...scriptureData};
-        newData[field] = !scriptureData[field];
-        setScriptureData(newData);
-    }
 
     const setFormatValue = (field, value) => {
         const newData = {...formatData};
@@ -163,104 +73,35 @@ export default function PrintModal(
 
     const floatDirection = (lang) => alignmentText(lang) === "right" ? "left" : "right";
 
-    const css = `
-        @page {
-            size: %pageWidth% %pageHeight%;
-            margin-top: 20mm;
-            margin-left: 20mm;
-            margin-bottom: 30mm;
-
-            @footnote {
-                float:bottom;
-                border-top: black 1px solid;
-                padding-top: 2mm;
-                font-size: 8pt;
-            }
-
-            @bottom-center {
-                content: counter(page);
-            }
-
-            @top-center {
-                content: element(heading);
-            }
-
-            @top-right {
-                content: none;
-            }
+    const substituteCss = (template, replaces) => {
+        let ret = template;
+        for (const [placeholder, replacement] of replaces) {
+            ret = ret.replace(placeholder, replacement);
         }
+        return ret;
+    }
 
-        @page :blank {
-            @bottom-center {
-                content: none;
-            }
+    const pageCss = substituteCss(
+        printModalResources.pageCssTemplate,
+        [
+            ['%pageWidth%', printModalResources.pageSizes[formatData.pageFormat].width],
+            ['%pageHeight%', printModalResources.pageSizes[formatData.pageFormat].height],
+            ['%nColumns%', formatData.nColumns]
+        ]
+    )
 
-            @top-center {
-                content: none;
-            }
-
-            @top-right {
-                content: none;
-            }
-
-        }
-
-        @page :right {
-            margin-left: 30mm;
-            margin-right: 20mm;
-        }
-
-        @page :left {
-            margin-right: 30mm;
-            margin-left: 20mm;
-        }
-        
-        #paras {
-            columns: %nColumns%
-        }
-        h1, h2, h3, h4, h5 {
-            columns: 1
-        }
-        `.replace(
-        '%pageWidth%',
-        pageFormats[formatData.pageFormat].width
-    ).replace(
-        '%pageHeight%',
-        pageFormats[formatData.pageFormat].height
-    ).replace(
-        '%nColumns%',
-        formatData.nColumns
-    );
-
-
-    const onPrintClick = () => {
-        const paras = doRender();
+     const onPrintClick = () => {
+        const paras = printModalResources.doRender({pk, scriptureData, docId});
         const newPage = window.open();
         newPage.document.body.innerHTML = `<div id="paras">${paras}</div>`;
-        const headContent = "<title>Diegesis PDF Preview</title>";
-        newPage.document.head.innerHTML = headContent;
+        newPage.document.head.innerHTML = "<title>Diegesis PDF Preview</title>";
         const script = document.createElement('script');
-        const url = `${window.location.protocol}//${window.location.host}/static/pagedjs_0_4_0.js`;
-        console.log(url);
-        script.src = url;
+        script.src = `${window.location.protocol}//${window.location.host}/static/pagedjs_0_4_0.js`;
         newPage.document.head.appendChild(script);
         const style = document.createElement('style');
-        style.innerHTML = css;
+        style.innerHTML = pageCss;
         newPage.document.head.appendChild(style);
     }
-    const ScriptureSwitchField =
-        ({fieldName, labelKey}) => <FormControlLabel
-            control={
-                <Switch
-                    checked={scriptureData[fieldName]}
-                    color="secondary"
-                    size="small"
-                    onChange={() => toggleScriptureToggle(fieldName)}
-                    inputProps={{"aria-label": "controlled"}}
-                />
-            }
-            label={i18n(appLang, labelKey)}
-        />
 
     return (
         <>
@@ -295,46 +136,28 @@ export default function PrintModal(
                                     >
                                         Included Content
                                     </FormLabel>
-                                    <ScriptureSwitchField
-                                        fieldName="showTitles"
-                                        labelKey="BROWSE_PAGE_TITLES"
-                                    />
-                                    <ScriptureSwitchField
-                                        fieldName="showHeadings"
-                                        labelKey="BROWSE_PAGE_HEADINGS"
-                                    />
-                                    <ScriptureSwitchField
-                                        fieldName="showIntroductions"
-                                        labelKey="BROWSE_PAGE_INTRODUCTIONS"
-                                    />
-                                    <ScriptureSwitchField
-                                        fieldName="showFootnotes"
-                                        labelKey="BROWSE_PAGE_FOOTNOTES"
-                                    />
-                                    <ScriptureSwitchField
-                                        fieldName="showXrefs"
-                                        labelKey="BROWSE_PAGE_XREFS"
-                                    />
-                                    <ScriptureSwitchField
-                                        fieldName="showParaStyles"
-                                        labelKey="BROWSE_PAGE_PARA_STYLES"
-                                    />
-                                    <ScriptureSwitchField
-                                        fieldName="showCharacterMarkup"
-                                        labelKey="BROWSE_PAGE_CHAR_STYLES"
-                                    />
-                                    <ScriptureSwitchField
-                                        fieldName="showChapterLabels"
-                                        labelKey="BROWSE_PAGE_CHAPTER_NUMBERS"
-                                    />
-                                    <ScriptureSwitchField
-                                        fieldName="showVersesLabels"
-                                        labelKey="BROWSE_PAGE_VERSE_NUMBERS"
-                                    />
-                                    <ScriptureSwitchField
-                                        fieldName="showWordAtts"
-                                        labelKey="BROWSE_PAGE_WORD_INFO"
-                                    />
+                                    {
+                                        [
+                                            ["showTitles", "BROWSE_PAGE_TITLES"],
+                                            ["showHeadings", "BROWSE_PAGE_HEADINGS"],
+                                            ["showIntroductions", "BROWSE_PAGE_INTRODUCTIONS"],
+                                            ["showFootnotes", "BROWSE_PAGE_FOOTNOTES"],
+                                            ["showXrefs", "BROWSE_PAGE_XREFS"],
+                                            ["showParaStyles", "BROWSE_PAGE_PARA_STYLES"],
+                                            ["showCharacterMarkup", "BROWSE_PAGE_CHAR_STYLES"],
+                                            ["showChapterLabels", "BROWSE_PAGE_CHAPTER_NUMBERS"],
+                                            ["showVersesLabels", "BROWSE_PAGE_VERSE_NUMBERS"],
+                                            ["showWordAtts", "BROWSE_PAGE_WORD_INFO"]
+                                        ].map(
+                                            (fSpec, n) => <ScriptureSwitchField
+                                                key={n}
+                                                fieldName={fSpec[0]}
+                                                labelKey={fSpec[1]}
+                                                scriptureData={scriptureData}
+                                                setScriptureData={setScriptureData}
+                                            />
+                                        )
+                                    }
                                 </FormGroup>
                             </Grid>
                             <Grid item>
@@ -356,7 +179,7 @@ export default function PrintModal(
                                         }}
                                     >
                                         {
-                                            Object.entries(pageFormats)
+                                            Object.entries(printModalResources.pageSizes)
                                                 .map((pf, n) => <FormControlLabel
                                                     key={n}
                                                     value={pf[0]}
