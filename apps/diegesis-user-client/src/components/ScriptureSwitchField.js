@@ -7,12 +7,16 @@ import i18n from "../i18n";
 import AppLangContext from "../contexts/AppLangContext";
 
 const ScriptureSwitchField =
-    ({scriptureData, setScriptureData, fieldName, labelKey}) => {
+    ({scriptureData, setScriptureData,fieldName, labelKey}) => {
         const appLang = useContext(AppLangContext);
         const toggleScriptureToggle = field => {
-            const newData = {...scriptureData};
+            setScriptureData(true)
+            const newData = {...scriptureData };
             newData[field] = !scriptureData[field];
-            setScriptureData(newData);
+            setScriptureData({
+                ...newData,
+                updatedAtts: true,
+              });
         }
         return <FormControlLabel
         control={
