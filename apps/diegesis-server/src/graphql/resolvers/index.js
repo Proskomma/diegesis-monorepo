@@ -179,6 +179,7 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
             }
             if (
                 org.config.languages &&
+                (org.config.languages.length > 0) &&
                 !org.config.languages.includes(entry.languageCode.split("-")[0])
             ) {
                 return false;
@@ -745,7 +746,7 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                 }
                 try {
                     if (entryExists(config, orgOb.name, args.id)) {
-                        deleteEntry(config, orgOb.name, args.id, args.revision) 
+                        deleteEntry(config, orgOb.name, args.id, args.revision)
                         return true;
                     }
                     return false;
@@ -772,7 +773,7 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                     return false;
                 }
                 if (entryExists(config, orgOb.name, transOb.id)) {
-                    deleteSuccinctError(config, orgOb.name, transOb.id, transOb.revision) 
+                    deleteSuccinctError(config, orgOb.name, transOb.id, transOb.revision)
                     return true;
                 } else {
                     return false;
