@@ -47,7 +47,7 @@ const fetchUsfm = async (org, trans, config) => {
     const http = require(`${appRoot}/src/lib/http.js`);
     const repoDetailsResponse = await http.getText(trans.downloadURL);
     const responseJson = JSON.parse(repoDetailsResponse.data);
-    const zipUrl = responseJson.catalog.latest.zipball_url;
+    const zipUrl = responseJson.catalog.prod.zipball_url;
     const downloadResponse = await http.getBuffer(zipUrl);
 try {
     initializeEmptyEntry(config, org.name, trans.id, trans.revision);
