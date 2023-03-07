@@ -12,7 +12,7 @@ import Backdrop from "@mui/material/Backdrop";
 import { useContext, useEffect, useState } from "react";
 import AppLangContext from "../contexts/AppLangContext";
 import i18n from "../i18n";
-import { directionText, setFontFamily } from "../i18n/languageDirection";
+import { directionText, FontFamily } from "../i18n/languageDirection";
 import DocSelector from "./DocSelector";
 
 const style = {
@@ -226,7 +226,7 @@ export default function SearchModal({openSearchModal,handleCloseSearchModal,pk,}
                   value={searchEntireBible}
                   onChange={(e) => setSearchEntireBible(!searchEntireBible)}
                 />
-                <Typography style={{ fontFamily: setFontFamily(appLang) }}>
+                <Typography style={{ fontFamily: FontFamily(appLang) }}>
                   {allBooksTitle}
                 </Typography>
               </Grid>
@@ -244,7 +244,7 @@ export default function SearchModal({openSearchModal,handleCloseSearchModal,pk,}
                   value={matchAll}
                   onChange={(e) => setMatchAll(!matchAll)}
                 />
-                <Typography style={{ fontFamily: setFontFamily(appLang) }}>
+                <Typography style={{ fontFamily: FontFamily(appLang) }}>
                   {matchAllTitle}
                 </Typography>
               </Grid>
@@ -257,29 +257,29 @@ export default function SearchModal({openSearchModal,handleCloseSearchModal,pk,}
                 sx={{ justifySelf: "flex-end" }}
               >
                 <Button variant="contained" onClick={() => runSearch()}>
-                  <span style={{ fontFamily: setFontFamily(appLang) }}>
+                  <span style={{ fontFamily: FontFamily(appLang) }}>
                     {runSearchTitle}
                   </span>
                 </Button>
               </Grid>
               <Grid item xs={12}>
                 {!validQuery ? (
-                  <span style={{ fontFamily: setFontFamily(appLang) }}>
+                  <span style={{ fontFamily: FontFamily(appLang) }}>
                     {i18n(appLang, "SEARCH_NOT_VALID_QUERY")}
                   </span>
                 ) : !searchFinished ? (
-                  <span style={{ fontFamily: setFontFamily(appLang) }}>
+                  <span style={{ fontFamily: FontFamily(appLang) }}>
                     {i18n(appLang, "SEARCH_VALID_QUERY")}
                   </span>
                 ) : matches.length === 0 ? (
-                  <span style={{ fontFamily: setFontFamily(appLang) }}>
+                  <span style={{ fontFamily: FontFamily(appLang) }}>
                     {i18n(appLang, "SEARCH_NO_OCCURENCES")}
                   </span>
                 ) : (
                   <div>
                     <p>
                       <span
-                        style={{ fontFamily: setFontFamily(appLang) }}
+                        style={{ fontFamily: FontFamily(appLang) }}
                       >
                         {i18n(appLang, "SEARCH_OCCURENCES_FOUND")}
                       </span>{" "}

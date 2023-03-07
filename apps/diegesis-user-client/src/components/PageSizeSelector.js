@@ -1,13 +1,12 @@
 import {
   FormGroup,
   FormLabel,
-  Grid,
   MenuItem,
   Select,
 } from "@mui/material";
 import { useContext} from "react";
 import AppLangContext from "../contexts/AppLangContext";
-import { setFontFamily } from "../i18n/languageDirection";
+import { directionText, FontFamily } from "../i18n/languageDirection";
 
 export default function PageSizeSelector({
   formLabelTitle,
@@ -23,11 +22,11 @@ export default function PageSizeSelector({
   };
   return (
     <>
-      <Grid item>
-        <FormGroup>
+        <FormGroup sx={{display:'flex',flexDirection:'row',alignItems:'flex-start'}} dir={directionText(appLang)}>
           <FormLabel
             id="page-size-group-label"
-            style={{ fontFamily: setFontFamily(appLang) }}
+            style={{ fontFamily: FontFamily(appLang) }}
+            sx={{marginRight:'5%'}}
           >
             {formLabelTitle}
           </FormLabel>
@@ -41,13 +40,12 @@ export default function PageSizeSelector({
             onChange={(e) => setFormatValue("pageFormat", e.target.value)}
           >
             {Object.entries(listItems).map((pf, n) => (
-              <MenuItem key={n} value={pf[0]} style={{ fontFamily: setFontFamily(appLang) }}>
+              <MenuItem key={n} value={pf[0]} style={{ fontFamily: FontFamily(appLang) }}>
                 {pf[1].label}
               </MenuItem>
             ))}
           </Select>
         </FormGroup>
-      </Grid>
     </>
   );
 }

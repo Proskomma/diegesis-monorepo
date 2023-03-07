@@ -10,7 +10,7 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import Spinner from "../components/Spinner";
 import BrowseScripture from "../components/BrowseScripture";
-import { directionText, setFontFamily } from "../i18n/languageDirection";
+import { directionText, FontFamily } from "../i18n/languageDirection";
 import AppLangContext from "../contexts/AppLangContext";
 import i18n from "../i18n";
 import SearchModal from "../components/SearchModal";
@@ -125,7 +125,7 @@ export default function EntryBrowsePage({ setAppLanguage }) {
           variant="h4"
           paragraph="true"
           sx={{ mt: "20px" }}
-          style={{ fontFamily: setFontFamily(appLang) }}
+          style={{ fontFamily: FontFamily(appLang) }}
         >
           <Button>
             <RouterLink to={`/entry/details/${source}/${entryId}/${revision}`}>
@@ -156,7 +156,7 @@ export default function EntryBrowsePage({ setAppLanguage }) {
           !entryInfo.canonResource.content) && (
           <Typography
             paragraph="true"
-            style={{ fontFamily: setFontFamily(appLang) }}
+            style={{ fontFamily: FontFamily(appLang) }}
           >
             {i18n(appLang, "BROWSE_PAGE_YET_WARNING")}
           </Typography>

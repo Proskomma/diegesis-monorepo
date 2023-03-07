@@ -6,7 +6,7 @@ import Footer from "../components/Footer";
 import i18n from "../i18n";
 import { useContext } from "react";
 import AppLangContext from "../contexts/AppLangContext";
-import {directionText, setFontFamily} from "../i18n/languageDirection";
+import {directionText, FontFamily} from "../i18n/languageDirection";
 
 export default function HomePage({setAppLanguage}) {
   
@@ -21,16 +21,16 @@ export default function HomePage({setAppLanguage}) {
     <Container fixed className="homepage">
         <Header setAppLanguage={setAppLanguage} selected="home" />
         <Box dir={directionText(appLang)} style={{ marginTop: "100px" }}>
-          <Typography variant="h4" paragraph="true" sx={{ mt: "20px" }} style={{ fontFamily : setFontFamily(appLang)}}>
+          <Typography variant="h4" paragraph="true" sx={{ mt: "20px" }} style={{ fontFamily : FontFamily(appLang)}}>
             {bigTitle}
           </Typography>
-          <Typography variant="h6" paragraph="true" style={{ fontFamily : setFontFamily(appLang)}}>
+          <Typography variant="h6" paragraph="true" style={{ fontFamily : FontFamily(appLang)}}>
             {title}
           </Typography>
-          <Typography variant="body1" paragraph="true" style={{ fontFamily : setFontFamily(appLang)}}>
+          <Typography variant="body1" paragraph="true" style={{ fontFamily : FontFamily(appLang)}}>
             {phrase}
           </Typography>
-          <Typography variant="body1" paragraph="true" style={{ fontFamily : setFontFamily(appLang)}}>
+          <Typography variant="body1" paragraph="true" style={{ fontFamily : FontFamily(appLang)}}>
             {content}<Link to="/list">{here}</Link>.
           </Typography>
           <Footer />

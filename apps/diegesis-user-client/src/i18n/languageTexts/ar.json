@@ -98,5 +98,9 @@
     "SEARCH_NOT_VALID_QUERY":"أدخل رقماً أو أرقاماً صحيحةً في مربع البحث",
     "SEARCH_VALID_QUERY":"تم التحقق من صحة الطلب.انقر فوق 'بدء البحث' لإجراء البحث",
     "SEARCH_NO_OCCURENCES":"لا يوجد تكرار لهذا الرقم أو لهذه الأرقام في الحقل المختار",
-    "SEARCH_OCCURENCES_FOUND":"تم العثور على تكرارات" 
+    "SEARCH_OCCURENCES_FOUND":"تم العثور على تكرارات" ,
+    "PAGE_SIZE":"حجم الصفحة",
+    "COLUMNS":"الأعمدة",
+    "PREVIEW_DOCUMENT":"معاينة المستند",
+    "INCLUDED_CONTENT":"المحتوى المضمن"
 }

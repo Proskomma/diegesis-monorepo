@@ -2,9 +2,7 @@ import React, { useContext, useState, useEffect } from "react";
 import {
   Typography,
   Grid,
-  Switch,
   FormGroup,
-  FormControlLabel,
   Box,
   Button,
 } from "@mui/material";
@@ -13,8 +11,7 @@ import { SofriaRenderFromProskomma } from "proskomma-json-tools";
 import sofria2WebActions from "../renderer/sofria2web";
 import DocSelector from "./DocSelector";
 import AppLangContext from "../contexts/AppLangContext";
-import { directionText, setFontFamily } from "../i18n/languageDirection";
-import i18n from "../i18n";
+import { directionText, FontFamily } from "../i18n/languageDirection";
 import { renderers } from "../renderer/render2react";
 import ScriptureSwitchField from "./ScriptureSwitchField";
 
@@ -124,7 +121,7 @@ export default function BrowseScripture({ pk, docId, setDocId }) {
     <Grid
       container
       dir={directionText(appLang)}
-      style={{ fontFamily: setFontFamily(appLang) }}
+      style={{ fontFamily: FontFamily(appLang) }}
     >
       <Grid item xs={12} sm={4} md={2} lg={2}>
         <Box sx={{ marginRight: "5px" }}>
@@ -138,7 +135,7 @@ export default function BrowseScripture({ pk, docId, setDocId }) {
               <Tune />
             </Button>
             {showSettings && (
-              <Box style={{ fontFamily: setFontFamily(appLang) }}>
+              <Box style={{ fontFamily: FontFamily(appLang) }}>
                 {[
                   ["showTitles", "BROWSE_PAGE_TITLES"],
                   ["showHeadings", "BROWSE_PAGE_HEADINGS"],

@@ -1,7 +1,7 @@
 import { Tab, Tabs } from "@mui/material";
 import React, { useContext } from "react";
 import AppLangContext from "../contexts/AppLangContext";
-import { setFontFamily } from "../i18n/languageDirection";
+import { FontFamily } from "../i18n/languageDirection";
 
 export default function TableHeader({selectedTabIndex,setSelectedTabIndex}) {
   const appLang = useContext(AppLangContext);
@@ -23,7 +23,7 @@ export default function TableHeader({selectedTabIndex,setSelectedTabIndex}) {
       aria-label="types tabs"
     >
       {Object.entries(tableOfFiles).map((val,n) => (
-        <Tab  style={{ fontFamily : setFontFamily(appLang)}} key={n} label={val[1]} id="simple-tab-0" aria-controls="simple-tabpanel-0" />
+        <Tab  style={{ fontFamily : FontFamily(appLang)}} key={n} label={val[1]} id="simple-tab-0" aria-controls="simple-tabpanel-0" />
       ))}
     </Tabs>
   );

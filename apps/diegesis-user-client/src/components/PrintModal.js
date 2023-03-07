@@ -2,13 +2,10 @@ import {
   Box,
   Button,
   Fade,
-  FormControlLabel,
   FormGroup,
   FormLabel,
   Grid,
   Modal,
-  Radio,
-  RadioGroup,
   Typography,
 } from "@mui/material";
 import Backdrop from "@mui/material/Backdrop";
@@ -18,12 +15,13 @@ import AppLangContext from "../contexts/AppLangContext";
 import ScriptureSwitchField from "./ScriptureSwitchField";
 import {
   directionText,
-  setFontFamily,
+  FontFamily,
   alignmentText,
 } from "../i18n/languageDirection";
 import printModalResources from "../lib/printModalResources";
 import ColumnsSelector from "./ColumnsSelector";
 import PageSizeSelector from "./PageSizeSelector";
+import i18n from "../i18n";
 
 const printModalStyle = {
   position: "absolute",
@@ -118,20 +116,23 @@ export default function PrintModal({
         <Fade in={openPrintModal}>
           <Box sx={printModalStyle}>
             <Typography variant="h4" sx={{ textAlign: "center" }}>
-              Print Page
+              {i18n(appLang, "PREVIEW_DOCUMENT")}
             </Typography>
             <Grid
               container
               dir={directionText(appLang)}
-              style={{ fontFamily: setFontFamily(appLang) }}
+              style={{ fontFamily: FontFamily(appLang) }}
+              sx={{ display: "flex", flexDirection: "column" }}
             >
-              <Grid item>
-                <FormGroup>
+              <Grid item sx={{ margin: "2%" }}>
+                <FormGroup
+                  sx={{display:'flex',flexDirection:'row',alignItems:'flex-start'}}
+                >
                   <FormLabel
                     id="included-content-group-label"
-                    style={{ fontFamily: setFontFamily(appLang) }}
+                    style={{ fontFamily: FontFamily(appLang) }}
                   >
-                    Included Content
+                    {i18n(appLang, "INCLUDED_CONTENT")}
                   </FormLabel>
                   {[
                     ["showTitles", "BROWSE_PAGE_TITLES"],
@@ -146,27 +147,28 @@ export default function PrintModal({
                     ["showWordAtts", "BROWSE_PAGE_WORD_INFO"],
                   ].map((fSpec, n) => (
                     <ScriptureSwitchField
-                      key={n}
-                      fieldName={fSpec[0]}
-                      labelKey={fSpec[1]}
                       scriptureData={scriptureData}
                       setScriptureData={setScriptureData}
                     />
                   ))}
                 </FormGroup>
               </Grid>
-              <PageSizeSelector
-                formLabelTitle="Page Size"
-                listItems={printModalResources.pageSizes}
-                formatData={formatData}
-                setFormatData={setFormatData}
-              />
-              <ColumnsSelector
-                formLabelTitle="Columns"
-                listItems={columnsList}
-                formatData={formatData}
-                setFormatData={setFormatData}
-              />
+              <Grid item sx={{ margin: "2%" }}>
+                <PageSizeSelector
+                  formLabelTitle={i18n(appLang, "PAGE_SIZE")}
+                  listItems={printModalResources.pageSizes}
+                  formatData={formatData}
+                  setFormatData={setFormatData}
+                />
+              </Grid>
+              <Grid item sx={{ margin: "2%" }}>
+                <ColumnsSelector
+                  formLabelTitle={i18n(appLang, "COLUMNS")}
+                  listItems={columnsList}
+                  formatData={formatData}
+                  setFormatData={setFormatData}
+                />
+              </Grid>
             </Grid>
             <Button
               onClick={onPrintClick}
