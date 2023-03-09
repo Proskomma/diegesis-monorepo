@@ -5,18 +5,17 @@ import Footer from "../components/Footer";
 import AppLangContext from "../contexts/AppLangContext";
 import i18n from "../i18n";
 import { directionText, FontFamily } from "../i18n/languageDirection";
-import TableHeader from "../components/TableHeader";
-import UsfmForm from "../components/UsfmForm";
-import SfmForm from "../components/SfmForm";
+import AddTabsHeader from "../components/AddTabsHeader";
+import ScriptureUsfmForm from "../components/ScriptureUsfmForm";
+import UwNotesForm from "../components/UwNotesForm";
 
 export default function UploadPage({ setAppLanguage }) {
   const appLang = useContext(AppLangContext);
 
-  const [selectedTabIndex, setSelectedTabIndex] = useState("");
+  const [selectedTabIndex, setSelectedTabIndex] = useState(0);
 
-  console.log(selectedTabIndex);
   return (
-    <Container fixed className="uploadpage">
+    <Container fixed className="upload-page">
       <Header setAppLanguage={setAppLanguage} selected="add" />
       <Typography
         dir={directionText(appLang)}
@@ -29,17 +28,12 @@ export default function UploadPage({ setAppLanguage }) {
       </Typography>
 
       <TableContainer dir={directionText(appLang)}>
-        {!selectedTabIndex && (
-          <Typography style={{ fontFamily: FontFamily(appLang) }}>
-            {i18n(appLang, "SELECT_FILE_TYPE")} :
-          </Typography>
-        )}
-        <TableHeader
+        <AddTabsHeader
           selectedTabIndex={selectedTabIndex}
           setSelectedTabIndex={setSelectedTabIndex}
         />
-        {selectedTabIndex === "usfm" && <UsfmForm />}
-        {selectedTabIndex === "sfm" && <SfmForm />}
+          {selectedTabIndex === 0 && <ScriptureUsfmForm />}
+          {selectedTabIndex === 1 && <UwNotesForm />}
       </TableContainer>
       <Footer />
     </Container>

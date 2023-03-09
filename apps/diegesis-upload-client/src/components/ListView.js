@@ -1,6 +1,5 @@
 import React, { useContext } from 'react';
 import {useQuery, gql} from "@apollo/client";
-import {Link as RouterLink} from 'react-router-dom';
 import {Typography, Grid} from "@mui/material";
 import {searchQuery} from '../lib/search';
 import GqlError from "./GqlError";
@@ -52,11 +51,7 @@ export default function ListView({searchTerms}) {
                 <Typography variant="body2" style={{ fontFamily : FontFamily(appLang)}}>{languageCodeFormat(localTranslation.language)}</Typography>
             </Grid>
             <Grid item xs={12} md={6}>
-                {/* <RouterLink
-                    to={`/entry/details/${localTranslation.source}/${localTranslation.transId}/${localTranslation.revision.replace(/\s/g, "__")}`}
-                    style={{textDecoration: "none"}}> */}
                     <Typography variant="body1" style={{ fontFamily : FontFamily(appLang)}}>{localTranslation.title}</Typography>
-                {/* </RouterLink> */}
             </Grid>
         </Grid>
     }

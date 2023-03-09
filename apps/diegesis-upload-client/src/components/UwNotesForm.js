@@ -23,12 +23,12 @@ const documentSuffixRegex = /^[A-Za-z0-9_().-]+(.txt|.usfm|.sfm)$/;
 const documentRegex = /^\\id ([A-Z1-6]{3})/;
 const BookRegex = /[a-zA-Z0-9]{3}/;
 
-export default function UsfmForm() {
+export default function UwNotesForm() {
   const client = useApolloClient();
 
   async function createEntry(client) {
     const query = buildQuery();
-    const result = await client.mutate({
+    await client.mutate({
       mutation: gql`
         ${query}
       `,
@@ -67,31 +67,31 @@ export default function UsfmForm() {
     setUploads(validFiles);
   };
 
-  function dedupe(elements) {
-    let ret = [];
-    let usedBooks = new Set([]);
-    let ignoredBooks = [];
-    for (const el of elements) {
-      if (!usedBooks.has(el.type)) {
-        ret.push(el);
-        usedBooks.add(el.type);
-      } else {
-        ignoredBooks.push(el.type);
-      }
-    }
-    if (ignoredBooks.length > 0) {
-      enqueueSnackbar(
-        `ignoring duplicate upload for ${ignoredBooks.join(";")}`,
-        {
-          autoHideDuration: 3000,
-          variant: "error",
-        }
-      );
-    }
-    return ret;
-  }
-
   useEffect(() => {
+    function dedupe(elements) {
+      let ret = [];
+      let usedBooks = new Set([]);
+      let ignoredBooks = [];
+      for (const el of elements) {
+        if (!usedBooks.has(el.type)) {
+          ret.push(el);
+          usedBooks.add(el.type);
+        } else {
+          ignoredBooks.push(el.type);
+        }
+      }
+      if (ignoredBooks.length > 0) {
+        enqueueSnackbar(
+            `ignoring duplicate upload for ${ignoredBooks.join(";")}`,
+            {
+              autoHideDuration: 3000,
+              variant: "error",
+            }
+        );
+      }
+      return ret;
+    }
+
     const newUploadContent = [];
     for (const file of uploads) {
       const fileReader = new FileReader();
