@@ -351,6 +351,8 @@ const mutationSchema = gql`
             revision: String!
         ) : Boolean!
         createLocalEntry (
+            """Entry Content Type"""
+            contentType: String!
             """All Resources"""
             resources: [ResourceElement!]!
             """ All Metadata"""

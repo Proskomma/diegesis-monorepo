@@ -27,18 +27,25 @@ export default function UwNotesForm() {
     const client = useApolloClient();
 
     async function createEntry(client) {
-        const query = buildQuery();
-        await client.mutate({
-            mutation: gql`
+        try {
+            const query = buildQuery();
+            await client.mutate({
+                mutation: gql`
         ${query}
       `,
-        });
+            });
+        } catch (err) {
+            setSubmitText("Error:" + err.msg);
+            return;
+        }
+        setSubmitText("Submitted");
     }
 
     const appLang = useContext(AppLangContext);
     const {enqueueSnackbar} = useSnackbar();
     const [uploads, setUploads] = useState([]);
     const [invalidFields, setInvalidFields] = useState({});
+    const [submitText, setSubmitText] = useState("");
     const [formValues, setFormValues] = useState({
         title: "",
         description: "",
@@ -161,6 +168,7 @@ export default function UwNotesForm() {
     const buildQuery = () => {
         let gqlBits = [];
         gqlBits.push("mutation { createLocalEntry(");
+        gqlBits.push('contentType: "uwNotes"');
         gqlBits.push("metadata:[");
         for (const [key, value] of Object.entries(formValues)) {
             gqlBits.push("{");
@@ -189,6 +197,10 @@ export default function UwNotesForm() {
                         {i18n(appLang, "METADATA")}
                     </Typography>
                 </Grid>
+                {submitText.length > 0 && <Grid item xs={12}>
+                    {submitText}
+                </Grid>
+                }
                 {fields.map((f) => (
                     <UploadFormField
                         formTextFieldLabel={i18n(appLang, f.i18n)}
@@ -274,7 +286,7 @@ export default function UwNotesForm() {
                         variant="contained"
                         size="large"
                         style={{marginBottom: "20px", marginTop: "20px", fontFamily: FontFamily(appLang)}}
-                        disabled={!isValidForm(formValues)}
+                        disabled={!isValidForm(formValues) || submitText.length > 0}
                         onClick={() => createEntry(client)}
                     >
                         {i18n(appLang, "SUBMIT")}

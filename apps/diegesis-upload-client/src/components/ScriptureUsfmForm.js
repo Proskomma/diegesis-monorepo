@@ -261,7 +261,6 @@ export default function ScriptureUsfmForm() {
         />
         <Grid item xs={12}>
           <Button
-            type="submit"
             variant="contained"
             size="large"
             style={{ marginBottom: "20px", marginTop: "20px",fontFamily : FontFamily(appLang) }}
