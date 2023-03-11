@@ -10,6 +10,7 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import Spinner from "../components/Spinner";
 import BrowseScripture from "../components/BrowseScripture";
+import BrowseBcvNotes from "../components/BrowseBcvNotes";
 import { directionText, FontFamily } from "../i18n/languageDirection";
 import AppLangContext from "../contexts/AppLangContext";
 import i18n from "../i18n";
@@ -37,6 +38,7 @@ export default function EntryBrowsePage({ setAppLanguage }) {
               id: """%entryId%"""
               revision: """%revision%"""
             ) {
+              types
               language
               title
               canonResource(type:"succinct") {content}
@@ -115,54 +117,92 @@ export default function EntryBrowsePage({ setAppLanguage }) {
   if (entryInfo?.canonResource?.content) {
     pk.loadSuccinctDocSet(JSON.parse(entryInfo.canonResource.content));
   }
-
-  return (
-    <Container fixed className="homepage">
-      <Header setAppLanguage={setAppLanguage} selected="list" />
-      <Box style={{ marginTop: "100px" }}>
-        <Typography
-          dir={directionText(appLang)}
-          variant="h4"
-          paragraph="true"
-          sx={{ mt: "20px" }}
-          style={{ fontFamily: FontFamily(appLang) }}
-        >
-          <Button>
-            <RouterLink to={`/entry/details/${source}/${entryId}/${revision}`}>
-              {setArrow(appLang)}
-            </RouterLink>
-          </Button>
-          {entryInfo && entryInfo.title}
-          {!entryInfo && "Loading..."}
-          <Button onClick={handleOpenSearchModal}>
-              <SearchIcon color="primary" sx={{ fontSize: 30 }} />
-          </Button>
-          <SearchModal openSearchModal={openSearchModal} handleCloseSearchModal={handleCloseSearchModal} pk={pk}/>
-          <Button onClick={handleOpenPrintModal}>
-            <PrintIcon color="primary"sx={{ fontSize: 30 }}/>
-          </Button>
-          <PrintModal
-              openPrintModal={openPrintModal}
-              handleClosePrintModal={handleClosePrintModal}
-              pk={pk}
-              docId={docId}
-          />
-        </Typography>
-        {entryInfo &&
-          entryInfo.canonResource &&
-          entryInfo.canonResource.content && <BrowseScripture pk={pk} docId={docId} setDocId={setDocId}/>}
-        {(!entryInfo ||
-          !entryInfo.canonResource ||
-          !entryInfo.canonResource.content) && (
-          <Typography
-            paragraph="true"
-            style={{ fontFamily: FontFamily(appLang) }}
-          >
-            {i18n(appLang, "BROWSE_PAGE_YET_WARNING")}
-          </Typography>
-        )}
-        <Footer />
-      </Box>
-    </Container>
-  );
+  if (entryInfo.type) {
+    return (
+        <Container fixed className="homepage">
+          <Header setAppLanguage={setAppLanguage} selected="list"/>
+          <Box style={{marginTop: "100px"}}>
+            <Typography
+                dir={directionText(appLang)}
+                variant="h4"
+                paragraph="true"
+                sx={{mt: "20px"}}
+                style={{fontFamily: FontFamily(appLang)}}
+            >
+              <Button>
+                <RouterLink to={`/entry/details/${source}/${entryId}/${revision}`}>
+                  {setArrow(appLang)}
+                </RouterLink>
+              </Button>
+              {entryInfo && entryInfo.title}
+              {!entryInfo && "Loading..."}
+              <Button onClick={handleOpenSearchModal}>
+                <SearchIcon color="primary" sx={{fontSize: 30}}/>
+              </Button>
+              <SearchModal openSearchModal={openSearchModal} handleCloseSearchModal={handleCloseSearchModal} pk={pk}/>
+              <Button onClick={handleOpenPrintModal}>
+                <PrintIcon color="primary" sx={{fontSize: 30}}/>
+              </Button>
+              <PrintModal
+                  openPrintModal={openPrintModal}
+                  handleClosePrintModal={handleClosePrintModal}
+                  pk={pk}
+                  docId={docId}
+              />
+            </Typography>
+            {entryInfo &&
+                entryInfo.canonResource &&
+                entryInfo.canonResource.content && <BrowseScripture pk={pk} docId={docId} setDocId={setDocId}/>}
+            {(!entryInfo ||
+                !entryInfo.canonResource ||
+                !entryInfo.canonResource.content) && (
+                <Typography
+                    paragraph="true"
+                    style={{fontFamily: FontFamily(appLang)}}
+                >
+                  {i18n(appLang, "BROWSE_PAGE_YET_WARNING")}
+                </Typography>
+            )}
+            <Footer/>
+          </Box>
+        </Container>
+    );
+  } else {
+    return (
+        <Container fixed className="homepage">
+          <Header setAppLanguage={setAppLanguage} selected="list"/>
+          <Box style={{marginTop: "100px"}}>
+            <Typography
+                dir={directionText(appLang)}
+                variant="h4"
+                paragraph="true"
+                sx={{mt: "20px"}}
+                style={{fontFamily: FontFamily(appLang)}}
+            >
+              <Button>
+                <RouterLink to={`/entry/details/${source}/${entryId}/${revision}`}>
+                  {setArrow(appLang)}
+                </RouterLink>
+              </Button>
+              {entryInfo && entryInfo.title}
+              {!entryInfo && "Loading..."}
+            </Typography>
+            {entryInfo &&
+                entryInfo.canonResource &&
+                entryInfo.canonResource.content && <BrowseBcvNotes pk={pk}/>}
+            {(!entryInfo ||
+                !entryInfo.canonResource ||
+                !entryInfo.canonResource.content) && (
+                <Typography
+                    paragraph="true"
+                    style={{fontFamily: FontFamily(appLang)}}
+                >
+                  {i18n(appLang, "BROWSE_PAGE_YET_WARNING")}
+                </Typography>
+            )}
+            <Footer/>
+          </Box>
+        </Container>
+    );
+  }
 }
