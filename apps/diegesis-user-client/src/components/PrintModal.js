@@ -110,7 +110,6 @@ export default function PrintModal({
       for (const name of allN) {
           ret[`show${name.substring(0, 1).toUpperCase()}${name.substring(1)}`] = (includedN.includes(name));
       }
-      console.log(ret);
       return ret;
     }
 
