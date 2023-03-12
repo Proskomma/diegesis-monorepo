@@ -117,7 +117,7 @@ export default function EntryBrowsePage({ setAppLanguage }) {
   if (entryInfo?.canonResource?.content) {
     pk.loadSuccinctDocSet(JSON.parse(entryInfo.canonResource.content));
   }
-  if (entryInfo.type) {
+  if (entryInfo.types.includes('bible')) {
     return (
         <Container fixed className="homepage">
           <Header setAppLanguage={setAppLanguage} selected="list"/>

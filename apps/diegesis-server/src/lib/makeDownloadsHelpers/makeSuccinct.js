@@ -26,6 +26,7 @@ function getSuccinct({config, org, pk, metadata, contentType, stats, verbose}) {
         const bookResources = entryBookResourcesForCategory(config, org, metadata.id, metadata.revision, `${contentType}Books`);
         const bookContent = bookResources.map(r => readEntryBookResource(config, org, metadata.id, metadata.revision, `${contentType}Books`, r));
         if (["usfm", "usx", "succinct"].includes(contentType)) {
+            const bookContent = bookResources.map(r => readEntryBookResource(config, org, metadata.id, metadata.revision, `${contentType}Books`, r));
             pk.importDocuments(
                 {
                     source: org,
@@ -76,11 +77,14 @@ function getSuccinct({config, org, pk, metadata, contentType, stats, verbose}) {
                 }
                 return ret;
             };
+            const bookContent = bookResources.map(
+                r => [r.split('.')[0], readEntryBookResource(config, org, metadata.id, metadata.revision, `${contentType}Books`, r)]
+            );
             const booksContent = bookContent
                 .map(
-                    bc => bc.split('\n')
+                    bc => bc[1].split('\n')
                         .slice(1)
-                        .map(l => l.trim())
+                        .map(l => (bc[0] + " " + l).trim())
                         .join('\n')
                 )
                 .join('\n');
