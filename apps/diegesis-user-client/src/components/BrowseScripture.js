@@ -4,16 +4,17 @@ import {
   Grid,
   FormGroup,
   Box,
-  Button,
+  OutlinedInput,
+  Select,
+  MenuItem,
 } from "@mui/material";
-import { Tune } from "@mui/icons-material";
 import { SofriaRenderFromProskomma } from "proskomma-json-tools";
 import sofria2WebActions from "../renderer/sofria2web";
 import DocSelector from "./DocSelector";
 import AppLangContext from "../contexts/AppLangContext";
 import { directionText, FontFamily } from "../i18n/languageDirection";
 import { renderers } from "../renderer/render2react";
-import ScriptureSwitchField from "./ScriptureSwitchField";
+import i18n from "../i18n";
 
 export default function BrowseScripture({ pk, docId, setDocId }) {
   const appLang = useContext(AppLangContext);
@@ -32,10 +33,92 @@ export default function BrowseScripture({ pk, docId, setDocId }) {
     showCharacterMarkup: true,
     showChapterLabels: true,
     showVersesLabels: true,
-    updatedAtts:false
+    updatedAtts: false,
   });
 
-  const [showSettings, setShowSettings] = useState(false);
+  const allNames = [
+    "wordAtts",
+    "titles",
+    "headings",
+    "introductions",
+    "footnotes",
+    "xrefs",
+    "paraStyles",
+    "characterMarkup",
+    "chapterLabels",
+    "versesLabels",
+  ];
+
+  const [includedNames, setIncludedNames] = useState(allNames);
+  const [includedFlags, setIncludedFlags] = useState({
+    showWordAtts: true,
+    showTitles: true,
+    showHeadings: true,
+    showIntroductions: true,
+    showFootnotes: true,
+    showXrefs: true,
+    showParaStyles: true,
+    showCharacterMarkup: true,
+    showChapterLabels: true,
+    showVersesLabels: true,
+  });
+  const getStyles = (name) => {
+    return {
+      fontWeight: includedNames.indexOf(name) === -1 ? "normal" : "bold",
+    };
+  };
+
+  const handleIncludedChange = (event) => {
+    const {
+      target: { value },
+    } = event;
+    setIncludedNames(
+      // On autofill we get a stringified value.
+      typeof value === "string" ? value.split(",") : value
+    );
+  };
+
+  const makeIncludedFlags = (allN, includedN) => {
+    const ret = {};
+    for (const name of allN) {
+      ret[`show${name.substring(0, 1).toUpperCase()}${name.substring(1)}`] =
+        includedN.includes(name);
+    }
+    return ret;
+  };
+
+  useEffect(() => {
+    const flags = makeIncludedFlags(allNames, includedNames);
+    setIncludedFlags({
+      ...includedFlags,
+      showWordAtts: flags.showWordAtts,
+      showTitles: flags.showTitles,
+      showHeadings: flags.showHeadings,
+      showIntroductions: flags.showIntroductions,
+      showFootnotes: flags.showFootnotes,
+      showXrefs: flags.showXrefs,
+      showParaStyles: flags.showParaStyles,
+      showCharacterMarkup: flags.showCharacterMarkup,
+      showChapterLabels: flags.showChapterLabels,
+      showVersesLabels: flags.showVersesLabels,
+    });
+  }, [includedNames]);
+
+  useEffect(() => {
+    setScriptureData({
+      ...scriptureData,
+      showWordAtts: includedFlags.showWordAtts,
+      showTitles: includedFlags.showTitles,
+      showHeadings: includedFlags.showHeadings,
+      showIntroductions: includedFlags.showIntroductions,
+      showFootnotes: includedFlags.showFootnotes,
+      showXrefs: includedFlags.showXrefs,
+      showParaStyles: includedFlags.showParaStyles,
+      showCharacterMarkup: includedFlags.showCharacterMarkup,
+      showChapterLabels: includedFlags.showChapterLabels,
+      showVersesLabels: includedFlags.showVersesLabels,
+    });
+  }, [includedFlags]);
 
   const docName = (d) => {
     return (
@@ -100,13 +183,23 @@ export default function BrowseScripture({ pk, docId, setDocId }) {
         renderedDocId: newDocId,
         menuQuery,
         rendered: output.paras,
+        showWordAtts: includedFlags.showWordAtts,
+        showTitles: includedFlags.showTitles,
+        showHeadings: includedFlags.showHeadings,
+        showIntroductions: includedFlags.showIntroductions,
+        showFootnotes: includedFlags.showFootnotes,
+        showXrefs: includedFlags.showXrefs,
+        showParaStyles: includedFlags.showParaStyles,
+        showCharacterMarkup: includedFlags.showCharacterMarkup,
+        showChapterLabels: includedFlags.showChapterLabels,
+        showVersesLabels: includedFlags.showVersesLabels,
         updatedAtts: false,
       });
       if (docId !== newDocId) {
         setDocId(newDocId);
       }
     }
-  }, [scriptureData, docId]);
+  }, [scriptureData, docId, includedNames]);
   const docMenuItems =
     scriptureData.menuQuery &&
     scriptureData.menuQuery.data &&
@@ -117,51 +210,40 @@ export default function BrowseScripture({ pk, docId, setDocId }) {
           label: docName(d),
         }))
       : [];
+  console.log(includedFlags);
+  console.log(scriptureData);
   return (
     <Grid
       container
       dir={directionText(appLang)}
       style={{ fontFamily: FontFamily(appLang) }}
+      sx={{
+        display:'flex',
+        justifyContent:'space-around'
+      }}
     >
-      <Grid item xs={12} sm={4} md={2} lg={2}>
+      <Grid item>
         <Box sx={{ marginRight: "5px" }}>
-          <FormGroup
-            sx={{
-              padding: "10px",
-              backgroundColor: showSettings ? "#ccc" : "inherit",
-            }}
-          >
-            <Button onClick={() => setShowSettings(!showSettings)}>
-              <Tune />
-            </Button>
-            {showSettings && (
-              <Box style={{ fontFamily: FontFamily(appLang) }}>
-                {[
-                  ["showTitles", "BROWSE_PAGE_TITLES"],
-                  ["showHeadings", "BROWSE_PAGE_HEADINGS"],
-                  ["showIntroductions", "BROWSE_PAGE_INTRODUCTIONS"],
-                  ["showFootnotes", "BROWSE_PAGE_FOOTNOTES"],
-                  ["showXrefs", "BROWSE_PAGE_XREFS"],
-                  ["showParaStyles", "BROWSE_PAGE_PARA_STYLES"],
-                  ["showCharacterMarkup", "BROWSE_PAGE_CHAR_STYLES"],
-                  ["showChapterLabels", "BROWSE_PAGE_CHAPTER_NUMBERS"],
-                  ["showVersesLabels", "BROWSE_PAGE_VERSE_NUMBERS"],
-                  ["showWordAtts", "BROWSE_PAGE_WORD_INFO"],
-                ].map((fSpec, n) => (
-                  <ScriptureSwitchField
-                    key={n}
-                    fieldName={fSpec[0]}
-                    labelKey={fSpec[1]}
-                    scriptureData={scriptureData}
-                    setScriptureData={setScriptureData}
-                  />
-                ))}
-              </Box>
-            )}
+          <FormGroup>
+            <Select
+              labelId="included-content-group-label"
+              id="included-content"
+              multiple
+              value={includedNames}
+              onChange={handleIncludedChange}
+              input={<OutlinedInput label="Name" />}
+              sx={{ width: 450 }}
+            >
+              {allNames.map((name) => (
+                <MenuItem key={name} value={name} style={getStyles(name)}>
+                  {name}
+                </MenuItem>
+              ))}
+            </Select>
           </FormGroup>
         </Box>
       </Grid>
-      <Grid item xs={12} sm={4} md={7} lg={8}>
+      <Grid item>
         <DocSelector
           docs={docMenuItems}
           docId={docId}
@@ -177,7 +259,7 @@ export default function BrowseScripture({ pk, docId, setDocId }) {
         {scriptureData.rendered && docId === scriptureData.renderedDocId ? (
           <>{scriptureData.rendered}</>
         ) : (
-          <Typography>Loading...</Typography>
+          <Typography>{i18n(appLang,"LOADING")}...</Typography>
         )}
       </Grid>
     </Grid>

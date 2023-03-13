@@ -102,5 +102,6 @@
     "PAGE_SIZE":"Taille de la page",
     "COLUMNS":"Colonnes",
     "PREVIEW_DOCUMENT":"Aperçu du document",
-    "INCLUDED_CONTENT":"Contenu inclus"
+    "INCLUDED_CONTENT":"Contenu inclus",
+    "LOADING":"Chargement"
 }

@@ -21,7 +21,7 @@ export default function ColumnsSelector({ formLabelTitle, listItems,formatData ,
           <FormLabel
             id="page-size-group-label"
             style={{ fontFamily: FontFamily(appLang) }}
-            sx={{marginRight:'5%'}}
+            sx={{marginRight:'5%',marginTop:'1%'}}
           >
             {formLabelTitle}
           </FormLabel>

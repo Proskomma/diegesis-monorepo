@@ -102,5 +102,6 @@
     "PAGE_SIZE":"Page Size",
     "COLUMNS":"Columns",
     "PREVIEW_DOCUMENT":"Preview Document",
-    "INCLUDED_CONTENT":"Included Content"
+    "INCLUDED_CONTENT":"Included Content",
+    "LOADING":"Loading"
 }

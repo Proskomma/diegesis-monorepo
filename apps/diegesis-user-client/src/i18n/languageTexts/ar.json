@@ -102,5 +102,6 @@
     "PAGE_SIZE":"حجم الصفحة",
     "COLUMNS":"الأعمدة",
     "PREVIEW_DOCUMENT":"معاينة المستند",
-    "INCLUDED_CONTENT":"المحتوى المضمن"
+    "INCLUDED_CONTENT":"المحتوى المضمن",
+    "LOADING":"جارٍ التحميل"
 }
