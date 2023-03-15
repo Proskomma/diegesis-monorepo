@@ -1,91 +1,45 @@
-import * as React from 'react';
-import { useTheme } from '@mui/material/styles';
-import Box from '@mui/material/Box';
-import OutlinedInput from '@mui/material/OutlinedInput';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import Select from '@mui/material/Select';
-import Chip from '@mui/material/Chip';
+const regex =
+  /^(("[HG][0-9]{3,5}")||("[A-Z0-9]{3}[ ]{1}[0-9]+:[0-9]+")||("[A-Z0-9]{3}[ ]{1}[0-9]+")||("[A-Za-z]+"))$/;
+const StrongsRegex = /^"[HG][0-9]{3,5}"$/;
+const BCVRegex = /^"[A-Z0-9]{3}[ ]{1}[0-9]+:[0-9]+"$/;
+const BCRegex = /^"[A-Z0-9]{3}[ ]{1}[0-9]+"$/;
+const TextRegex = /^"[A-Za-z]+"$/;
 
-const ITEM_HEIGHT = 48;
-const ITEM_PADDING_TOP = 8;
-const MenuProps = {
-  PaperProps: {
-    style: {
-      maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
-      width: 250,
-    },
-  },
+const matchingWords = function matchingWords() {
+  const ret = [];
+  const text = '"H2032""G523""5NH 6""ADV 2:25""hguuvg""1SA 5:1"';
+  let str = "";
+  for (let t = 0; t < text.length; t++) {
+    if (!str.match(StrongsRegex)) {
+      str += text[t];
+      console.log("str :", str);
+    }
+    if (str.match(StrongsRegex)) {
+      ret.push([str.match(StrongsRegex).input, "Strongs"]);
+      str = "";
+      console.log(ret);
+    }
+    if (str.match(BCVRegex)) {
+      ret.push([str.match(BCVRegex).input, "BCV"]);
+      str = "";
+      console.log(ret);
+    }
+    if (str.match(BCRegex)) {
+      ret.push([str.match(BCRegex).input, "BC"]);
+      str = "";
+      console.log(ret);
+    }
+    if (str.match(TextRegex)) {
+      ret.push([str.match(TextRegex).input, "text"]);
+      str = "";
+      console.log(ret);
+    }
+  }
 };
 
-const names = [
-  'Oliver Hansen',
-  'Van Henry',
-  'April Tucker',
-  'Ralph Hubbard',
-  'Omar Alexander',
-  'Carlos Abbott',
-  'Miriam Wagner',
-  'Bradley Wilkerson',
-  'Virginia Andrews',
-  'Kelly Snyder',
-];
+matchingWords();
 
-function getStyles(name, personName, theme) {
-  return {
-    fontWeight:
-      personName.indexOf(name) === -1
-        ? theme.typography.fontWeightRegular
-        : theme.typography.fontWeightMedium,
-  };
-}
-
-export default function MultipleSelectChip() {
-  const theme = useTheme();
-  const [personName, setPersonName] = React.useState([]);
-
-  const handleChange = (event) => {
-    const {
-      target: { value },
-    } = event;
-    setPersonName(
-      // On autofill we get a stringified value.
-      typeof value === 'string' ? value.split(',') : value,
-    );
-  };
-
-  return (
-    <div>
-      <FormControl sx={{ m: 1, width: 300 }}>
-        <InputLabel id="demo-multiple-chip-label">Chip</InputLabel>
-        <Select
-          labelId="demo-multiple-chip-label"
-          id="demo-multiple-chip"
-          multiple
-          value={personName}
-          onChange={handleChange}
-          input={<OutlinedInput id="select-multiple-chip" label="Chip" />}
-          renderValue={(selected) => (
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-              {selected.map((value) => (
-                <Chip key={value} label={value} />
-              ))}
-            </Box>
-          )}
-          MenuProps={MenuProps}
-        >
-          {names.map((name) => (
-            <MenuItem
-              key={name}
-              value={name}
-              style={getStyles(name, personName, theme)}
-            >
-              {name}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
-    </div>
-  );
-}
+//   const matchingWords = function matchingWords() {
+//     const ret = XRegExp.match('G2012 H222',StrongsRegex,'all');
+//     console.log(ret)
+// }
