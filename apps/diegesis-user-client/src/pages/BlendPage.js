@@ -1,5 +1,5 @@
 import { Container, Typography, Box } from "@mui/material";
-import XRegExp from "xregexp";
+import xre from "xregexp";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import AppLangContext from "../contexts/AppLangContext";
@@ -8,18 +8,23 @@ import i18n from "../i18n";
 import { directionText, FontFamily } from "../i18n/languageDirection";
 
 const regex =
-  /(("[A-Z0-9]{3}[ ]{1}[0-9]+:[0-9]+")|("[HG][0-9]{3,5}")|("[A-Z0-9]{3}[ ]{1}[0-9]+")|([A-Za-z]+))/;
+  /("[HG][0-9]{3,5}")|("[A-Z0-9]{3}[ ]{1}[0-9]+:[0-9]+")|("[A-Z0-9]{3}[ ]{1}[0-9]+")|([A-Za-z]+)/;
 export default function BlendPage({ setAppLanguage }) {
   const matchingWords = () => {
     const textToSearch = '"H2032""G523""5NH 6""ADV 2:25"hguuvg"1SA 5:1"';
-    if (XRegExp.match(textToSearch, regex, "all").length > 0) {
-      console.log(XRegExp.match(textToSearch, regex,'all'));
-    }else{
-      console.log('No Matchs !')
+    const textMatches = xre.match(textToSearch, regex, "all");
+    const resultTable = [null,'Strongs','BCV','BC','Text'];
+    for (const match of textMatches) {
+      const capturedMatch = xre.exec(match,regex)
+      for (let i = 1; i < 5; i++) {
+        if (capturedMatch[i]){
+          resultTable.push([match,resultTable[i]])
+        }
+      }
     }
+    console.log(resultTable);
   };
   matchingWords();
-
 
   const appLang = useContext(AppLangContext);
   return (
