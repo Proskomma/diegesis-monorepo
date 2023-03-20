@@ -117,6 +117,7 @@ export default function BrowseScripture({pk, docId, setDocId}) {
             showCharacterMarkup: includedFlags.showCharacterMarkup,
             showChapterLabels: includedFlags.showChapterLabels,
             showVersesLabels: includedFlags.showVersesLabels,
+            updatedAtts: true,
         });
     }, [includedFlags]);
 
@@ -148,7 +149,7 @@ export default function BrowseScripture({pk, docId, setDocId}) {
         } else {
             newDocId = docId;
         }
-        if (newDocId !== scriptureData.renderedDocId || scriptureData.updatedAtts) {
+        if ((newDocId !== scriptureData.renderedDocId) || scriptureData.updatedAtts) {
             const renderer = new SofriaRenderFromProskomma({
                 proskomma: pk,
                 actions: sofria2WebActions,
@@ -210,8 +211,6 @@ export default function BrowseScripture({pk, docId, setDocId}) {
                 label: docName(d),
             }))
             : [];
-    console.log(includedFlags);
-    console.log(scriptureData);
     return (
         <Grid
             container

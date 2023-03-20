@@ -155,6 +155,7 @@ export default function ScriptureUsfmForm() {
   const buildQuery = () => {
     let gqlBits = [];
     gqlBits.push("mutation { createLocalEntry(");
+      gqlBits.push('contentType: "scriptureUsfm"');
     gqlBits.push("metadata:[");
     for (const [key, value] of Object.entries(formValues)) {
       gqlBits.push("{");
