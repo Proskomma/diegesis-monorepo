@@ -42,6 +42,7 @@ export default function BrowseBcvNotes({pk}) {
             dir={directionText(appLang)}
             style={{fontFamily: FontFamily(appLang)}}
         >
+            <Grid item>BCV Notes</Grid>
             {
                 rows.map(
                     (r, n) => [
