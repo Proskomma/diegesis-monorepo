@@ -1,5 +1,5 @@
 import React, {useContext, useEffect, useState} from "react";
-import {Grid,} from "@mui/material";
+import {Grid, TextField} from "@mui/material";
 import ReactMarkdown from 'react-markdown';
 import AppLangContext from "../contexts/AppLangContext";
 import {directionText, FontFamily} from "../i18n/languageDirection";
@@ -13,11 +13,14 @@ export default function BrowseBcvNotes({pk}) {
     const [rows, setRows] = useState([]);
 
     useEffect(() => {
+        if (notesData.length < 5) {
+            return;
+        }
         const docQuery =
             `{
           documents {
             tableSequences {
-              rows(matches:[{colN:0 matching:"""%ref%"""}], columns: [0, 1, 6]) {
+              rows(equals:[{colN:0 values:"""%ref%"""}], columns: [0, 1, 6]) {
                 text
               }
             }
@@ -42,6 +45,17 @@ export default function BrowseBcvNotes({pk}) {
             dir={directionText(appLang)}
             style={{fontFamily: FontFamily(appLang)}}
         >
+            <Grid item xs={12}>
+                <TextField
+                    value={notesData.ref}
+                    onChange={(e) => setNotesData({...notesData, ref:e.target.value})}
+                    label={"Reference"}
+                    size="small"
+                    id="searchReference"
+                    variant="filled"
+                    color="primary"
+                />
+            </Grid>
             {
                 rows.map(
                     (r, n) => [
