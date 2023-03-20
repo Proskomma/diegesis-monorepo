@@ -200,6 +200,8 @@ export default function BrowseScripture({ pk, docId, setDocId }) {
       }
     }
   }, [scriptureData, docId, includedNames]);
+
+
   const docMenuItems =
     scriptureData.menuQuery &&
     scriptureData.menuQuery.data &&
@@ -210,8 +212,6 @@ export default function BrowseScripture({ pk, docId, setDocId }) {
           label: docName(d),
         }))
       : [];
-  console.log(includedFlags);
-  console.log(scriptureData);
   return (
     <Grid
       container

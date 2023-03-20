@@ -14,6 +14,7 @@ import AppLangContext from "../contexts/AppLangContext";
 import i18n from "../i18n";
 import { directionText, FontFamily } from "../i18n/languageDirection";
 import DocSelector from "./DocSelector";
+import xre from "xregexp";
 
 const style = {
   position: "absolute",
@@ -29,7 +30,14 @@ const style = {
   maxHeight: "95%",
 };
 
-export default function SearchModal({openSearchModal,handleCloseSearchModal,pk,}) {
+const regex = xre(
+  '"([hHgG][0-9]{3,5})"|"([A-Z0-9]{3}[ ]{1}[0-9]+)"|([\\p{L}\\p{M}]+)'
+);
+export default function SearchModal({
+  openSearchModal,
+  handleCloseSearchModal,
+  pk,
+}) {
   const appLang = useContext(AppLangContext);
 
   const searchQueryTitle = i18n(appLang, "CONTROLS_SEARCHQUERY");
@@ -45,6 +53,8 @@ export default function SearchModal({openSearchModal,handleCloseSearchModal,pk,}
   const [validQuery, setValidQuery] = useState(false);
   const [searchFinished, setSearchFinished] = useState(false);
   const [matches, setMatches] = useState([]);
+  const [searchTerms, setSearchTerms] = useState([]);
+  const [isSearchable, setIsSearchable] = useState(false);
 
   const docName = (d) => {
     return (
@@ -55,6 +65,36 @@ export default function SearchModal({openSearchModal,handleCloseSearchModal,pk,}
       d.headers.filter((d) => d.key === "bookCode")[0].value
     );
   };
+
+  useEffect(() => {
+    const textMatches = xre.match(searchQuery, regex, "all");
+    const resultTable = [null, "strongs", "bc", "text"];
+    const terms = {
+      strongs: [],
+      bc: [],
+      text: [],
+    };
+    for (const match of textMatches) {
+      const capturedMatch = xre.exec(match, regex);
+      for (let i = 1; i < resultTable.length; i++) {
+        if (capturedMatch[i]) {
+          terms[resultTable[i]].push(capturedMatch[i]);
+          continue;
+        }
+      }
+    }
+    setSearchTerms(terms);
+  }, [searchQuery]);
+
+  useEffect(() => {
+    let ret;
+    for (const term of Object.keys(searchTerms)) {
+      if (searchTerms[term].length > 0) {
+        ret = true;
+      }
+      setIsSearchable(ret);
+    }
+  }, [searchTerms]);
 
   useEffect(() => {
     const docSetInfo = pk.gqlQuerySync(
@@ -86,17 +126,6 @@ export default function SearchModal({openSearchModal,handleCloseSearchModal,pk,}
       return;
     }
 
-    let strongsNums = searchQuery.split(",");
-
-    const re = /^[hHgG]\d{3,4}$/; // Strong's number pattern
-
-    for (let id = 0; id < strongsNums.length; id++) {
-      if (!re.test(strongsNums[id])) {
-        setValidQuery(false);
-        return;
-      }
-    }
-
     if (!docId || docId === "pleaseChoose") {
       setMatches([]);
       return;
@@ -105,6 +134,7 @@ export default function SearchModal({openSearchModal,handleCloseSearchModal,pk,}
     setValidQuery(true);
   }, [searchEntireBible, searchQuery, docId, matchAll]);
 
+
   const runSearch = () => {
     setMatches([]);
 
@@ -112,25 +142,37 @@ export default function SearchModal({openSearchModal,handleCloseSearchModal,pk,}
       return;
     }
 
-    let strongsNums = searchQuery.split(",");
+    let strongsNums = searchTerms["strongs"];
     const strongAtts = "attribute/spanWithAtts/w/strong/0/";
 
     strongsNums.forEach((num, id) => {
       strongsNums[id] = '"' + strongAtts + num.toUpperCase() + '"';
     });
-
     const scopes = strongsNums.join(", ");
 
+    let textStrings = searchTerms["text"];
+    textStrings.forEach((str, id) => {
+      textStrings[id] = '"' + str + '"';
+    });
+    const textScopes = textStrings.join(", ");
+    
     const matchAllString = matchAll ? "true" : "false";
 
-    const queryCore = `cvMatching( withScopes:[${scopes}] allScopes:${matchAllString}) {
+    let params = "";
+    if (textStrings.length > 0) {
+      params = `withChars:[${textScopes}] allChars:${matchAllString}`;
+    }
+    if (strongsNums.length > 0) {
+      params += ` withScopes:[${scopes}] allScopes:${matchAllString}`;
+    }
+
+    const queryCore = `cvMatching(${params}) {
               scopeLabels
               tokens {
                 payload
                 scopes( startsWith: "${strongAtts}")
               }
             }`;
-
     const bibleQuery = `{
               documents(sortedBy:"paratext") {
                 id
@@ -148,7 +190,6 @@ export default function SearchModal({openSearchModal,handleCloseSearchModal,pk,}
     const result = pk.gqlQuerySync(
       searchEntireBible ? bibleQuery : singleBookQuery
     );
-
     if (searchEntireBible) {
       let matches = [];
       result.data.documents.forEach((doc) => {
@@ -235,7 +276,7 @@ export default function SearchModal({openSearchModal,handleCloseSearchModal,pk,}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   label={searchQueryTitle}
-                  helperText="H1234,H2345,G3456"
+                  helperText='Strongs:"H1234" or BC:"1CH 12" or Text'
                 />
               </Grid>
               <Grid item xs={6} sm={4} md={2} lg={2}>
@@ -256,7 +297,11 @@ export default function SearchModal({openSearchModal,handleCloseSearchModal,pk,}
                 lg={2}
                 sx={{ justifySelf: "flex-end" }}
               >
-                <Button variant="contained" onClick={() => runSearch()}>
+                <Button
+                  variant="contained"
+                  onClick={() => runSearch()}
+                  disabled={!isSearchable}
+                >
                   <span style={{ fontFamily: FontFamily(appLang) }}>
                     {runSearchTitle}
                   </span>
@@ -278,9 +323,7 @@ export default function SearchModal({openSearchModal,handleCloseSearchModal,pk,}
                 ) : (
                   <div>
                     <p>
-                      <span
-                        style={{ fontFamily: FontFamily(appLang) }}
-                      >
+                      <span style={{ fontFamily: FontFamily(appLang) }}>
                         {i18n(appLang, "SEARCH_OCCURENCES_FOUND")}
                       </span>{" "}
                       : {matches.length}{" "}

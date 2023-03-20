@@ -18,6 +18,7 @@ import SearchModal from "../components/SearchModal";
 import PrintModal from "../components/PrintModal";
 import PrintIcon from '@mui/icons-material/Print';
 
+
 export default function EntryBrowsePage({ setAppLanguage }) {
   const appLang = useContext(AppLangContext);
   const { source, entryId, revision } = useParams();
@@ -72,6 +73,7 @@ export default function EntryBrowsePage({ setAppLanguage }) {
       return <ArrowForward color="primary" />;
     }
   };
+
 
   if (!entryInfo) {
     return (
