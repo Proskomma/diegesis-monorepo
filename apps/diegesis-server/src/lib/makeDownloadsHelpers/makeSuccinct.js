@@ -73,7 +73,8 @@ function getSuccinct({config, org, pk, metadata, contentType, stats, verbose}) {
                 }
 
                 for (const row of rows) {
-                    ret.rows.push(row.split('\t'));
+                    const cells = row.split('\t');
+                    ret.rows.push([cells[0], cells[1], cells[6]]);
                 }
                 return ret;
             };

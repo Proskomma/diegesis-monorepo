@@ -13,14 +13,15 @@ export default function BrowseBcvNotes({pk}) {
     const [rows, setRows] = useState([]);
 
     useEffect(() => {
-        if (notesData.length < 5) {
+        const refTest = /^[A-Z1-6]{3} [0-9]+:[0-9]+$/;
+        if (!refTest.test(notesData.ref)) {
             return;
         }
         const docQuery =
             `{
           documents {
             tableSequences {
-              rows(equals:[{colN:0 values:"""%ref%"""}], columns: [0, 1, 6]) {
+              rows(equals:[{colN:0 values:"""%ref%"""}], columns: [0, 1, 2]) {
                 text
               }
             }
