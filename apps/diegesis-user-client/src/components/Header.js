@@ -6,7 +6,6 @@ import {
     Engineering,
     Dataset,
     Diversity3,
-    Blender,
 } from "@mui/icons-material";
 import langTable from "../i18n/languages.json"
 import AppLangContext from "../contexts/AppLangContext";
