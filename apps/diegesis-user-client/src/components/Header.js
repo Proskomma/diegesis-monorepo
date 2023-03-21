@@ -12,8 +12,6 @@ import langTable from "../i18n/languages.json"
 import AppLangContext from "../contexts/AppLangContext";
 import { alignmentText } from "../i18n/languageDirection";
 
-
-
 export default function Header({selected, children, setAppLanguage}) {
     const linkBoxStyles = {
         m: 3,
@@ -30,7 +28,7 @@ export default function Header({selected, children, setAppLanguage}) {
     const appLang = useContext(AppLangContext);
 
     const handleLanguageChange = e => setAppLanguage(e.target.value)
-    
+
     return (
         <AppBar position="fixed">
             <Toolbar dir={alignmentText(appLang) === 'right' ? 'rtl' : 'ltr'}>
@@ -58,13 +56,6 @@ export default function Header({selected, children, setAppLanguage}) {
                         <Box sx={linkBoxStyles}>
                             <Dataset
                                 sx={selected === "list" ? selectedLinkStyles : linkStyles}
-                            />
-                        </Box>
-                    </RouterLink>
-                    <RouterLink to="/blend">
-                        <Box sx={linkBoxStyles}>
-                            <Blender
-                                sx={selected === "mix" ? selectedLinkStyles : linkStyles}
                             />
                         </Box>
                     </RouterLink>
