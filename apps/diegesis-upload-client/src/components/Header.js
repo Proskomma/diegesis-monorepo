@@ -7,25 +7,15 @@ import {
   Select,
   MenuItem,
 } from "@mui/material";
+import { Add, Home } from "@mui/icons-material";
 
 import langTable from "../i18n/languages.json";
 import AppLangContext from "../contexts/AppLangContext";
 import { alignmentText } from "../i18n/languageDirection";
-import { Add, Home } from "@mui/icons-material";
 
-export default function Header({selected, children, setAppLanguage }) {
+export default function Header({children, setAppLanguage }) {
   const appLang = useContext(AppLangContext);
   const handleLanguageChange = (e) => setAppLanguage(e.target.value);
-
-  const showPathName = () => {
-    let ret;
-    if (window.location.pathname === `/uploads/add`) {
-      ret = true;
-    } else {
-      ret = false;
-    }
-    return ret;
-  };
 
   const linkBoxStyles = {
     m: 3,
@@ -34,21 +24,20 @@ export default function Header({selected, children, setAppLanguage }) {
   const selectedLinkStyles = {
     color: "#fff",
   };
-
   return (
     <AppBar position="fixed">
       <Toolbar dir={alignmentText(appLang) === "right" ? "rtl" : "ltr"}>
-        {!showPathName() ? (
+        {window.location.pathname === `/uploads/` ? (
           <Box
             sx={{ display: "flex", flexDirection: "row", flexGrow: 1, m: 3 }}
           >
-            <RouterLink to={`/uploads/add`}>
+            <RouterLink to={`/uploads/add-scripture-usfm`}>
               <Add sx={selectedLinkStyles}></Add>
             </RouterLink>
           </Box>
         ) : (
           <Box sx={{ display: "flex", flexDirection: "row", flexGrow: 1 }}>
-            <RouterLink to={`/uploads`}>
+            <RouterLink to={`/uploads/`}>
               <Box sx={linkBoxStyles}>
                 <Home sx={selectedLinkStyles}/>
               </Box>

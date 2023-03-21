@@ -20,7 +20,7 @@ import {useSnackbar} from "notistack";
 import {gql, useApolloClient} from "@apollo/client";
 
 const documentSuffixRegex = /^[A-Za-z0-9_().-]+.tsv$/;
-const documentRegex = /^\\id ([A-Z1-6]{3})/;
+const documentRegex = /^[^\t\n]+(\t[^\t\n]+){6}\n/;
 const BookRegex = /([a-zA-Z0-9]{3})\.tsv$/;
 
 export default function UwNotesForm() {
@@ -113,7 +113,9 @@ export default function UwNotesForm() {
             fileReader.onloadend = (e) => {
                 const {result} = e.target;
                 if (result) {
-
+                    if (!result.match(documentRegex)) {
+                        return;
+                    }
                     newUploadContent.push({
                         content: result,
                         type: file.name.match(BookRegex)[1],

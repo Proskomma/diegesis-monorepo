@@ -73,7 +73,13 @@ function getSuccinct({config, org, pk, metadata, contentType, stats, verbose}) {
                 }
 
                 for (const row of rows) {
-                    ret.rows.push(row.split('\t'));
+                    const cells = row.split('\t');
+                    let newRow = [cells[0], cells[1]];
+                    if (cells[2]) {
+                        newRow.push(cells[2]);
+                        newRow.push(cells[7]);
+                    }
+                    ret.rows.push(newRow);
                 }
                 return ret;
             };
@@ -84,24 +90,46 @@ function getSuccinct({config, org, pk, metadata, contentType, stats, verbose}) {
                 .map(
                     bc => bc[1].split('\n')
                         .slice(1)
-                        .map(l => (bc[0] + " " + l).trim())
+                        .map(
+                            l => {
+                                let cells = l.split('\t');
+                                cells[0] = bc[0] + " " + cells[0];
+                                cells.unshift(cells[0]);
+                                return cells.join('\t');
+                            }
+                        )
                         .join('\n')
                 )
                 .join('\n');
-            pk.importDocument({
+            const t00 = tsvToTable(
+                booksContent,
+                false,
+            );
+            const bcvIds = {};
+            for (const row of t00.rows) {
+                const bcv = row[0];
+                if (!bcvIds[bcv]) {
+                    bcvIds[bcv] = [];
+                }
+                bcvIds[bcv].push(row[2]);
+            }
+            const t01 = tsvToTable(
+                Object.entries(bcvIds)
+                    .map(
+                        kv => `${kv[0]}\t${kv[1].join(',')}`
+                    ).join('\n'),
+                false
+            )
+                pk.importDocuments({
                     source: org,
                     project: metadata.id,
                     revision: metadata.revision,
                 },
                 'tsv',
-                JSON.stringify(
-                    tsvToTable(
-                        booksContent,
-                        false,
-                    ),
-                    null,
-                    2,
-                )
+                [
+                    JSON.stringify(t00),
+                    JSON.stringify(t01)
+                ]
             )
         }
         const docSet = pk.gqlQuerySync('{docSets { id documents { bookCode: header(id: "bookCode") sequences {type} } } }').data.docSets[0];

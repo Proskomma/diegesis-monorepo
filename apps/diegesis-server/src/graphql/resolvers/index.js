@@ -179,6 +179,7 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
             }
             if (
                 org.config.languages &&
+                (org.config.languages.length > 0) &&
                 !org.config.languages.includes(entry.languageCode.split("-")[0])
             ) {
                 return false;

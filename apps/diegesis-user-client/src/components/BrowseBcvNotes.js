@@ -1,5 +1,5 @@
 import React, {useContext, useEffect, useState} from "react";
-import {Grid, TextField} from "@mui/material";
+import {Grid, TextField, Typography} from "@mui/material";
 import ReactMarkdown from 'react-markdown';
 import AppLangContext from "../contexts/AppLangContext";
 import {directionText, fontFamily} from "../i18n/languageDirection";
@@ -13,14 +13,16 @@ export default function BrowseBcvNotes({pk}) {
     const [rows, setRows] = useState([]);
 
     useEffect(() => {
-        if (notesData.length < 5) {
+        const refTest = /^[A-Z1-6]{3} [0-9]+:[0-9]+$/;
+        if (!refTest.test(notesData.ref)) {
             return;
         }
         const docQuery =
             `{
           documents {
+            bookCode: header(id:"bookCode")
             tableSequences {
-              rows(equals:[{colN:0 values:"""%ref%"""}], columns: [0, 1, 6]) {
+              rows(equals:[{colN:0 values:"""%ref%"""}]) {
                 text
               }
             }
@@ -48,7 +50,7 @@ export default function BrowseBcvNotes({pk}) {
             <Grid item xs={12}>
                 <TextField
                     value={notesData.ref}
-                    onChange={(e) => setNotesData({...notesData, ref:e.target.value})}
+                    onChange={(e) => setNotesData({...notesData, ref: e.target.value})}
                     label={"Reference"}
                     size="small"
                     id="searchReference"
@@ -57,13 +59,22 @@ export default function BrowseBcvNotes({pk}) {
                 />
             </Grid>
             {
+                rows.length > 0 && [
+                    <Grid item xs={1}><Typography variant="h6">ID</Typography></Grid>,
+                    <Grid item xs={2}><Typography variant="h6">Start</Typography></Grid>,
+                    <Grid item xs={2}><Typography variant="h6">End</Typography></Grid>,
+                    <Grid item xs={7}><Typography variant="h6">Content</Typography></Grid>
+                ]
+            }
+            {
                 rows.map(
                     (r, n) => [
-                        <Grid item xs={2} key={n}>{r[0]}</Grid>,
-                        <Grid item xs={2} key={`${n}_bis`}>{r[1]}</Grid>,
-                        <Grid item xs={8} key={`${n}_ter`}>
+                        <Grid item xs={1} key={n}>{r[2]}</Grid>,
+                        <Grid item xs={2} key={`${n}_bis`}>{r[0]}</Grid>,
+                        <Grid item xs={2} key={`${n}_ter`}>{r[1]}</Grid>,
+                        <Grid item xs={7} key={`${n}_quad`}>
                             <ReactMarkdown>
-                                {r[2].replace(/\(See:[^)]+\)/g, "")}
+                                {r[3].replace(/\(See:[^)]+\)/g, "")}
                             </ReactMarkdown>
                         </Grid>,
                     ]

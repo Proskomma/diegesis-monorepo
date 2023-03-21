@@ -26,7 +26,8 @@
       "url": "/uploads",
       "redirectTarget": "../diegesis-upload-client/build/index.html",
       "redirects":[
-        "/uploads/add"
+        "/uploads/add-scripture-usfm",
+        "/uploads/add-uw-notes"
       ]
     },
     {
