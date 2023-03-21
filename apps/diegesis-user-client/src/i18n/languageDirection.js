@@ -5,7 +5,7 @@ const directionText = function directionText(lang) {
     return (lTable ? lTable['textDirection'] : lang)
 }
 
-const FontFamily = function FontFamily(lang) {
+const fontFamily = function fontFamily(lang) {
     const lTable = langTable[lang]
     return (lTable ? lTable['fontFamily'] : 'Arial')
 }
@@ -20,4 +20,4 @@ const getAutonym = function getAutonym(lang){
     const lTable = langTable[lang]
     return (lTable ? lTable['autonym'] : lang)
 }
-export {directionText,alignmentText,getAutonym,FontFamily}
+export {directionText,alignmentText,getAutonym,fontFamily}

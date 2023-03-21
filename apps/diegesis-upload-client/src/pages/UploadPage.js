@@ -4,7 +4,7 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import AppLangContext from "../contexts/AppLangContext";
 import i18n from "../i18n";
-import { directionText, FontFamily } from "../i18n/languageDirection";
+import { directionText, fontFamily } from "../i18n/languageDirection";
 import AddTabsHeader from "../components/AddTabsHeader";
 import ScriptureUsfmForm from "../components/ScriptureUsfmForm";
 import UwNotesForm from "../components/UwNotesForm";
@@ -22,7 +22,7 @@ export default function UploadPage({ setAppLanguage }) {
         variant="h4"
         paragraph="true"
         sx={{ mt: "100px" }}
-        style={{ fontFamily: FontFamily(appLang) }}
+        style={{ fontFamily: fontFamily(appLang) }}
       >
         {i18n(appLang, "Add_Document")}
       </Typography>

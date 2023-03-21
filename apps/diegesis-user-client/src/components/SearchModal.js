@@ -4,6 +4,9 @@ import {
   Checkbox,
   Fade,
   Grid,
+  List,
+  ListItem,
+  ListItemText,
   Modal,
   TextField,
   Typography,
@@ -12,7 +15,7 @@ import Backdrop from "@mui/material/Backdrop";
 import { useContext, useEffect, useState } from "react";
 import AppLangContext from "../contexts/AppLangContext";
 import i18n from "../i18n";
-import { directionText, FontFamily } from "../i18n/languageDirection";
+import { directionText, fontFamily } from "../i18n/languageDirection";
 import DocSelector from "./DocSelector";
 import xre from "xregexp";
 
@@ -33,6 +36,7 @@ const style = {
 const regex = xre(
   '"([hHgG][0-9]{3,5})"|"([A-Z0-9]{3}[ ]{1}[0-9]+)"|([\\p{L}\\p{M}]+)'
 );
+const StrongsRegex = xre('"[HG][0-9]{3,5}"');
 export default function SearchModal({
   openSearchModal,
   handleCloseSearchModal,
@@ -51,10 +55,14 @@ export default function SearchModal({
   const [searchQuery, setSearchQuery] = useState("");
   const [matchAll, setMatchAll] = useState(false);
   const [validQuery, setValidQuery] = useState(false);
-  const [searchFinished, setSearchFinished] = useState(false);
   const [matches, setMatches] = useState([]);
-  const [searchTerms, setSearchTerms] = useState([]);
+  const [searchTerms, setSearchTerms] = useState({
+    strongs: [],
+    bc: [],
+    text: [],
+  });
   const [isSearchable, setIsSearchable] = useState(false);
+  const [unsearchedQuery, setUnsearchedQuery] = useState(true);
 
   const docName = (d) => {
     return (
@@ -118,8 +126,6 @@ export default function SearchModal({
   }, []); // this function (likely) only needs to run on initialization. Is this a good way of making such a function?
 
   useEffect(() => {
-    setSearchFinished(false);
-
     if (searchQuery.length === 0) {
       setValidQuery(false);
       setMatches([]);
@@ -133,7 +139,6 @@ export default function SearchModal({
 
     setValidQuery(true);
   }, [searchEntireBible, searchQuery, docId, matchAll]);
-
 
   const runSearch = () => {
     setMatches([]);
@@ -155,7 +160,7 @@ export default function SearchModal({
       textStrings[id] = '"' + str + '"';
     });
     const textScopes = textStrings.join(", ");
-    
+
     const matchAllString = matchAll ? "true" : "false";
 
     let params = "";
@@ -214,7 +219,7 @@ export default function SearchModal({
       );
     }
 
-    setSearchFinished(true);
+    setUnsearchedQuery(false);
   };
 
   // This could be some kind of utility function
@@ -225,8 +230,12 @@ export default function SearchModal({
   };
 
   const isTokenStrongsInQuery = (token) => {
-    const strongsInQuery = searchQuery.toUpperCase().split(",");
-
+    // const strongsInQuery = searchQuery.replace(/\"/g,"");
+    const strongsMatchingInQuery = xre.match(searchQuery,StrongsRegex,"all")
+    const strongsInQuery = []
+    for (const strong of strongsMatchingInQuery) {
+      strongsInQuery.push(strong.replace(/\"/g, ""))
+    }
     for (let id = 0; id < strongsInQuery.length; id++) {
       if (token.includes(strongsInQuery[id])) {
         return true;
@@ -234,7 +243,6 @@ export default function SearchModal({
     }
     return false;
   };
-
   return (
     <>
       <Modal
@@ -252,6 +260,12 @@ export default function SearchModal({
       >
         <Fade in={openSearchModal}>
           <Box sx={style} dir={directionText(appLang)}>
+            <Typography
+              variant="h4"
+              sx={{ textAlign: "center", marginBottom: "2%" }}
+            >
+              {i18n(appLang, "SEARCH")}
+            </Typography>
             <Grid container>
               <Grid item xs={6} sm={8} md={2} lg={2}>
                 <DocSelector
@@ -267,14 +281,17 @@ export default function SearchModal({
                   value={searchEntireBible}
                   onChange={(e) => setSearchEntireBible(!searchEntireBible)}
                 />
-                <Typography style={{ fontFamily: FontFamily(appLang) }}>
+                <Typography style={{ fontFamily: fontFamily(appLang) }}>
                   {allBooksTitle}
                 </Typography>
               </Grid>
               <Grid item xs={6} sm={8} md={4} lg={4}>
                 <TextField
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(e) => {
+                    setUnsearchedQuery(true);
+                    setSearchQuery(e.target.value);
+                  }}
                   label={searchQueryTitle}
                   helperText='Strongs:"H1234" or BC:"1CH 12" or Text'
                 />
@@ -285,7 +302,7 @@ export default function SearchModal({
                   value={matchAll}
                   onChange={(e) => setMatchAll(!matchAll)}
                 />
-                <Typography style={{ fontFamily: FontFamily(appLang) }}>
+                <Typography style={{ fontFamily: fontFamily(appLang) }}>
                   {matchAllTitle}
                 </Typography>
               </Grid>
@@ -302,31 +319,66 @@ export default function SearchModal({
                   onClick={() => runSearch()}
                   disabled={!isSearchable}
                 >
-                  <span style={{ fontFamily: FontFamily(appLang) }}>
+                  <span style={{ fontFamily: fontFamily(appLang) }}>
                     {runSearchTitle}
                   </span>
                 </Button>
               </Grid>
               <Grid item xs={12}>
-                {!validQuery ? (
-                  <span style={{ fontFamily: FontFamily(appLang) }}>
-                    {i18n(appLang, "SEARCH_NOT_VALID_QUERY")}
-                  </span>
-                ) : !searchFinished ? (
-                  <span style={{ fontFamily: FontFamily(appLang) }}>
-                    {i18n(appLang, "SEARCH_VALID_QUERY")}
-                  </span>
-                ) : matches.length === 0 ? (
-                  <span style={{ fontFamily: FontFamily(appLang) }}>
-                    {i18n(appLang, "SEARCH_NO_OCCURENCES")}
-                  </span>
+                <Typography
+                  sx={{ fontWeight: "bold", fontFamily: fontFamily(appLang) }}
+                >
+                  {i18n(appLang, "SEARCH_TERMS")}
+                </Typography>
+                {searchTerms.strongs.length === 0 &&
+                searchTerms.bc.length === 0 &&
+                searchTerms.text.length === 0 ? (
+                  <Typography>{i18n(appLang, "NO_VALID_TERMS")}</Typography>
                 ) : (
-                  <div>
+                  <List>
+                    {searchTerms.strongs.length === 0 ? (
+                      ""
+                    ) : (
+                      <ListItem>
+                        <ListItemText
+                          sx={{ fontFamily: fontFamily(appLang) }}
+                          dir={directionText(appLang)}
+                          primary={`${i18n(appLang, "STRONGS")} : ${
+                            xre.match(searchQuery,StrongsRegex,"all")
+                          }`}
+                        />
+                      </ListItem>
+                    )}
+                    {searchTerms.bc.length === 0 ? (
+                      ""
+                    ) : (
+                      <ListItem dir={directionText(appLang)}>
+                        <ListItemText
+                          sx={{ fontFamily: fontFamily(appLang) }}
+                          primary={`${i18n(appLang, "BC")} : ${searchTerms.bc}`}
+                        />
+                      </ListItem>
+                    )}
+                    {searchTerms.text.length === 0 ? (
+                      ""
+                    ) : (
+                      <ListItem dir={directionText(appLang)}>
+                        <ListItemText
+                          sx={{ fontFamily: fontFamily(appLang) }}
+                          primary={`${i18n(appLang, "TEXT")} : ${
+                            searchTerms.text
+                          }`}
+                        />
+                      </ListItem>
+                    )}
+                  </List>
+                )}
+                {!unsearchedQuery && (
+                  <>
                     <p>
-                      <span style={{ fontFamily: FontFamily(appLang) }}>
+                      <span style={{ fontFamily: fontFamily(appLang) }}>
                         {i18n(appLang, "SEARCH_OCCURENCES_FOUND")}
-                      </span>{" "}
-                      : {matches.length}{" "}
+                      </span>{" "} : {matches.length}{" "}
                     </p>
                     <ul>
                       {matches.map((match) => {
@@ -349,7 +401,7 @@ export default function SearchModal({
                         );
                       })}
                     </ul>
-                  </div>
+                  </>
                 )}
               </Grid>
             </Grid>

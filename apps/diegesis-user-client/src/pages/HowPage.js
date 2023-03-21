@@ -5,7 +5,7 @@ import Footer from "../components/Footer";
 import { useContext } from "react";
 import AppLangContext from "../contexts/AppLangContext";
 import i18n from "../i18n";
-import { directionText, FontFamily } from "../i18n/languageDirection";
+import { directionText, fontFamily } from "../i18n/languageDirection";
 
 export default function HowPage({ setAppLanguage }) {
   const appLang = useContext(AppLangContext);
@@ -23,14 +23,14 @@ export default function HowPage({ setAppLanguage }) {
           variant="h4"
           paragraph="true"
           sx={{ mt: "20px" }}
-          style={{ fontFamily: FontFamily(appLang) }}
+          style={{ fontFamily: fontFamily(appLang) }}
         >
           {title}
         </Typography>
         <Typography
           variant="body1"
           paragraph="true"
-          style={{ fontFamily: FontFamily(appLang) }}
+          style={{ fontFamily: fontFamily(appLang) }}
         >
           {phrase}{" "}
           <a href="https://github.com/Proskomma/diegesis-monorepo">Github</a>.

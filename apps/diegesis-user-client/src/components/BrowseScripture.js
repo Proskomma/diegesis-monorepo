@@ -12,7 +12,7 @@ import { SofriaRenderFromProskomma } from "proskomma-json-tools";
 import sofria2WebActions from "../renderer/sofria2web";
 import DocSelector from "./DocSelector";
 import AppLangContext from "../contexts/AppLangContext";
-import { directionText, FontFamily } from "../i18n/languageDirection";
+import { directionText, fontFamily } from "../i18n/languageDirection";
 import { renderers } from "../renderer/render2react";
 import i18n from "../i18n";
 
@@ -216,7 +216,7 @@ export default function BrowseScripture({ pk, docId, setDocId }) {
     <Grid
       container
       dir={directionText(appLang)}
-      style={{ fontFamily: FontFamily(appLang) }}
+      style={{ fontFamily: fontFamily(appLang) }}
       sx={{
         display:'flex',
         justifyContent:'space-around'

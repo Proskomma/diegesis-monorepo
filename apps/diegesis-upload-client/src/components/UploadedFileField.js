@@ -8,7 +8,7 @@ import { DeleteForeverRounded } from "@mui/icons-material";
 import AppLangContext from "../contexts/AppLangContext";
 import { useContext} from "react";
 import i18n from "../i18n";
-import { directionText, otherDirectionText, FontFamily } from "../i18n/languageDirection";
+import { directionText, otherDirectionText, fontFamily } from "../i18n/languageDirection";
 
 export default function UploadedFileField({ setFileValues, filesValues }) {
   const appLang = useContext(AppLangContext);
@@ -25,13 +25,13 @@ export default function UploadedFileField({ setFileValues, filesValues }) {
           <Grid item xs={12} sm={6} md={4} lg={3} key={uploadedFile.name}>
             <Card style={{ marginTop: "5%" }}>
               <CardContent dir={directionText(appLang)}>
-                <Typography sx={{ mb: 1.5 }} color="text.secondary" style={{ fontFamily : FontFamily(appLang)}}>
+                <Typography sx={{ mb: 1.5 }} color="text.secondary" style={{ fontFamily : fontFamily(appLang)}}>
                   {uploadedFile.name}
                     {" ("}
                     {`${uploadedFile.content.length} ${i18n(appLang, "BYTES")}`}
                     {")"}
                 </Typography>
-                <Typography sx={{ mb: 1.5 }} color="text.secondary"  dir={directionText(appLang)} style={{ fontFamily : FontFamily(appLang)}}>
+                <Typography sx={{ mb: 1.5 }} color="text.secondary"  dir={directionText(appLang)} style={{ fontFamily : fontFamily(appLang)}}>
                   {i18n(appLang, "BOOK")}: {uploadedFile.type}
                   <DeleteForeverRounded
                   color="error"

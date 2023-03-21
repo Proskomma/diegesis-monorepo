@@ -4,7 +4,7 @@ import Footer from "../components/Footer";
 import AppLangContext from "../contexts/AppLangContext";
 import { useContext } from "react";
 import i18n from "../i18n";
-import { directionText, FontFamily } from "../i18n/languageDirection";
+import { directionText, fontFamily } from "../i18n/languageDirection";
 
 
 export default function BlendPage({ setAppLanguage }) {
@@ -18,7 +18,7 @@ export default function BlendPage({ setAppLanguage }) {
           variant="h4"
           paragraph="true"
           sx={{ mt: "20px" }}
-          style={{ fontFamily: FontFamily(appLang) }}
+          style={{ fontFamily: fontFamily(appLang) }}
         >
           {i18n(appLang, "BLEND_PAGE")}
         </Typography>

@@ -2,7 +2,7 @@ import React, {useContext, useEffect, useState} from "react";
 import {Grid, TextField} from "@mui/material";
 import ReactMarkdown from 'react-markdown';
 import AppLangContext from "../contexts/AppLangContext";
-import {directionText, FontFamily} from "../i18n/languageDirection";
+import {directionText, fontFamily} from "../i18n/languageDirection";
 
 export default function BrowseBcvNotes({pk}) {
     const appLang = useContext(AppLangContext);
@@ -43,7 +43,7 @@ export default function BrowseBcvNotes({pk}) {
         <Grid
             container
             dir={directionText(appLang)}
-            style={{fontFamily: FontFamily(appLang)}}
+            style={{fontFamily: fontFamily(appLang)}}
         >
             <Grid item xs={12}>
                 <TextField

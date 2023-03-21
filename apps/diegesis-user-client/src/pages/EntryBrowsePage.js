@@ -11,7 +11,7 @@ import Footer from "../components/Footer";
 import Spinner from "../components/Spinner";
 import BrowseScripture from "../components/BrowseScripture";
 import BrowseBcvNotes from "../components/BrowseBcvNotes";
-import { directionText, FontFamily } from "../i18n/languageDirection";
+import { directionText, fontFamily } from "../i18n/languageDirection";
 import AppLangContext from "../contexts/AppLangContext";
 import i18n from "../i18n";
 import SearchModal from "../components/SearchModal";
@@ -129,7 +129,7 @@ export default function EntryBrowsePage({ setAppLanguage }) {
                 variant="h4"
                 paragraph="true"
                 sx={{mt: "20px"}}
-                style={{fontFamily: FontFamily(appLang)}}
+                style={{fontFamily: fontFamily(appLang)}}
             >
               <Button>
                 <RouterLink to={`/entry/details/${source}/${entryId}/${revision}`}>
@@ -160,7 +160,7 @@ export default function EntryBrowsePage({ setAppLanguage }) {
                 !entryInfo.canonResource.content) && (
                 <Typography
                     paragraph="true"
-                    style={{fontFamily: FontFamily(appLang)}}
+                    style={{fontFamily: fontFamily(appLang)}}
                 >
                   {i18n(appLang, "BROWSE_PAGE_YET_WARNING")}
                 </Typography>
@@ -179,7 +179,7 @@ export default function EntryBrowsePage({ setAppLanguage }) {
                 variant="h4"
                 paragraph="true"
                 sx={{mt: "20px"}}
-                style={{fontFamily: FontFamily(appLang)}}
+                style={{fontFamily: fontFamily(appLang)}}
             >
               <Button>
                 <RouterLink to={`/entry/details/${source}/${entryId}/${revision}`}>
@@ -197,7 +197,7 @@ export default function EntryBrowsePage({ setAppLanguage }) {
                 !entryInfo.canonResource.content) && (
                 <Typography
                     paragraph="true"
-                    style={{fontFamily: FontFamily(appLang)}}
+                    style={{fontFamily: fontFamily(appLang)}}
                 >
                   {i18n(appLang, "BROWSE_PAGE_YET_WARNING")}
                 </Typography>

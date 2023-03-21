@@ -6,7 +6,7 @@ import {
 } from "@mui/material";
 import { useContext} from "react";
 import AppLangContext from "../contexts/AppLangContext";
-import { directionText, FontFamily } from "../i18n/languageDirection";
+import { directionText, fontFamily } from "../i18n/languageDirection";
 
 export default function PageSizeSelector({
   formLabelTitle,
@@ -25,7 +25,7 @@ export default function PageSizeSelector({
         <FormGroup sx={{display:'flex',flexDirection:'row',alignItems:'flex-start'}} dir={directionText(appLang)}>
           <FormLabel
             id="page-size-group-label"
-            style={{ fontFamily: FontFamily(appLang) }}
+            style={{ fontFamily: fontFamily(appLang) }}
             sx={{marginRight:'5%',marginTop:'1%'}}
           >
             {formLabelTitle}
@@ -40,7 +40,7 @@ export default function PageSizeSelector({
             onChange={(e) => setFormatValue("pageFormat", e.target.value)}
           >
             {Object.entries(listItems).map((pf, n) => (
-              <MenuItem key={n} value={pf[0]} style={{ fontFamily: FontFamily(appLang) }}>
+              <MenuItem key={n} value={pf[0]} style={{ fontFamily: fontFamily(appLang) }}>
                 {pf[1].label}
               </MenuItem>
             ))}
