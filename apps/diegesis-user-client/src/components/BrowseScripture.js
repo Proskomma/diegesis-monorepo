@@ -17,9 +17,14 @@ import AppLangContext from "../contexts/AppLangContext";
 import {directionText, FontFamily} from "../i18n/languageDirection";
 import {renderers} from "../renderer/render2react";
 import i18n from "../i18n";
+import BlendModal from "./BlendModal";
 
 export default function BrowseScripture({pk, docId, setDocId}) {
     const appLang = useContext(AppLangContext);
+
+    const [openBlendModal, setOpenBlendModal] = useState(false);
+    const handleOpenBlendModal = () => setOpenBlendModal(true);
+    const handleCloseBlendModal = () => setOpenBlendModal(false);
 
     const [scriptureData, setScriptureData] = useState({
         menuQuery: null,
@@ -254,11 +259,15 @@ export default function BrowseScripture({pk, docId, setDocId}) {
             </Grid>
             <Grid item xs={6}>
                 <Box display="flex" justifyContent="flex-end">
-                    <Button>
+                    <Button onClick={handleOpenBlendModal}>
                         <Blender color="primary" sx={{fontSize: 30}}/>
                     </Button>
                 </Box>
             </Grid>
+            <BlendModal
+                openBlendModal={openBlendModal}
+                handleCloseBlendModal={handleCloseBlendModal}
+            />
             <Grid item xs={12}>
                 {scriptureData.rendered && docId === scriptureData.renderedDocId ? (
                     <>{scriptureData.rendered}</>
