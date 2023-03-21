@@ -7,7 +7,9 @@ import {
     OutlinedInput,
     Select,
     MenuItem,
+    Button,
 } from "@mui/material";
+import {Blender} from "@mui/icons-material";
 import {SofriaRenderFromProskomma} from "proskomma-json-tools";
 import sofria2WebActions from "../renderer/sofria2web";
 import DocSelector from "./DocSelector";
@@ -15,9 +17,14 @@ import AppLangContext from "../contexts/AppLangContext";
 import {directionText, FontFamily} from "../i18n/languageDirection";
 import {renderers} from "../renderer/render2react";
 import i18n from "../i18n";
+import BlendModal from "./BlendModal";
 
 export default function BrowseScripture({pk, docId, setDocId}) {
     const appLang = useContext(AppLangContext);
+
+    const [openBlendModal, setOpenBlendModal] = useState(false);
+    const handleOpenBlendModal = () => setOpenBlendModal(true);
+    const handleCloseBlendModal = () => setOpenBlendModal(false);
 
     const [scriptureData, setScriptureData] = useState({
         menuQuery: null,
@@ -216,13 +223,8 @@ export default function BrowseScripture({pk, docId, setDocId}) {
             container
             dir={directionText(appLang)}
             style={{fontFamily: FontFamily(appLang)}}
-            sx={{
-                display: 'flex',
-                justifyContent: 'space-around'
-            }}
         >
-            <Grid item>Scripture</Grid>
-            <Grid item>
+            <Grid item xs={12}>
                 <Box sx={{marginRight: "5px"}}>
                     <FormGroup>
                         <Select
@@ -243,7 +245,7 @@ export default function BrowseScripture({pk, docId, setDocId}) {
                     </FormGroup>
                 </Box>
             </Grid>
-            <Grid item>
+            <Grid item xs={6}>
                 <DocSelector
                     docs={docMenuItems}
                     docId={docId}
@@ -255,6 +257,17 @@ export default function BrowseScripture({pk, docId, setDocId}) {
                     }
                 />
             </Grid>
+            <Grid item xs={6}>
+                <Box display="flex" justifyContent="flex-end">
+                    <Button onClick={handleOpenBlendModal}>
+                        <Blender color="primary" sx={{fontSize: 30}}/>
+                    </Button>
+                </Box>
+            </Grid>
+            <BlendModal
+                openBlendModal={openBlendModal}
+                handleCloseBlendModal={handleCloseBlendModal}
+            />
             <Grid item xs={12}>
                 {scriptureData.rendered && docId === scriptureData.renderedDocId ? (
                     <>{scriptureData.rendered}</>
