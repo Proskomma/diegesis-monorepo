@@ -6,6 +6,7 @@ import {
   Grid,
   List,
   ListItem,
+  ListItemButton,
   ListItemText,
   Modal,
   TextField,
@@ -37,6 +38,7 @@ const regex = xre(
   '"([hHgG][0-9]{3,5})"|"([A-Z0-9]{3}[ ]{1}[0-9]+)"|([\\p{L}\\p{M}]+)'
 );
 const StrongsRegex = xre('"[HG][0-9]{3,5}"');
+const textRegex = xre("[\\p{L}\\p{M}]+");
 export default function SearchModal({
   openSearchModal,
   handleCloseSearchModal,
@@ -63,7 +65,6 @@ export default function SearchModal({
   });
   const [isSearchable, setIsSearchable] = useState(false);
   const [unsearchedQuery, setUnsearchedQuery] = useState(true);
-
   const docName = (d) => {
     return (
       d.headers.filter((d) => d.key === "toc3")[0]?.value ||
@@ -221,7 +222,6 @@ export default function SearchModal({
 
     setUnsearchedQuery(false);
   };
-
   // This could be some kind of utility function
   const findValueForLabel = (scopeLabels, label) => {
     for (var i = 0; i < scopeLabels.length; i++) {
@@ -230,19 +230,32 @@ export default function SearchModal({
   };
 
   const isTokenStrongsInQuery = (token) => {
-    // const strongsInQuery = searchQuery.replace(/\"/g,"");
-    const strongsMatchingInQuery = xre.match(searchQuery,StrongsRegex,"all")
-    const strongsInQuery = []
+    const strongsMatchingInQuery = xre.match(searchQuery, StrongsRegex, "all");
+    const strongsInQuery = [];
     for (const strong of strongsMatchingInQuery) {
-      strongsInQuery.push(strong.replace(/\"/g, ""))
+      strongsInQuery.push(strong.replace(/\"/g, ""));
     }
     for (let id = 0; id < strongsInQuery.length; id++) {
       if (token.includes(strongsInQuery[id])) {
         return true;
       }
     }
+  };
+
+  const isTokenTextsInQuery = (token) => {
+    const textMatchingInQuery = xre.match(searchQuery, textRegex, "all");
+    const textInQuery = [];
+    for (const txt of textMatchingInQuery) {
+      textInQuery.push(txt);
+    }
+    for (let id = 0; id < textInQuery.length; id++) {
+      if (token.includes(textInQuery[id])) {
+        return true;
+      }
+    }
     return false;
   };
+
   return (
     <>
       <Modal
@@ -326,6 +339,7 @@ export default function SearchModal({
               </Grid>
               <Grid item xs={12}>
                 <Typography
+                  variant="h6"
                   sx={{ fontWeight: "bold", fontFamily: fontFamily(appLang) }}
                 >
                   {i18n(appLang, "SEARCH_TERMS")}
@@ -343,9 +357,11 @@ export default function SearchModal({
                         <ListItemText
                           sx={{ fontFamily: fontFamily(appLang) }}
                           dir={directionText(appLang)}
-                          primary={`${i18n(appLang, "STRONGS")} : ${
-                            xre.match(searchQuery,StrongsRegex,"all")
-                          }`}
+                          primary={`${i18n(appLang, "STRONGS")} : ${xre.match(
+                            searchQuery,
+                            StrongsRegex,
+                            "all"
+                          )}`}
                         />
                       </ListItem>
                     )}
@@ -375,32 +391,54 @@ export default function SearchModal({
                 )}
                 {!unsearchedQuery && (
                   <>
-                    <p>
-                      <span style={{ fontFamily: fontFamily(appLang) }}>
-                        {i18n(appLang, "SEARCH_OCCURENCES_FOUND")}
-                      </span>{" "} : {matches.length}{" "}
-                    </p>
-                    <ul>
+                    <Typography
+                      variant="h6"
+                      style={{
+                        fontWeight: "bold",
+                        fontFamily: fontFamily(appLang),
+                      }}
+                    >
+                      {i18n(appLang, "SEARCH_OCCURENCES_FOUND")} :
+                      {matches.length}{" "}
+                    </Typography>
+                    <List>
                       {matches.map((match) => {
                         return (
-                          <li>
-                            {match.b + " " + match.c + ":" + match.v}
-                            <br />
-                            {match.t.map((token) => {
-                              return token.scopes.length === 1 ? (
-                                isTokenStrongsInQuery(token.scopes[0]) ? (
-                                  <b>{token.payload}</b>
-                                ) : (
-                                  token.payload
-                                )
-                              ) : (
-                                token.payload
-                              );
-                            })}
-                          </li>
+                          <ListItem>
+                            <Box
+                              sx={{ display: "flex", flexDirection: "column" }}
+                              dir={directionText(appLang)}
+                            >
+                              <ListItemButton
+                                onClick={(e) => console.log(e)}
+                                sx={{
+                                  color: "#007",
+                                  textDecoration: "underline",
+                                }}
+                              >
+                                <ListItemText>
+                                  {match.b + " " + match.c + ":" + match.v}
+                                </ListItemText>
+                              </ListItemButton>
+                              <ListItemText>
+                                {match.t.map((token) => {
+                                  return token.scopes.length === 1 ? (
+                                    isTokenTextsInQuery(token.payload) ||
+                                    isTokenStrongsInQuery(token.scopes[0]) ? (
+                                      <b>{token.payload}</b>
+                                    ) : (
+                                      token.payload
+                                    )
+                                  ) : (
+                                    token.payload
+                                  );
+                                })}
+                              </ListItemText>
+                            </Box>
+                          </ListItem>
                         );
                       })}
-                    </ul>
+                    </List>
                   </>
                 )}
               </Grid>

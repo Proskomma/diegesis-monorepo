@@ -98,7 +98,7 @@
     "SEARCH_NOT_VALID_QUERY":"Entrez un ou plusieurs numéros valides dans la zone de recherche...",
     "SEARCH_VALID_QUERY":"Requête valide détectée. Cliquez sur 'lancer la recherche' pour effectuer la recherche",
     "SEARCH_NO_OCCURENCES":"Il n'y a pas d'occurrences de ce(s) terme(s) dans le cadre sélectionné...",
-    "SEARCH_OCCURENCES_FOUND":"occurrences trouvées" ,
+    "SEARCH_OCCURENCES_FOUND":"Occurrences trouvées" ,
     "PAGE_SIZE":"Taille de la page",
     "COLUMNS":"Colonnes",
     "PREVIEW_DOCUMENT":"Aperçu du document",
