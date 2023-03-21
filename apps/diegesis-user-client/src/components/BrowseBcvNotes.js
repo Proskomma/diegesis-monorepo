@@ -20,6 +20,7 @@ export default function BrowseBcvNotes({pk}) {
         const docQuery =
             `{
           documents {
+            bookCode: header(id:"bookCode")
             tableSequences {
               rows(equals:[{colN:0 values:"""%ref%"""}]) {
                 text

@@ -74,7 +74,12 @@ function getSuccinct({config, org, pk, metadata, contentType, stats, verbose}) {
 
                 for (const row of rows) {
                     const cells = row.split('\t');
-                    ret.rows.push([cells[0], cells[1], cells[2], cells[7]]);
+                    let newRow = [cells[0], cells[1]];
+                    if (cells[2]) {
+                        newRow.push(cells[2]);
+                        newRow.push(cells[7]);
+                    }
+                    ret.rows.push(newRow);
                 }
                 return ret;
             };
@@ -96,20 +101,35 @@ function getSuccinct({config, org, pk, metadata, contentType, stats, verbose}) {
                         .join('\n')
                 )
                 .join('\n');
-            pk.importDocument({
+            const t00 = tsvToTable(
+                booksContent,
+                false,
+            );
+            const bcvIds = {};
+            for (const row of t00.rows) {
+                const bcv = row[0];
+                if (!bcvIds[bcv]) {
+                    bcvIds[bcv] = [];
+                }
+                bcvIds[bcv].push(row[2]);
+            }
+            const t01 = tsvToTable(
+                Object.entries(bcvIds)
+                    .map(
+                        kv => `${kv[0]}\t${kv[1].join(',')}`
+                    ).join('\n'),
+                false
+            )
+                pk.importDocuments({
                     source: org,
                     project: metadata.id,
                     revision: metadata.revision,
                 },
                 'tsv',
-                JSON.stringify(
-                    tsvToTable(
-                        booksContent,
-                        false,
-                    ),
-                    null,
-                    2,
-                )
+                [
+                    JSON.stringify(t00),
+                    JSON.stringify(t01)
+                ]
             )
         }
         const docSet = pk.gqlQuerySync('{docSets { id documents { bookCode: header(id: "bookCode") sequences {type} } } }').data.docSets[0];
