@@ -74,7 +74,7 @@ function getSuccinct({config, org, pk, metadata, contentType, stats, verbose}) {
 
                 for (const row of rows) {
                     const cells = row.split('\t');
-                    ret.rows.push([cells[0], cells[1], cells[6]]);
+                    ret.rows.push([cells[0], cells[1], cells[2], cells[7]]);
                 }
                 return ret;
             };
@@ -85,7 +85,14 @@ function getSuccinct({config, org, pk, metadata, contentType, stats, verbose}) {
                 .map(
                     bc => bc[1].split('\n')
                         .slice(1)
-                        .map(l => (bc[0] + " " + l).trim())
+                        .map(
+                            l => {
+                                let cells = l.split('\t');
+                                cells[0] = bc[0] + " " + cells[0];
+                                cells.unshift(cells[0]);
+                                return cells.join('\t');
+                            }
+                        )
                         .join('\n')
                 )
                 .join('\n');
