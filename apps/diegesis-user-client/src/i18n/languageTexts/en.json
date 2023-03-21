@@ -98,5 +98,10 @@
     "SEARCH_NOT_VALID_QUERY":"Enter valid Strong's number(s) in search box...",
     "SEARCH_VALID_QUERY":"Valid query detected. Click 'run search' to perform search",
     "SEARCH_NO_OCCURENCES":"There are no occurrences of this/these Strong's number(s) in the selected scope..." ,
-    "SEARCH_OCCURENCES_FOUND":"occurrences found"
+    "SEARCH_OCCURENCES_FOUND":"occurrences found",
+    "PAGE_SIZE":"Page Size",
+    "COLUMNS":"Columns",
+    "PREVIEW_DOCUMENT":"Preview Document",
+    "INCLUDED_CONTENT":"Included Content",
+    "LOADING":"Loading"
 }

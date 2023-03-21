@@ -1,6 +1,6 @@
 import AppLangContext from "../contexts/AppLangContext";
 import i18n from "../i18n";
-import { directionText, setFontFamily } from "../i18n/languageDirection";
+import { directionText, FontFamily } from "../i18n/languageDirection";
 import React, { useContext, useEffect, useState } from "react";
 import {
   Grid,
@@ -23,12 +23,12 @@ const documentSuffixRegex = /^[A-Za-z0-9_().-]+(.txt|.usfm|.sfm)$/;
 const documentRegex = /^\\id ([A-Z1-6]{3})/;
 const BookRegex = /[a-zA-Z0-9]{3}/;
 
-export default function UsfmForm() {
+export default function ScriptureUsfmForm() {
   const client = useApolloClient();
 
   async function createEntry(client) {
     const query = buildQuery();
-    const result = await client.mutate({
+    await client.mutate({
       mutation: gql`
         ${query}
       `,
@@ -67,31 +67,31 @@ export default function UsfmForm() {
     setUploads(validFiles);
   };
 
-  function dedupe(elements) {
-    let ret = [];
-    let usedBooks = new Set([]);
-    let ignoredBooks = [];
-    for (const el of elements) {
-      if (!usedBooks.has(el.type)) {
-        ret.push(el);
-        usedBooks.add(el.type);
-      } else {
-        ignoredBooks.push(el.type);
-      }
-    }
-    if (ignoredBooks.length > 0) {
-      enqueueSnackbar(
-        `ignoring duplicate upload for ${ignoredBooks.join(";")}`,
-        {
-          autoHideDuration: 3000,
-          variant: "error",
-        }
-      );
-    }
-    return ret;
-  }
-
   useEffect(() => {
+    function dedupe(elements) {
+      let ret = [];
+      let usedBooks = new Set([]);
+      let ignoredBooks = [];
+      for (const el of elements) {
+        if (!usedBooks.has(el.type)) {
+          ret.push(el);
+          usedBooks.add(el.type);
+        } else {
+          ignoredBooks.push(el.type);
+        }
+      }
+      if (ignoredBooks.length > 0) {
+        enqueueSnackbar(
+            `ignoring duplicate upload for ${ignoredBooks.join(";")}`,
+            {
+              autoHideDuration: 3000,
+              variant: "error",
+            }
+        );
+      }
+      return ret;
+    }
+
     const newUploadContent = [];
     for (const file of uploads) {
       const fileReader = new FileReader();
@@ -155,6 +155,7 @@ export default function UsfmForm() {
   const buildQuery = () => {
     let gqlBits = [];
     gqlBits.push("mutation { createLocalEntry(");
+      gqlBits.push('contentType: "scriptureUsfm"');
     gqlBits.push("metadata:[");
     for (const [key, value] of Object.entries(formValues)) {
       gqlBits.push("{");
@@ -178,7 +179,7 @@ export default function UsfmForm() {
     <form>
       <Grid dir={directionText(appLang)} container spacing={2}>
         <Grid item xs={12}>
-          <Typography variant="h5" paragraph="true" sx={{ mt: "20px" }} style={{ fontFamily : setFontFamily(appLang)}}>
+          <Typography variant="h5" paragraph="true" sx={{ mt: "20px" }} style={{ fontFamily : FontFamily(appLang)}}>
             {i18n(appLang, "METADATA")}
           </Typography>
         </Grid>
@@ -206,7 +207,7 @@ export default function UsfmForm() {
           />
         </Grid>
         <Grid item xs={12} md={6}>
-          <FormLabel id="text-direction-group-label" htmlFor="textDirection" style={{ fontFamily : setFontFamily(appLang)}}>
+          <FormLabel id="text-direction-group-label" htmlFor="textDirection" style={{ fontFamily : FontFamily(appLang)}}>
             {i18n(appLang, "TEXT_DIRECTION")}
           </FormLabel>
           <RadioGroup
@@ -229,7 +230,7 @@ export default function UsfmForm() {
               value="ltr"
               control={<Radio />}
               label={i18n(appLang, "LTR")}
-              style={{ fontFamily : setFontFamily(appLang)}}
+              style={{ fontFamily : FontFamily(appLang)}}
             />
             <FormControlLabel
               value="rtl"
@@ -239,12 +240,12 @@ export default function UsfmForm() {
           </RadioGroup>
         </Grid>
         <Grid item xs={12}>
-          <Typography variant="h5" paragraph="true" sx={{ mt: "20px" }} style={{ fontFamily : setFontFamily(appLang)}}>
+          <Typography variant="h5" paragraph="true" sx={{ mt: "20px" }} style={{ fontFamily : FontFamily(appLang)}}>
             {i18n(appLang, "RESOURCES")}
           </Typography>
         </Grid>
         <Grid item xs={12}>
-          <InputLabel id="uploadFilesId" style={{ fontFamily : setFontFamily(appLang)}}>
+          <InputLabel id="uploadFilesId" style={{ fontFamily : FontFamily(appLang)}}>
             {i18n(appLang, "Upload_documents")}
           </InputLabel>
           <TextField
@@ -261,10 +262,9 @@ export default function UsfmForm() {
         />
         <Grid item xs={12}>
           <Button
-            type="submit"
             variant="contained"
             size="large"
-            style={{ marginBottom: "20px", marginTop: "20px",fontFamily : setFontFamily(appLang) }}
+            style={{ marginBottom: "20px", marginTop: "20px",fontFamily : FontFamily(appLang) }}
             disabled={!isValidForm(formValues)}
             onClick={() => createEntry(client)}
           >

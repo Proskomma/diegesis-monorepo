@@ -16,24 +16,12 @@ const makeAggregateStats = require("./makeDownloadsHelpers/makeAggregateStats");
 
 const verbose = false;
 
-function doScriptureDownloads({configString, org, transId, revision, contentType}) {
-    if (!["usfm", "usx", "succinct"].includes(contentType)) {
-        const contentTypeError = {
-            generatedBy: 'cron',
-            context: {
-                making: "doScriptureDownloads",
-            },
-            message: `doScriptureDownloads() expects contentType of usfm, usx or succinct, not '${contentType}'`
-        };
-        parentPort.postMessage(contentTypeError);
-        return;
-    }
-    const config = JSON.parse(configString);
+function doScriptureDownloads({config, org, transId, revision, contentType}) {
+    let pk;
+    let docSetId;
     try {
         lockEntry(config, org, transId, revision, "makeDownloads");
         const metadata = readEntryMetadata(config, org, transId, revision);
-        let pk;
-        let docSetId;
         let stats = {
             nOT: 0,
             nNT: 0,
@@ -133,6 +121,61 @@ function doScriptureDownloads({configString, org, transId, revision, contentType
     }
 }
 
+function doBcvNotesDownloads({config, org, transId, revision, contentType}) {
+    let pk;
+    try {
+        lockEntry(config, org, transId, revision, "makeDownloads");
+        const metadata = readEntryMetadata(config, org, transId, revision);
+        pk = new Proskomma([
+            {
+                name: "source",
+                type: "string",
+                regex: "^[^\\s]+$"
+            },
+            {
+                name: "project",
+                type: "string",
+                regex: "^[^\\s]+$"
+            },
+            {
+                name: "revision",
+                type: "string",
+                regex: "^[^\\s]+$"
+            },
+        ]);
+        getSuccinct({config, org, pk, metadata, contentType, stats: null, verbose});
+        unlockEntry(config, org, transId, revision);
+        parentPort.postMessage({org, transId, revision, status: "done"});
+    } catch (err) {
+        const succinctError = {
+            generatedBy: 'cron bcvNotes',
+            context: {
+                org,
+                transId,
+                revision,
+                contentType
+            },
+            message: err.message
+        };
+        parentPort.postMessage(succinctError);
+        unlockEntry(config, org, transId, revision);
+    }
+}
+
 parentPort.on("message", data => {
-    doScriptureDownloads(data);
+    const data2 = {...data, config: JSON.parse(data.configString)};
+    if (["usfm", "usx", "succinct"].includes(data2.contentType)) {
+        doScriptureDownloads(data2);
+    } else if (["uwNotes"].includes(data2.contentType)) {
+        doBcvNotesDownloads(data2);
+    } else {
+        const contentTypeError = {
+            generatedBy: 'cron',
+            context: {
+                making: "doScriptureDownloads",
+            },
+            message: `Unknown contentType '${data2.contentType}' in makeDownloads`
+        };
+        parentPort.postMessage(contentTypeError);
+    }
 });

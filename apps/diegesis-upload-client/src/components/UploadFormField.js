@@ -1,7 +1,7 @@
 import { FormLabel, Grid, TextField } from "@mui/material";
 import { useContext } from "react";
 import AppLangContext from "../contexts/AppLangContext";
-import { directionText, setFontFamily } from "../i18n/languageDirection";
+import { directionText, FontFamily } from "../i18n/languageDirection";
 import i18n from "../i18n";
 
 export default function UploadFormField({
@@ -54,7 +54,7 @@ export default function UploadFormField({
       <FormLabel
         id={`upload-field-${name}-label`}
         htmlFor={`upload-field-${name}`}
-        style={{ fontFamily: setFontFamily(appLang) }}
+        style={{ fontFamily: FontFamily(appLang) }}
       >
         {formTextFieldLabel}
       </FormLabel>
@@ -66,7 +66,7 @@ export default function UploadFormField({
         error={hasError}
         helperText={errorMessages.join(";")}
         dir={directionText(appLang)}
-        style={{ fontFamily: setFontFamily(appLang) }}
+        style={{ fontFamily: FontFamily(appLang) }}
       />
     </Grid>
   );

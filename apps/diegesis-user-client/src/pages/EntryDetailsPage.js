@@ -14,7 +14,7 @@ import {
   directionText,
   alignmentText,
   getAutonym,
-  setFontFamily
+  FontFamily
 } from "../i18n/languageDirection";
 import { useContext, useState } from "react";
 import i18n from "../i18n";
@@ -111,7 +111,7 @@ export default function EntryDetailsPage({ setAppLanguage }) {
     <Container fixed className="homepage">
       <Header setAppLanguage={setAppLanguage} selected="list" />
       <Box dir={directionText(appLang)} style={{ marginTop: "100px" }}>
-        <Typography variant="h4" paragraph="true" sx={{ mt: "20px" }}  style={{ fontFamily : setFontFamily(appLang)}}>
+        <Typography variant="h4" paragraph="true" sx={{ mt: "20px" }}  style={{ fontFamily : FontFamily(appLang)}}>
           <Button>
             <RouterLink to="/list" relative="path">
               {setArrow(appLang)}
@@ -130,7 +130,7 @@ export default function EntryDetailsPage({ setAppLanguage }) {
           </Button>
         </Typography>
         <Paper className="container">
-          <Typography variant="h4" paragraph="true" style={{ fontFamily : setFontFamily(appLang)}}>
+          <Typography variant="h4" paragraph="true" style={{ fontFamily : FontFamily(appLang)}}>
             {i18n(appLang, "ADMIN_DETAILS")}
           </Typography>
 
@@ -141,7 +141,7 @@ export default function EntryDetailsPage({ setAppLanguage }) {
               style={{ fontWeight: "bold", textAlign: alignmentText(appLang) }}
             >
               <Grid item>
-                <span dir={directionText(appLang)} style={{ fontFamily : setFontFamily(appLang)}}>
+                <span dir={directionText(appLang)} style={{ fontFamily : FontFamily(appLang)}}>
                   {i18n(appLang, "ADMIN_DETAILS_ABBREVIATION")}
                 </span>
               </Grid>
@@ -155,7 +155,7 @@ export default function EntryDetailsPage({ setAppLanguage }) {
               style={{ fontWeight: "bold", textAlign: alignmentText(appLang) }}
             >
               <Grid item>
-                <span dir={directionText(appLang)} style={{ fontFamily : setFontFamily(appLang)}}>
+                <span dir={directionText(appLang)} style={{ fontFamily : FontFamily(appLang)}}>
                   {i18n(appLang, "ADMIN_DETAILS_COPYRIGHT")}
                 </span>
               </Grid>
@@ -169,7 +169,7 @@ export default function EntryDetailsPage({ setAppLanguage }) {
               style={{ fontWeight: "bold", textAlign: alignmentText(appLang) }}
             >
               <Grid item>
-                <span dir={directionText(appLang)} style={{ fontFamily : setFontFamily(appLang)}}>
+                <span dir={directionText(appLang)} style={{ fontFamily : FontFamily(appLang)}}>
                   {i18n(appLang, "ADMIN_DETAILS_LANGUAGE")}
                 </span>
               </Grid>
@@ -179,10 +179,10 @@ export default function EntryDetailsPage({ setAppLanguage }) {
                 {getAutonym(entryInfo.language)}
                 {", "}
                 {entryInfo.textDirection === "rtl"
-                  ? <span style={{ fontFamily : setFontFamily(appLang)}}>{i18n(appLang, "ADMIN_TEXT_DIRECTION_RIGHT")}</span>
-                  : <span style={{ fontFamily : setFontFamily(appLang)}}>{i18n(appLang, "ADMIN_TEXT_DIRECTION_LEFT")}{', '}</span>
+                  ? <span style={{ fontFamily : FontFamily(appLang)}}>{i18n(appLang, "ADMIN_TEXT_DIRECTION_RIGHT")}</span>
+                  : <span style={{ fontFamily : FontFamily(appLang)}}>{i18n(appLang, "ADMIN_TEXT_DIRECTION_LEFT")}{', '}</span>
                   }
-                {entryInfo.script ? <span style={{ fontFamily : setFontFamily(appLang)}}>{finalScript}</span> : ""}
+                {entryInfo.script ? <span style={{ fontFamily : FontFamily(appLang)}}>{finalScript}</span> : ""}
               </Grid>
             </Grid>
             <Grid
@@ -191,7 +191,7 @@ export default function EntryDetailsPage({ setAppLanguage }) {
               style={{ fontWeight: "bold", textAlign: alignmentText(appLang) }}
             >
               <Grid item>
-                <span dir={directionText(appLang)}  style={{ fontFamily : setFontFamily(appLang)}}>
+                <span dir={directionText(appLang)}  style={{ fontFamily : FontFamily(appLang)}}>
                   {i18n(appLang, "ADMIN_DETAILS_DATA_SOURCE")}
                 </span>
               </Grid>
@@ -205,7 +205,7 @@ export default function EntryDetailsPage({ setAppLanguage }) {
               style={{ fontWeight: "bold", textAlign: alignmentText(appLang) }}
             >
               <Grid item>
-                <span dir={directionText(appLang)} style={{ fontFamily : setFontFamily(appLang)}}>
+                <span dir={directionText(appLang)} style={{ fontFamily : FontFamily(appLang)}}>
                   {i18n(appLang, "ADMIN_DETAILS_OWNER")}
                 </span>
               </Grid>
@@ -219,7 +219,7 @@ export default function EntryDetailsPage({ setAppLanguage }) {
               style={{ fontWeight: "bold", textAlign: alignmentText(appLang) }}
             >
               <Grid item>
-                <span dir={directionText(appLang)} style={{ fontFamily : setFontFamily(appLang)}}>
+                <span dir={directionText(appLang)} style={{ fontFamily : FontFamily(appLang)}}>
                   {i18n(appLang, "ADMIN_DETAILS_ENTRY_ID")}
                 </span>
               </Grid>
@@ -234,7 +234,7 @@ export default function EntryDetailsPage({ setAppLanguage }) {
             >
               <Grid item>
                 {" "}
-                <span dir={directionText(appLang)} style={{ fontFamily : setFontFamily(appLang)}}>
+                <span dir={directionText(appLang)} style={{ fontFamily : FontFamily(appLang)}}>
                   {i18n(appLang, "ADMIN_DETAILS_REVISION")}
                 </span>
               </Grid>
@@ -248,7 +248,7 @@ export default function EntryDetailsPage({ setAppLanguage }) {
               style={{ fontWeight: "bold", textAlign: alignmentText(appLang) }}
             >
               <Grid item>
-                <span dir={directionText(appLang)} style={{ fontFamily : setFontFamily(appLang)}}>
+                <span dir={directionText(appLang)} style={{ fontFamily : FontFamily(appLang)}}>
                   {i18n(appLang, "ADMIN_DETAILS_CONTENT")}
                 </span>
               </Grid>
@@ -263,7 +263,7 @@ export default function EntryDetailsPage({ setAppLanguage }) {
             >
               <Grid item>
                 {" "}
-                <span dir={directionText(appLang)} style={{ fontFamily : setFontFamily(appLang)}}>
+                <span dir={directionText(appLang)} style={{ fontFamily : FontFamily(appLang)}}>
                   {i18n(appLang, "ADMIN_DETAILS_CHAPTERS")}
                 </span>
               </Grid>
@@ -277,7 +277,7 @@ export default function EntryDetailsPage({ setAppLanguage }) {
               style={{ fontWeight: "bold", textAlign: alignmentText(appLang) }}
             >
               <Grid item>
-                <span dir={directionText(appLang)} style={{ fontFamily : setFontFamily(appLang)}}>
+                <span dir={directionText(appLang)} style={{ fontFamily : FontFamily(appLang)}}>
                   {i18n(appLang, "ADMIN_DETAILS_VERSES")}
                 </span>
               </Grid>
@@ -290,7 +290,7 @@ export default function EntryDetailsPage({ setAppLanguage }) {
             {bookCodes.length > 0 && (
               <>
                 <Grid item xs={12}>
-                  <Typography variant="h4" paragraph="true" sx={{ mt: "20px" }} style={{ fontFamily : setFontFamily(appLang)}}>
+                  <Typography variant="h4" paragraph="true" sx={{ mt: "20px" }} style={{ fontFamily : FontFamily(appLang)}}>
                     {i18n(appLang, "ADMIN_DETAILS_TITLE")}
                   </Typography>
                 </Grid>
@@ -307,7 +307,7 @@ export default function EntryDetailsPage({ setAppLanguage }) {
               {selectedBook !== "" &&
                 filteredStatsTab.map((bo) => (
                   <>
-                    <Grid item xs={4} md={2} style={{ fontFamily : setFontFamily(appLang)}}>
+                    <Grid item xs={4} md={2} style={{ fontFamily : FontFamily(appLang)}}>
                       {i18n(appLang, `STATS_${bo.field}`)}
                     </Grid>
                     <Grid item xs={8} md={10}>
@@ -316,7 +316,7 @@ export default function EntryDetailsPage({ setAppLanguage }) {
                   </>
                 ))}
               {selectedBook === "" && bookCodes.length > 0 && (
-                <Typography style={{ textAlign: alignmentText(appLang) , fontFamily : setFontFamily(appLang)}}>
+                <Typography style={{ textAlign: alignmentText(appLang) , fontFamily : FontFamily(appLang)}}>
                   {i18n(appLang, "ADMIN_DETAILS_ALERT")}
                 </Typography>
               )}

@@ -179,6 +179,7 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
             }
             if (
                 org.config.languages &&
+                (org.config.languages.length > 0) &&
                 !org.config.languages.includes(entry.languageCode.split("-")[0])
             ) {
                 return false;
@@ -745,7 +746,7 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                 }
                 try {
                     if (entryExists(config, orgOb.name, args.id)) {
-                        deleteEntry(config, orgOb.name, args.id, args.revision) 
+                        deleteEntry(config, orgOb.name, args.id, args.revision)
                         return true;
                     }
                     return false;
@@ -772,7 +773,7 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                     return false;
                 }
                 if (entryExists(config, orgOb.name, transOb.id)) {
-                    deleteSuccinctError(config, orgOb.name, transOb.id, transOb.revision) 
+                    deleteSuccinctError(config, orgOb.name, transOb.id, transOb.revision)
                     return true;
                 } else {
                     return false;
@@ -787,7 +788,22 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                         `Required auth role 'archivist' not found for createLocalEntry`
                     );
                 }
-                const fieldError = checkCreateLocalEntryFields(args.metadata, args.resources);
+                const resourceTypes = {
+                    scriptureUsfm: {
+                        resourceTypes: ["bible"],
+                        originalDir: "usfmBooks",
+                        suffix: "usfm"
+                    },
+                    uwNotes: {
+                        resourceTypes: ["bcvNotes"],
+                        originalDir: "uwNotesBooks",
+                        "suffix": "tsv"
+                    }
+                }
+                if (!resourceTypes[args.contentType]) {
+                    throw new Error(`Content type '${args.contentType}' not supported`);
+                }
+               const fieldError = checkCreateLocalEntryFields(args.metadata, args.resources);
                 if (fieldError.length > 0) {
                     throw new Error(fieldError);
                 }
@@ -800,7 +816,7 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                     let revision = generateId();
                     const entryMetadata = {
                         source: config.name,
-                        resourceTypes: ["bible"],
+                        resourceTypes: resourceTypes[args.contentType].resourceTypes,
                         id: id,
                         languageCode: metadataMap["langCode"],
                         title: metadataMap["title"],
@@ -822,7 +838,7 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                         id,
                         revision,
                         "original",
-                        "usfmBooks"
+                        resourceTypes[args.contentType].originalDir
                     );
                     for (const resource of args.resources) {
                         writeEntryBookResource(
@@ -830,8 +846,8 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                             config.name,
                             id,
                             revision,
-                            "usfmBooks",
-                            `${resource.bookCode}.usfm`,
+                            resourceTypes[args.contentType].originalDir,
+                            `${resource.bookCode}.${resourceTypes[args.contentType].suffix}`,
                             resource.content
                         );
                     }

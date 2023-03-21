@@ -8,7 +8,7 @@ import ListViewControls from "../components/ListViewControls";
 import Spinner from "../components/Spinner";
 import Footer from "../components/Footer";
 import AppLangContext from "../contexts/AppLangContext";
-import { directionText, setFontFamily } from "../i18n/languageDirection";
+import { directionText, FontFamily } from "../i18n/languageDirection";
 import i18n from "../i18n";
 
 export default function ListPage({ setAppLanguage }) {
@@ -67,7 +67,7 @@ export default function ListPage({ setAppLanguage }) {
     <Container fixed className="listpage">
       <Header setAppLanguage={setAppLanguage} selected="uploads" />
       <Box dir={directionText(appLang)} style={{ marginTop: "100px" }}>
-        <Typography variant="h4" paragraph="true" sx={{ mt: "20px" }} style={{ fontFamily : setFontFamily(appLang)}}>
+        <Typography variant="h4" paragraph="true" sx={{ mt: "20px" }} style={{ fontFamily : FontFamily(appLang)}}>
           {i18n(appLang, "LIST_PAGE_ENTRIES")}
           {" ("}
           {(name.length > 0) && name}
