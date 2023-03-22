@@ -7,25 +7,17 @@ import {
   Select,
   MenuItem,
 } from "@mui/material";
+import { Add, Home } from "@mui/icons-material";
 
 import langTable from "../i18n/languages.json";
 import AppLangContext from "../contexts/AppLangContext";
 import { alignmentText } from "../i18n/languageDirection";
-import { Add, Home } from "@mui/icons-material";
 
-export default function Header({selected, children, setAppLanguage }) {
+export default function Header({children, setAppLanguage }) {
   const appLang = useContext(AppLangContext);
   const handleLanguageChange = (e) => setAppLanguage(e.target.value);
 
-  const showPathName = () => {
-    let ret;
-    if (window.location.pathname === `/uploads/add`) {
-      ret = true;
-    } else {
-      ret = false;
-    }
-    return ret;
-  };
+  const isListView = () => window.location.pathname === `/uploads`;
 
   const linkBoxStyles = {
     m: 3,
@@ -38,11 +30,11 @@ export default function Header({selected, children, setAppLanguage }) {
   return (
     <AppBar position="fixed">
       <Toolbar dir={alignmentText(appLang) === "right" ? "rtl" : "ltr"}>
-        {!showPathName() ? (
+        {!isListView() ? (
           <Box
             sx={{ display: "flex", flexDirection: "row", flexGrow: 1, m: 3 }}
           >
-            <RouterLink to={`/uploads/add`}>
+            <RouterLink to={`/uploads/add-scripture-usfm`}>
               <Add sx={selectedLinkStyles}></Add>
             </RouterLink>
           </Box>

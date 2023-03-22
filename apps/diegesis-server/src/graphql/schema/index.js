@@ -1,4 +1,4 @@
-const {gql} = require("apollo-server-express");
+const gql= require("graphql-tag");
 
 const scalarSchema = gql`
     scalar OrgName
@@ -9,6 +9,9 @@ const scalarSchema = gql`
 
 const querySchema = gql`
     type Query {
+
+        """The server name"""
+        name: String!
 
         """A list of organizations from which this server can serve data"""
         orgs: [Org!]!
@@ -348,6 +351,8 @@ const mutationSchema = gql`
             revision: String!
         ) : Boolean!
         createLocalEntry (
+            """Entry Content Type"""
+            contentType: String!
             """All Resources"""
             resources: [ResourceElement!]!
             """ All Metadata"""

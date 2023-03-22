@@ -1,14 +1,32 @@
-import React, {useState, useEffect} from 'react';
-import {Typography, Grid, Switch, FormGroup, FormControlLabel, Box, Button} from "@mui/material";
-import {Tune} from '@mui/icons-material';
+import React, {useContext, useState, useEffect} from "react";
+import {
+    Typography,
+    Grid,
+    FormGroup,
+    Box,
+    OutlinedInput,
+    Select,
+    MenuItem,
+    Button,
+} from "@mui/material";
+import {Blender} from "@mui/icons-material";
 import {SofriaRenderFromProskomma} from "proskomma-json-tools";
-import sofria2WebActions from '../renderer/sofria2web';
+import sofria2WebActions from "../renderer/sofria2web";
 import DocSelector from "./DocSelector";
+import AppLangContext from "../contexts/AppLangContext";
+import {directionText, FontFamily} from "../i18n/languageDirection";
+import {renderers} from "../renderer/render2react";
+import i18n from "../i18n";
+import BlendModal from "./BlendModal";
 
-export default function BrowseScripture({pk}) {
+export default function BrowseScripture({pk, docId, setDocId}) {
+    const appLang = useContext(AppLangContext);
+
+    const [openBlendModal, setOpenBlendModal] = useState(false);
+    const handleOpenBlendModal = () => setOpenBlendModal(true);
+    const handleCloseBlendModal = () => setOpenBlendModal(false);
 
     const [scriptureData, setScriptureData] = useState({
-        docId: null,
         menuQuery: null,
         renderedDocId: null,
         rendered: null,
@@ -25,23 +43,107 @@ export default function BrowseScripture({pk}) {
         updatedAtts: false,
     });
 
-    const [showSettings, setShowSettings] = useState(false);
+    const allNames = [
+        "wordAtts",
+        "titles",
+        "headings",
+        "introductions",
+        "footnotes",
+        "xrefs",
+        "paraStyles",
+        "characterMarkup",
+        "chapterLabels",
+        "versesLabels",
+    ];
 
-    const docName = d => {
-        return d.headers.filter(d => d.key === 'toc3')[0]?.value ||
-            d.headers.filter(d => d.key === 'h')[0]?.value ||
-            d.headers.filter(d => d.key === 'toc2')[0]?.value ||
-            d.headers.filter(d => d.key === 'toc')[0]?.value ||
-            d.headers.filter(d => d.key === 'bookCode')[0].value
-    }
+    const [includedNames, setIncludedNames] = useState(allNames);
+    const [includedFlags, setIncludedFlags] = useState({
+        showWordAtts: true,
+        showTitles: true,
+        showHeadings: true,
+        showIntroductions: true,
+        showFootnotes: true,
+        showXrefs: true,
+        showParaStyles: true,
+        showCharacterMarkup: true,
+        showChapterLabels: true,
+        showVersesLabels: true,
+    });
+    const getStyles = (name) => {
+        return {
+            fontWeight: includedNames.indexOf(name) === -1 ? "normal" : "bold",
+        };
+    };
 
-    useEffect(
-        () => {
-            let newDocId;
-            let menuQuery = scriptureData.menuQuery;
-            if (!scriptureData.docId) {
-                menuQuery = pk.gqlQuerySync(
-                    `{
+    const handleIncludedChange = (event) => {
+        const {
+            target: {value},
+        } = event;
+        setIncludedNames(
+            // On autofill we get a stringified value.
+            typeof value === "string" ? value.split(",") : value
+        );
+    };
+
+    const makeIncludedFlags = (allN, includedN) => {
+        const ret = {};
+        for (const name of allN) {
+            ret[`show${name.substring(0, 1).toUpperCase()}${name.substring(1)}`] =
+                includedN.includes(name);
+        }
+        return ret;
+    };
+
+    useEffect(() => {
+        const flags = makeIncludedFlags(allNames, includedNames);
+        setIncludedFlags({
+            ...includedFlags,
+            showWordAtts: flags.showWordAtts,
+            showTitles: flags.showTitles,
+            showHeadings: flags.showHeadings,
+            showIntroductions: flags.showIntroductions,
+            showFootnotes: flags.showFootnotes,
+            showXrefs: flags.showXrefs,
+            showParaStyles: flags.showParaStyles,
+            showCharacterMarkup: flags.showCharacterMarkup,
+            showChapterLabels: flags.showChapterLabels,
+            showVersesLabels: flags.showVersesLabels,
+        });
+    }, [includedNames]);
+
+    useEffect(() => {
+        setScriptureData({
+            ...scriptureData,
+            showWordAtts: includedFlags.showWordAtts,
+            showTitles: includedFlags.showTitles,
+            showHeadings: includedFlags.showHeadings,
+            showIntroductions: includedFlags.showIntroductions,
+            showFootnotes: includedFlags.showFootnotes,
+            showXrefs: includedFlags.showXrefs,
+            showParaStyles: includedFlags.showParaStyles,
+            showCharacterMarkup: includedFlags.showCharacterMarkup,
+            showChapterLabels: includedFlags.showChapterLabels,
+            showVersesLabels: includedFlags.showVersesLabels,
+            updatedAtts: true,
+        });
+    }, [includedFlags]);
+
+    const docName = (d) => {
+        return (
+            d.headers.filter((d) => d.key === "toc3")[0]?.value ||
+            d.headers.filter((d) => d.key === "h")[0]?.value ||
+            d.headers.filter((d) => d.key === "toc2")[0]?.value ||
+            d.headers.filter((d) => d.key === "toc")[0]?.value ||
+            d.headers.filter((d) => d.key === "bookCode")[0].value
+        );
+    };
+
+    useEffect(() => {
+        let newDocId;
+        let menuQuery = scriptureData.menuQuery;
+        if (!docId) {
+            menuQuery = pk.gqlQuerySync(
+                `{
                docSets {
                  documents(sortedBy:"paratext") {
                    id
@@ -49,254 +151,130 @@ export default function BrowseScripture({pk}) {
                  }
                }
             }`
-                );
-                newDocId = menuQuery.data.docSets[0].documents[0].id;
-            } else {
-                newDocId = scriptureData.docId;
-            }
-            if (newDocId !== scriptureData.renderedDocId || scriptureData.updatedAtts) {
-                const renderer = new SofriaRenderFromProskomma({
-                    proskomma: pk,
-                    actions: sofria2WebActions,
-                });
+            );
+            newDocId = menuQuery.data.docSets[0].documents[0].id;
+        } else {
+            newDocId = docId;
+        }
+        if ((newDocId !== scriptureData.renderedDocId) || scriptureData.updatedAtts) {
+            const renderer = new SofriaRenderFromProskomma({
+                proskomma: pk,
+                actions: sofria2WebActions,
+            });
 
-                const config = {
-                    showWordAtts: scriptureData.showWordAtts,
-                    showTitles: scriptureData.showTitles,
-                    showHeadings: scriptureData.showHeadings,
-                    showIntroductions: scriptureData.showIntroductions,
-                    showFootnotes: scriptureData.showFootnotes,
-                    showXrefs: scriptureData.showXrefs,
-                    showParaStyles: scriptureData.showParaStyles,
-                    showCharacterMarkup: scriptureData.showCharacterMarkup,
-                    showChapterLabels: scriptureData.showChapterLabels,
-                    showVersesLabels: scriptureData.showVersesLabels
-                };
-                const output = {};
-                try {
-                    renderer.renderDocument(
-                        {
-                            docId: newDocId,
-                            config,
-                            output,
-                        },
-                    );
-                } catch (err) {
-                    console.log("Renderer", err);
-                    throw err;
-                }
-                setScriptureData({
-                    ...scriptureData,
+            const config = {
+                showWordAtts: scriptureData.showWordAtts,
+                showTitles: scriptureData.showTitles,
+                showHeadings: scriptureData.showHeadings,
+                showIntroductions: scriptureData.showIntroductions,
+                showFootnotes: scriptureData.showFootnotes,
+                showXrefs: scriptureData.showXrefs,
+                showParaStyles: scriptureData.showParaStyles,
+                showCharacterMarkup: scriptureData.showCharacterMarkup,
+                showChapterLabels: scriptureData.showChapterLabels,
+                showVersesLabels: scriptureData.showVersesLabels,
+                renderers,
+            };
+            const output = {};
+            try {
+                renderer.renderDocument({
                     docId: newDocId,
-                    renderedDocId: newDocId,
-                    menuQuery,
-                    rendered: output.paras,
-                    updatedAtts: false,
+                    config,
+                    output,
                 });
+            } catch (err) {
+                console.log("Renderer", err);
+                throw err;
             }
-        },
-        [scriptureData]
-    )
-
-    const docMenuItems = scriptureData.menuQuery && scriptureData.menuQuery.data && scriptureData.menuQuery.data.docSets && scriptureData.menuQuery.data.docSets[0].documents ?
-        scriptureData.menuQuery.data.docSets[0].documents.map(d => ({id: d.id, label: docName(d)})) :
-        [];
-
-    const setDocId = newId => setScriptureData({...scriptureData, docId: newId});
-    const toggleWordAtts = () => setScriptureData({
-        ...scriptureData,
-        showWordAtts: !scriptureData.showWordAtts,
-        updatedAtts: true
-    });
-    const toggleTitles = () => setScriptureData({
-        ...scriptureData,
-        showTitles: !scriptureData.showTitles,
-        updatedAtts: true
-    });
-    const toggleHeadings = () => setScriptureData({
-        ...scriptureData,
-        showHeadings: !scriptureData.showHeadings,
-        updatedAtts: true
-    });
-    const toggleIntroductions = () => setScriptureData({
-        ...scriptureData,
-        showIntroductions: !scriptureData.showIntroductions,
-        updatedAtts: true
-    });
-    const toggleFootnotes = () => setScriptureData({
-        ...scriptureData,
-        showFootnotes: !scriptureData.showFootnotes,
-        updatedAtts: true
-    });
-    const toggleXrefs = () => setScriptureData({
-        ...scriptureData,
-        showXrefs: !scriptureData.showXrefs,
-        updatedAtts: true
-    });
-    const toggleParaStyles = () => setScriptureData({
-        ...scriptureData,
-        showParaStyles: !scriptureData.showParaStyles,
-        updatedAtts: true
-    });
-    const toggleCharacterMarkup = () => setScriptureData({
-        ...scriptureData,
-        showCharacterMarkup: !scriptureData.showCharacterMarkup,
-        updatedAtts: true
-    });
-    const toggleChapterLabels = () => setScriptureData({
-        ...scriptureData,
-        showChapterLabels: !scriptureData.showChapterLabels,
-        updatedAtts: true
-    });
-    const toggleVersesLabels = () => setScriptureData({
-        ...scriptureData,
-        showVersesLabels: !scriptureData.showVersesLabels,
-        updatedAtts: true
-    });
-
+            setScriptureData({
+                ...scriptureData,
+                renderedDocId: newDocId,
+                menuQuery,
+                rendered: output.paras,
+                showWordAtts: includedFlags.showWordAtts,
+                showTitles: includedFlags.showTitles,
+                showHeadings: includedFlags.showHeadings,
+                showIntroductions: includedFlags.showIntroductions,
+                showFootnotes: includedFlags.showFootnotes,
+                showXrefs: includedFlags.showXrefs,
+                showParaStyles: includedFlags.showParaStyles,
+                showCharacterMarkup: includedFlags.showCharacterMarkup,
+                showChapterLabels: includedFlags.showChapterLabels,
+                showVersesLabels: includedFlags.showVersesLabels,
+                updatedAtts: false,
+            });
+            if (docId !== newDocId) {
+                setDocId(newDocId);
+            }
+        }
+    }, [scriptureData, docId, includedNames]);
+    const docMenuItems =
+        scriptureData.menuQuery &&
+        scriptureData.menuQuery.data &&
+        scriptureData.menuQuery.data.docSets &&
+        scriptureData.menuQuery.data.docSets[0].documents
+            ? scriptureData.menuQuery.data.docSets[0].documents.map((d) => ({
+                id: d.id,
+                label: docName(d),
+            }))
+            : [];
     return (
-        <Grid container>
-            <Grid item xs={12} sm={6} md={4} lg={2}>
+        <Grid
+            container
+            dir={directionText(appLang)}
+            style={{fontFamily: FontFamily(appLang)}}
+        >
+            <Grid item xs={12}>
                 <Box sx={{marginRight: "5px"}}>
-                    <FormGroup sx={{padding: "10px", backgroundColor: showSettings ? "#ccc" : "inherit"}}>
-                        <Button
-                            onClick={() => setShowSettings(!showSettings)}
+                    <FormGroup>
+                        <Select
+                            labelId="included-content-group-label"
+                            id="included-content"
+                            multiple
+                            value={includedNames}
+                            onChange={handleIncludedChange}
+                            input={<OutlinedInput label="Name"/>}
+                            sx={{width: 450}}
                         >
-                            <Tune />
-                        </Button>
-                        {
-                            showSettings &&
-                            <>
-                                <FormControlLabel
-                                    control={<Switch
-                                        checked={scriptureData.showTitles}
-                                        color="secondary"
-                                        size="small"
-                                        onChange={() => toggleTitles()}
-                                        inputProps={{'aria-label': 'controlled'}}
-                                        disabled={!scriptureData.rendered || scriptureData.docId !== scriptureData.renderedDocId || scriptureData.updatedAtts}
-                                    />}
-                                    label="Titles"
-                                />
-                                <FormControlLabel
-                                    control={<Switch
-                                        checked={scriptureData.showHeadings}
-                                        color="secondary"
-                                        size="small"
-                                        onChange={() => toggleHeadings()}
-                                        inputProps={{'aria-label': 'controlled'}}
-                                        disabled={!scriptureData.rendered || scriptureData.docId !== scriptureData.renderedDocId || scriptureData.updatedAtts}
-                                    />}
-                                    label="Headings"
-                                />
-                                <FormControlLabel
-                                    control={<Switch
-                                        checked={scriptureData.showIntroductions}
-                                        color="secondary"
-                                        size="small"
-                                        onChange={() => toggleIntroductions()}
-                                        inputProps={{'aria-label': 'controlled'}}
-                                        disabled={!scriptureData.rendered || scriptureData.docId !== scriptureData.renderedDocId || scriptureData.updatedAtts}
-                                    />}
-                                    label="Introductions"
-                                />
-                                <FormControlLabel
-                                    control={<Switch
-                                        checked={scriptureData.showFootnotes}
-                                        color="secondary"
-                                        size="small"
-                                        onChange={() => toggleFootnotes()}
-                                        inputProps={{'aria-label': 'controlled'}}
-                                        disabled={!scriptureData.rendered || scriptureData.docId !== scriptureData.renderedDocId || scriptureData.updatedAtts}
-                                    />}
-                                    label="Footnotes"
-                                />
-                                <FormControlLabel
-                                    control={<Switch
-                                        checked={scriptureData.showXrefs}
-                                        color="secondary"
-                                        size="small"
-                                        onChange={() => toggleXrefs()}
-                                        inputProps={{'aria-label': 'controlled'}}
-                                        disabled={!scriptureData.rendered || scriptureData.docId !== scriptureData.renderedDocId || scriptureData.updatedAtts}
-                                    />}
-                                    label="Cross Refs"
-                                />
-                                <FormControlLabel
-                                    control={<Switch
-                                        checked={scriptureData.showParaStyles}
-                                        color="secondary"
-                                        size="small"
-                                        onChange={() => toggleParaStyles()}
-                                        inputProps={{'aria-label': 'controlled'}}
-                                        disabled={!scriptureData.rendered || scriptureData.docId !== scriptureData.renderedDocId || scriptureData.updatedAtts}
-                                    />}
-                                    label="Para Styles"
-                                />
-                                <FormControlLabel
-                                    control={<Switch
-                                        checked={scriptureData.showCharacterMarkup}
-                                        color="secondary"
-                                        size="small"
-                                        onChange={() => toggleCharacterMarkup()}
-                                        inputProps={{'aria-label': 'controlled'}}
-                                        disabled={!scriptureData.rendered || scriptureData.docId !== scriptureData.renderedDocId || scriptureData.updatedAtts}
-                                    />}
-                                    label="Char Styles"
-                                />
-                                <FormControlLabel
-                                    control={<Switch
-                                        checked={scriptureData.showChapterLabels}
-                                        color="secondary"
-                                        size="small"
-                                        onChange={() => toggleChapterLabels()}
-                                        inputProps={{'aria-label': 'controlled'}}
-                                        disabled={!scriptureData.rendered || scriptureData.docId !== scriptureData.renderedDocId || scriptureData.updatedAtts}
-                                    />}
-                                    label="Chapter N°s"
-                                />
-                                <FormControlLabel
-                                    control={<Switch
-                                        checked={scriptureData.showVersesLabels}
-                                        color="secondary"
-                                        size="small"
-                                        onChange={() => toggleVersesLabels()}
-                                        inputProps={{'aria-label': 'controlled'}}
-                                        disabled={!scriptureData.rendered || scriptureData.docId !== scriptureData.renderedDocId || scriptureData.updatedAtts}
-                                    />}
-                                    label="Verse N°s"
-                                />
-                                <FormControlLabel
-                                    control={<Switch
-                                        checked={scriptureData.showWordAtts}
-                                        color="secondary"
-                                        size="small"
-                                        onChange={() => toggleWordAtts()}
-                                        inputProps={{'aria-label': 'controlled'}}
-                                        disabled={!scriptureData.rendered || scriptureData.docId !== scriptureData.renderedDocId || scriptureData.updatedAtts}
-                                    />}
-                                    label="Word Info"
-                                />
-                            </>
-                        }
+                            {allNames.map((name) => (
+                                <MenuItem key={name} value={name} style={getStyles(name)}>
+                                    {name}
+                                </MenuItem>
+                            ))}
+                        </Select>
                     </FormGroup>
                 </Box>
             </Grid>
-            <Grid item xs={12} sm={6} md={8} lg={10}>
+            <Grid item xs={6}>
                 <DocSelector
                     docs={docMenuItems}
-                    docId={scriptureData.docId}
+                    docId={docId}
                     setDocId={setDocId}
-                    disabled={!scriptureData.rendered || scriptureData.docId !== scriptureData.renderedDocId || scriptureData.updatedAtts}
+                    disabled={
+                        !scriptureData.rendered ||
+                        docId !== scriptureData.renderedDocId ||
+                        scriptureData.updatedAtts
+                    }
                 />
             </Grid>
+            <Grid item xs={6}>
+                <Box display="flex" justifyContent="flex-end">
+                    <Button onClick={handleOpenBlendModal}>
+                        <Blender color="primary" sx={{fontSize: 30}}/>
+                    </Button>
+                </Box>
+            </Grid>
+            <BlendModal
+                openBlendModal={openBlendModal}
+                handleCloseBlendModal={handleCloseBlendModal}
+            />
             <Grid item xs={12}>
-                {
-                    scriptureData.rendered && scriptureData.docId === scriptureData.renderedDocId ?
-                        <>{scriptureData.rendered}</> :
-                        <Typography>Loading...</Typography>
-                }
+                {scriptureData.rendered && docId === scriptureData.renderedDocId ? (
+                    <>{scriptureData.rendered}</>
+                ) : (
+                    <Typography>{i18n(appLang, "LOADING")}...</Typography>
+                )}
             </Grid>
         </Grid>
-    )
+    );
 }

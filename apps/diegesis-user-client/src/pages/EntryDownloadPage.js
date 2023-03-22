@@ -1,7 +1,7 @@
 import React, {useContext, useState} from "react";
 import {Container, Typography, Grid, Box, Button} from "@mui/material";
 import {useParams, Link as RouterLink} from "react-router-dom";
-import {ArrowBack, Download} from '@mui/icons-material';
+import {ArrowBack, ArrowForward, Download} from '@mui/icons-material';
 import {gql, useQuery, useApolloClient} from "@apollo/client";
 import GqlError from "../components/GqlError";
 
@@ -11,7 +11,7 @@ import Spinner from "../components/Spinner";
 import BookSelector from "../components/BookSelector";
 import i18n from "../i18n";
 import AppLangContext from "../contexts/AppLangContext";
-import {directionText} from "../i18n/languageDirection";
+import {directionText, FontFamily} from "../i18n/languageDirection";
 
 export default function EntryDownloadPage({setAppLanguage}) {
     const appLang = useContext(AppLangContext);
@@ -150,7 +150,7 @@ export default function EntryDownloadPage({setAppLanguage}) {
             <Container fixed className="homepage">
                 <Header setAppLanguage={setAppLanguage} selected="list"/>
                 <Box dir={directionText(appLang)} style={{marginTop: "100px"}}>
-                    <Typography variant="h4" paragraph="true" sx={{mt: "20px"}}>
+                    <Typography variant="h4" paragraph="true" sx={{mt: "20px"}} style={{ fontFamily : FontFamily(appLang)}}>
                         Processing on server - wait a while and hit "refresh"
                     </Typography>
                 </Box>
@@ -163,18 +163,27 @@ export default function EntryDownloadPage({setAppLanguage}) {
         entryInfo[`${downloadType}BookCodes`].forEach(b => bookCodes.add(b));
     }
 
+    const setArrow = (lang) => {
+        if (directionText(lang) === "ltr") {
+          return <ArrowBack />;
+        }
+        if (directionText(lang) === "rtl") {
+          return <ArrowForward />;
+        }
+      };
+
     return <Container fixed className="homepage">
         <Header setAppLanguage={setAppLanguage} selected="list"/>
         <Box dir={directionText(appLang)} style={{marginTop: "100px"}}>
-            <Typography variant="h4" paragraph="true" sx={{mt: "20px"}}>
+            <Typography variant="h4" paragraph="true" sx={{mt: "20px"}} style={{ fontFamily : FontFamily(appLang)}}>
                 <Button>
                     <RouterLink to={`/entry/details/${source}/${entryId}/${revision}`}
-                                relative="path"><ArrowBack/></RouterLink></Button>
+                                relative="path"> {setArrow(appLang)}</RouterLink></Button>
                 {entryInfo.title}
             </Typography>
             <Grid container>
                 <Grid item xs={12}>
-                    <Typography variant="h5" paragraph="true">{i18n(appLang, "ADMIN_DOWNLOAD_PAGE_TITLE")}</Typography>
+                    <Typography variant="h5" paragraph="true" style={{ fontFamily : FontFamily(appLang)}}>{i18n(appLang, "ADMIN_DOWNLOAD_PAGE_TITLE")}</Typography>
                 </Grid>
                 {
                     entryInfo.canonResources && entryInfo.canonResources
@@ -182,7 +191,7 @@ export default function EntryDownloadPage({setAppLanguage}) {
                         .map(
                             cr => <>
                                 <Grid item xs={4}>
-                                    <Typography variant="body1" paragraph="true">{cr}</Typography>
+                                    <Typography variant="body1" paragraph="true" style={{ fontFamily : FontFamily(appLang)}}>{cr}</Typography>
                                 </Grid>
                                 <Grid item xs={8}>
                                     <Button onClick={() => downloadTranslation(cr)}>
@@ -197,7 +206,7 @@ export default function EntryDownloadPage({setAppLanguage}) {
                     <>
                         <Grid item xs={4} md={2}>
                             <Typography variant="h5"
-                                        paragraph="true">{i18n(appLang, "ADMIN_DOWNLOAD_PAGE_STITLE")}</Typography>
+                                        paragraph="true" style={{ fontFamily : FontFamily(appLang)}}>{i18n(appLang, "ADMIN_DOWNLOAD_PAGE_STITLE")}</Typography>
                         </Grid>
                         <Grid item xs={8} md={10}>
                             <BookSelector bookCodes={Array.from(bookCodes)} selectedBook={selectedBook}

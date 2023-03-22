@@ -29,9 +29,6 @@ function doRenderCron(config) {
             let taskSpecs = [];
             try {
                 let orgs = config.orgs;
-                if (config.localContent) {
-                    orgs = [...orgs,config.name];
-                }
                 for (const org of orgs) {
                     for (const entryRecord of orgEntries(config, org)) {
                         for (const revision of entryRecord.revisions) {
@@ -51,6 +48,8 @@ function doRenderCron(config) {
                                 taskSpecs.push([org, entryRecord.id, revision, 'usfm']);
                             } else if (entryHasOriginal(config, org, entryRecord.id, revision, "usxBooks")) {
                                 taskSpecs.push([org, entryRecord.id, revision, 'usx']);
+                            } else if (entryHasOriginal(config, org, entryRecord.id, revision, "uwNotesBooks")) {
+                                taskSpecs.push([org, entryRecord.id, revision, 'uwNotes']);
                             }
                         }
                     }

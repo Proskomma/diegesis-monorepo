@@ -14,30 +14,60 @@ such as React.
 
 This assumes a fairly standard setup including the monorepo's public and admin React clients.
 
+### Ensure Node Version
+
+If you are MacOS or Linux and have NVM, in the repository root run:
+```bash
+nvm install 18
+nvm use 18
+```
+It will get the node version from the repository `.nvmrc` file.
+
+If you are Windows, get the node version from the `.nvmrc` file, e.g.:
+```bash
+nvm install 18.14.2
+nvm use 18.14.2
+```
+
+If you don't use NVM, then ensure you have the node version in the `.nvmrc` file.
+
+### Use the script
+
+go into the folder `scripts` and launch `cleanInstall.sh`!
+```bash
+cd scripts/
+./cleanInstall.sh
+```
+
+After that you can skip the "Compile the clients" part and go directly to the "Make your own config file" section.
+
 ### Compile the clients
 
-```
-cd apps/diegesis-user-client
+First install the packages
+```bash
+cd diegesis-monorepo
 npm install
+```
+
+then compile
+```bash
+cd apps/diegesis-user-client
 npm run build
 cd ../diegesis-admin-client
-npm install
+npm run build
+cd ../diegesis-upload-client
 npm run build
 ```
 
-### Move to the server directory
-
-```
-cd ../diegesis-server
-npm install
-```
 ### Make your own config file
 
 Start by copying `config/debug_config.json`. You may want to create a `local` directory for this. (That directory is gitignore'd.)
-```
+```bash
+cd apps/diegesis-server
 mkdir local
 cp config/debug_config.json local/
 ```
+
 #### Choose a server name
 This is the identifier used for peer to peer transactions. Pick something short and meaningful in upper-case letters and digits.
 
@@ -46,14 +76,14 @@ This is the identifier used for peer to peer transactions. Pick something short 
 There is a command-line utility to do this. Note that it will currently store your plain text password in the bash log.
 The password hash is portable so, for production, one solution is to make the hash locally and
 then copy it into the production config file.
-```
+```bash
 cd utils
 node add_admin_user.js ../local/debug_config.json auser aGreatPassword admin archivist
 ```
 You should then see a superuser record in your config file.
 
 ### Run the server
-```
+```bash
 # In diegesis-server directory
 node src/index.js local/debug_config.json
 ```

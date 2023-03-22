@@ -11,7 +11,8 @@ import "./App.css";
 import ListPage from "./pages/ListPage";
 import AppLangContext, { AppLangProvider } from "./contexts/AppLangContext";
 import i18n from "./i18n";
-import UploadPage from "./pages/UploadPage";
+import AddScriptureUsfmPage from "./pages/AddScriptureUsfmPage";
+import AddUwNotesPage from "./pages/AddUwNotesPage";
 import { SnackbarProvider } from "notistack";
 
 function App() {
@@ -70,11 +71,16 @@ function App() {
       element: <ListPage setAppLanguage={setAppLanguage} />,
       errorElement: <ErrorBoundary />,
     },
-    {
-      path: "/uploads/add",
-      element: <UploadPage setAppLanguage={setAppLanguage} />,
-      errorElement: <ErrorBoundary />,
-    },
+      {
+          path: "/uploads/add-scripture-usfm",
+          element: <AddScriptureUsfmPage setAppLanguage={setAppLanguage} />,
+          errorElement: <ErrorBoundary />,
+      },
+      {
+          path: "/uploads/add-uw-notes",
+          element: <AddUwNotesPage setAppLanguage={setAppLanguage} />,
+          errorElement: <ErrorBoundary />,
+      },
   ]);
   return (
     <ApolloProvider client={client}>

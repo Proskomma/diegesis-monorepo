@@ -2,7 +2,7 @@ import {Select, MenuItem} from "@mui/material";
 import { useContext } from "react";
 import AppLangContext from "../contexts/AppLangContext";
 import i18n from "../i18n";
-import { directionText } from "../i18n/languageDirection";
+import { directionText, FontFamily } from "../i18n/languageDirection";
 
 export default function SortSelector({sortField, setSortField}) {
     const appLang = useContext(AppLangContext);
@@ -15,6 +15,7 @@ export default function SortSelector({sortField, setSortField}) {
             color="secondary"
             sx={{marginLeft: "1em", backgroundColor: "#FFF"}}
             onChange={(event) => setSortField(event.target.value)}
+            style={{ fontFamily : FontFamily(appLang)}}
         >
             {
                 [["title", i18n(appLang, "CONTROLS_TITLE") ], ["languageCode",i18n(appLang, "CONTROLS_LANGUAGE")], ["source",i18n(appLang, "CONTROLS_SOURCE")], ["owner",i18n(appLang, "CONTROLS_OWNER")], ["id", i18n(appLang, "CONTROLS_ID") ]]
@@ -24,6 +25,7 @@ export default function SortSelector({sortField, setSortField}) {
                                 dir={directionText(appLang)} 
                                 key={index}
                                 value={option[0]}
+                                style={{ fontFamily : FontFamily(appLang)}}
                             >
                                 {`${i18n(appLang, "CONTROLS_SORT_BY")} ${option[1]}`}
                             </MenuItem>

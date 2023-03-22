@@ -1,13 +1,14 @@
-import * as en from "./en.json"
-import * as fr from "./fr.json"
-import * as ar from "./ar.json"
-import * as es from "./es.json"
+/* eslint-disable import/no-anonymous-default-export */
+import * as en from "./en.json";
+import * as fr from "./fr.json";
+import * as ar from "./ar.json";
+import * as es from "./es.json";
+import * as debug from "./debug.json";
 
-const langs = {
-    ar,
-    en,
-    es,
-    fr
-}
-
-export default langs;
+export default {
+  en,
+  fr,
+  ar,
+  es,
+  debug,
+};

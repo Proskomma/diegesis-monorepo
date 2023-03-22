@@ -59,7 +59,7 @@ async function setupPeerOrg(config, orgRecord) {
 }
 
 async function setupLocalOrg(config) {
-    maybeInitializeOrg(config, {name: "_local"});
+    maybeInitializeOrg(config, {name: config.name});
     const translations = require('../localTranslations');
     const orgHandler = {
         getTranslationsCatalog: translations.getTranslationsCatalog,
@@ -119,9 +119,6 @@ async function makeServerOrgs(config) {
     }
     // Set up orgs
     let orgs = config.orgs.length > 0 ? config.orgs : Object.keys(nonPeerOrgs);
-    if (config.localContent) {
-        orgs.push(config.name);
-    }
     for (const org of orgs) {
         config.verbose && console.log(`    ${org}`);
         let orgName;
@@ -140,7 +137,7 @@ async function makeServerOrgs(config) {
         } else if (org === config.name) {
             orgName = config.name;
             [orgHandlers[orgName], orgsData[orgName]] = await setupLocalOrg(config);
-            const nLocal = orgEntries(config, "_local").length;
+            const nLocal = orgEntries(config, config.name).length;
             config.verbose && console.log(`      ${nLocal} local entr${nLocal === 1 ? "y" : "ies"}`);
         } else {
             throw new Error(`No org called '${org}'`);

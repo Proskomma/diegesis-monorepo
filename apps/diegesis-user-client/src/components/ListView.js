@@ -7,6 +7,7 @@ import GqlError from "./GqlError";
 import Spinner from './Spinner';
 import i18n from '../i18n';
 import AppLangContext from '../contexts/AppLangContext';
+import { FontFamily } from '../i18n/languageDirection';
 
 export default function ListView({searchTerms}) {
 
@@ -42,19 +43,19 @@ export default function ListView({searchTerms}) {
     function rowData(localTranslation) {
         return <Grid container xs={12} sx={{borderTop: "solid 1px #ccc", padding: "2px", marginBottom: "2px"}}>
             <Grid item xs={6} sm={4} md={1}>
-                <Typography variant="body2">{localTranslation.types?.join(', ') || "?"}</Typography>
+                <Typography variant="body2" style={{ fontFamily : FontFamily(appLang)}}>{localTranslation.types?.join(', ') || "?"}</Typography>
             </Grid>
             <Grid item xs={6} sm={4} md={3}>
-                <Typography variant="body2">{localTranslation.owner}@{localTranslation.source}</Typography>
+                <Typography variant="body2" style={{ fontFamily : FontFamily(appLang)}}>{localTranslation.owner}@{localTranslation.source}</Typography>
             </Grid>
             <Grid item xs={12} sm={4} md={2}>
-                <Typography variant="body2">{languageCodeFormat(localTranslation.language)}</Typography>
+                <Typography variant="body2" style={{ fontFamily : FontFamily(appLang)}}>{languageCodeFormat(localTranslation.language)}</Typography>
             </Grid>
             <Grid item xs={12} md={6}>
                 <RouterLink
                     to={`/entry/details/${localTranslation.source}/${localTranslation.transId}/${localTranslation.revision.replace(/\s/g, "__")}`}
                     style={{textDecoration: "none"}}>
-                    <Typography variant="body1">{localTranslation.title}</Typography>
+                    <Typography variant="body1" style={{ fontFamily : FontFamily(appLang)}}>{localTranslation.title}</Typography>
                 </RouterLink>
             </Grid>
         </Grid>
@@ -75,16 +76,16 @@ export default function ListView({searchTerms}) {
     );
     return <Grid container xs={12}>
         <Grid item xs={6} sm={4} md={2}>
-            <Typography variant="body1" sx={{fontWeight: "bold"}}>{i18n(appLang,"RESOURCE_TYPES")}</Typography>
+            <Typography variant="body1" sx={{fontWeight: "bold"}} style={{ fontFamily : FontFamily(appLang)}}>{i18n(appLang,"RESOURCE_TYPES")}</Typography>
         </Grid>
         <Grid item xs={6} sm={4} md={2}>
-            <Typography variant="body1" sx={{fontWeight: "bold"}}>{i18n(appLang,"CONTROLS_SOURCE")}</Typography>
+            <Typography variant="body1" sx={{fontWeight: "bold"}} style={{ fontFamily : FontFamily(appLang)}}>{i18n(appLang,"CONTROLS_SOURCE")}</Typography>
         </Grid>
         <Grid item xs={12} sm={4} md={2}>
-            <Typography variant="body1" sx={{fontWeight: "bold"}}>{i18n(appLang,"CONTROLS_LANGUAGE")}</Typography>
+            <Typography variant="body1" sx={{fontWeight: "bold"}} style={{ fontFamily : FontFamily(appLang)}}>{i18n(appLang,"CONTROLS_LANGUAGE")}</Typography>
         </Grid>
         <Grid item xs={12} md={6}>
-            <Typography variant="body1" sx={{fontWeight: "bold"}}>{i18n(appLang,"CONTROLS_TITLE")}</Typography>
+            <Typography variant="body1" sx={{fontWeight: "bold"}} style={{ fontFamily : FontFamily(appLang)}}>{i18n(appLang,"CONTROLS_TITLE")}</Typography>
         </Grid>
         {displayRows}
     </Grid>

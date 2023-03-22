@@ -1,5 +1,5 @@
 {
-    "HOME_BIG_TITLE":"Diegesis",
+    "DIEGESIS_TITLE":"Diegesis",
     "HOME_TITLE":"Creative Commons Scripture Resources to Go!" ,
     "HOME_PHRASE":"Diegesis is a place to find Bibles and related resources, in a variety of formats, released under open licences. (In other words, you can use, share, improve and translate them.)",
     "HOME_CONTENT":"You can see the content ",
@@ -97,5 +97,7 @@
     "ERROR_TOO_SHORT":"Field too short !",
     "ERROR_TOO_LONG":"Field too long !",
     "ERROR_REGEX":"Field not match regex !",
-    "BYTES":"Bytes"
+    "BYTES":"Bytes",
+    "LOADING":"Loading",
+    "SELECT_FILE_TYPE":"Please select the type of resources to add"
 }
