@@ -68,7 +68,9 @@ export default function BlendModal({
                             blendables.bcvNotes.map(
                                 bl => <>
                                     <Grid item xs={2} md={1}>
-                                        <Checkbox onChange={
+                                        <Checkbox
+                                            checked={usedBlendables[`${bl.source}/${bl.transId}/${bl.revision}`]}
+                                            onChange={
                                             e => {
                                                 const newUsedBlendables = {...usedBlendables};
                                                 newUsedBlendables[`${bl.source}/${bl.transId}/${bl.revision}`] = e.target.checked;

@@ -19,13 +19,12 @@ import { renderers } from "../renderer/render2react";
 import i18n from "../i18n";
 import BlendModal from "./BlendModal";
 
-export default function BrowseScripture({pk, docId, setDocId, blendables}) {
+export default function BrowseScripture({pk, docId, setDocId, blendables, usedBlendables, setUsedBlendables}) {
     const appLang = useContext(AppLangContext);
 
     const [openBlendModal, setOpenBlendModal] = useState(false);
     const handleOpenBlendModal = () => setOpenBlendModal(true);
     const handleCloseBlendModal = () => setOpenBlendModal(false);
-    const [usedBlendables, setUsedBlendables] = useState({});
 
     const [scriptureData, setScriptureData] = useState({
         menuQuery: null,
@@ -127,7 +126,7 @@ export default function BrowseScripture({pk, docId, setDocId, blendables}) {
             showVersesLabels: includedFlags.showVersesLabels,
             updatedAtts: true,
         });
-    }, [includedFlags]);
+    }, [includedFlags, usedBlendables]);
 
     const docName = (d) => {
         return (
@@ -174,6 +173,7 @@ export default function BrowseScripture({pk, docId, setDocId, blendables}) {
                 showCharacterMarkup: scriptureData.showCharacterMarkup,
                 showChapterLabels: scriptureData.showChapterLabels,
                 showVersesLabels: scriptureData.showVersesLabels,
+                selectedBcvNotes: Object.entries(usedBlendables).filter(kv => kv[1]).map(kv => kv[0]).map(k => k.split('/')),
                 renderers,
             };
             const output = {};
@@ -208,7 +208,7 @@ export default function BrowseScripture({pk, docId, setDocId, blendables}) {
                 setDocId(newDocId);
             }
         }
-    }, [scriptureData, docId, includedNames]);
+    }, [scriptureData, docId, includedNames, usedBlendables]);
     const docMenuItems =
         scriptureData.menuQuery &&
         scriptureData.menuQuery.data &&

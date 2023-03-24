@@ -31,6 +31,8 @@ export default function EntryBrowsePage({ setAppLanguage }) {
   const handleOpenPrintModal = () => setOpenPrintModal(true);
   const handleClosePrintModal = () => setOpenPrintModal(false);
 
+  const [usedBlendables, setUsedBlendables] = useState({});
+
     const [docId, setDocId] = useState(null);
 
     const queryString = `query {
@@ -53,6 +55,7 @@ export default function EntryBrowsePage({ setAppLanguage }) {
               title
               abbreviation
               language
+              canonResource(type:"succinct") {content}
             }
         }`
     .replace("%source%", source)
@@ -128,6 +131,13 @@ export default function EntryBrowsePage({ setAppLanguage }) {
 
   if (entryInfo?.canonResource?.content) {
     pk.loadSuccinctDocSet(JSON.parse(entryInfo.canonResource.content));
+    const selectedBcvNotes = Object.entries(usedBlendables).filter(kv => kv[1]).map(kv => kv[0]).map(k => k.split('/'));
+    for (const [source, transId, revision] of selectedBcvNotes) {
+        const bcvCanonResource = data.bcvEntries.filter(e => e.source === source && e.transId === transId && e.revision === revision)[0];
+        if (bcvCanonResource) {
+            pk.loadSuccinctDocSet(JSON.parse(bcvCanonResource.canonResource.content));
+        }
+    }
   }
   if (entryInfo.types.includes('bible')) {
     return (
@@ -169,7 +179,9 @@ export default function EntryBrowsePage({ setAppLanguage }) {
                 pk={pk}
                 docId={docId}
                 setDocId={setDocId}
-                blendables = {{bcvNotes: data.bcvEntries}}
+                blendables={{bcvNotes: data.bcvEntries}}
+                usedBlendables={usedBlendables}
+                setUsedBlendables={setUsedBlendables}
             />
             }
             {(!entryInfo ||
