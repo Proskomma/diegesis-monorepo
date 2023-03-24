@@ -76,7 +76,7 @@ COPY $server_loc/package.json .
 COPY $server_loc/config/docker_config.json /app/config/config.json
 
 # Create data dir
-RUN mkdir data && chmod 777 data
+RUN mkdir /app/data && chown 2590:2590 /app/data
 
 EXPOSE 2468
 
