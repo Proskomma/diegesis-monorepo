@@ -109,5 +109,6 @@
     "STRONGS":"Strongs",
     "BC":"Book Chapters",
     "TEXT":"Text",
-    "NO_VALID_TERMS":"No valid terms to search yet"
+    "NO_VALID_TERMS":"No valid terms to search yet",
+    "BLEND_MODAL_TITLE": "Blend in Resources"
 }

@@ -411,7 +411,7 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                     .filter(
                         (e) =>
                             !args.types ||
-                            lowerCaseArray(args.types).filter((t) =>
+                            args.types.filter((t) =>
                                 e.resourceTypes.includes(t)
                             ).length > 0
                     )

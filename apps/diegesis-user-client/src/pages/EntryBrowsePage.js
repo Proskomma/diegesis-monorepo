@@ -44,6 +44,16 @@ export default function EntryBrowsePage({ setAppLanguage }) {
               title
               canonResource(type:"succinct") {content}
             }
+            bcvEntries: localEntries(
+              types: "bcvNotes"
+            ) {
+              source
+              transId
+              revision
+              title
+              abbreviation
+              language
+            }
         }`
     .replace("%source%", source)
     .replace("%entryId%", entryId)
@@ -154,7 +164,14 @@ export default function EntryBrowsePage({ setAppLanguage }) {
             </Typography>
             {entryInfo &&
                 entryInfo.canonResource &&
-                entryInfo.canonResource.content && <BrowseScripture pk={pk} docId={docId} setDocId={setDocId}/>}
+                entryInfo.canonResource.content &&
+            <BrowseScripture
+                pk={pk}
+                docId={docId}
+                setDocId={setDocId}
+                blendables = {{bcvNotes: data.bcvEntries}}
+            />
+            }
             {(!entryInfo ||
                 !entryInfo.canonResource ||
                 !entryInfo.canonResource.content) && (

@@ -19,12 +19,13 @@ import { renderers } from "../renderer/render2react";
 import i18n from "../i18n";
 import BlendModal from "./BlendModal";
 
-export default function BrowseScripture({pk, docId, setDocId}) {
+export default function BrowseScripture({pk, docId, setDocId, blendables}) {
     const appLang = useContext(AppLangContext);
 
     const [openBlendModal, setOpenBlendModal] = useState(false);
     const handleOpenBlendModal = () => setOpenBlendModal(true);
     const handleCloseBlendModal = () => setOpenBlendModal(false);
+    const [usedBlendables, setUsedBlendables] = useState({});
 
     const [scriptureData, setScriptureData] = useState({
         menuQuery: null,
@@ -267,6 +268,9 @@ export default function BrowseScripture({pk, docId, setDocId}) {
             <BlendModal
                 openBlendModal={openBlendModal}
                 handleCloseBlendModal={handleCloseBlendModal}
+                blendables={blendables}
+                usedBlendables={usedBlendables}
+                setUsedBlendables={setUsedBlendables}
             />
             <Grid item xs={12}>
                 {scriptureData.rendered && docId === scriptureData.renderedDocId ? (
