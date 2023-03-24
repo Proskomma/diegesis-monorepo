@@ -35,13 +35,6 @@ export default function BlendModal({
                                    }) {
     const appLang = useContext(AppLangContext);
 
-    useEffect(
-        () => {
-
-        },
-        []
-    );
-
     return (
         <Modal
             aria-labelledby="transition-modal-title"

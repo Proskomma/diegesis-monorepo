@@ -18,6 +18,7 @@ import { directionText, fontFamily } from "../i18n/languageDirection";
 import { renderers } from "../renderer/render2react";
 import i18n from "../i18n";
 import BlendModal from "./BlendModal";
+import BcvNotesModal from "./BcvNotesModal"
 
 export default function BrowseScripture({pk, docId, setDocId, blendables, usedBlendables, setUsedBlendables}) {
     const appLang = useContext(AppLangContext);
@@ -25,6 +26,8 @@ export default function BrowseScripture({pk, docId, setDocId, blendables, usedBl
     const [openBlendModal, setOpenBlendModal] = useState(false);
     const handleOpenBlendModal = () => setOpenBlendModal(true);
     const handleCloseBlendModal = () => setOpenBlendModal(false);
+    const [bcvNoteRef, setBcvNoteRef] = useState(null);
+    const handleCloseBcvNotesModal = () => setBcvNoteRef(null);
 
     const [scriptureData, setScriptureData] = useState({
         menuQuery: null,
@@ -174,6 +177,9 @@ export default function BrowseScripture({pk, docId, setDocId, blendables, usedBl
                 showChapterLabels: scriptureData.showChapterLabels,
                 showVersesLabels: scriptureData.showVersesLabels,
                 selectedBcvNotes: Object.entries(usedBlendables).filter(kv => kv[1]).map(kv => kv[0]).map(k => k.split('/')),
+                bcvNotesCallback: (bcv) => {
+                    setBcvNoteRef(bcv);
+                },
                 renderers,
             };
             const output = {};
@@ -271,6 +277,13 @@ export default function BrowseScripture({pk, docId, setDocId, blendables, usedBl
                 blendables={blendables}
                 usedBlendables={usedBlendables}
                 setUsedBlendables={setUsedBlendables}
+            />
+            <BcvNotesModal
+                pk={pk}
+                openModal={!!bcvNoteRef}
+                bcvNoteRef={bcvNoteRef}
+                handleCloseBcvNotesModal={handleCloseBcvNotesModal}
+                usedBlendables={usedBlendables}
             />
             <Grid item xs={12}>
                 {scriptureData.rendered && docId === scriptureData.renderedDocId ? (

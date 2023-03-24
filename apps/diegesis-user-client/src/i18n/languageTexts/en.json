@@ -110,5 +110,6 @@
     "BC":"Book Chapters",
     "TEXT":"Text",
     "NO_VALID_TERMS":"No valid terms to search yet",
-    "BLEND_MODAL_TITLE": "Blend in Resources"
+    "BLEND_MODAL_TITLE": "Blend in Resources",
+    "BCV_NOTES_MODAL_TITLE": "Notes"
 }

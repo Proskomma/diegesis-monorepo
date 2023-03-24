@@ -265,11 +265,10 @@ const sofria2WebActions = {
                     workspace.paraContentStack[0].content.push(config.renderers.chapter_label(element.atts.number));
                 } else if (element.subType === "verses_label" && workspace.settings.showVersesLabels) {
                     let bcv = [];
-                    console.log(config);
                     if (config.selectedBcvNotes.length > 0) {
                         bcv = [workspace.bookCode, workspace.chapter, element.atts.number]
                     }
-                    workspace.paraContentStack[0].content.push(config.renderers.verses_label(element.atts.number, bcv));
+                    workspace.paraContentStack[0].content.push(config.renderers.verses_label(element.atts.number, bcv, config.bcvNotesCallback));
                 }
             }
         },
