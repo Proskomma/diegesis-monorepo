@@ -798,6 +798,11 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                         resourceTypes: ["bcvNotes"],
                         originalDir: "uwNotesBooks",
                         "suffix": "tsv"
+                    },
+                    tyndaleStudyNotes: {
+                        resourceTypes: ["bcvNotes"],
+                        originalDir: "tyndaleStudyNotesBooks",
+                        "suffix": "tsv"
                     }
                 }
                 if (!resourceTypes[args.contentType]) {

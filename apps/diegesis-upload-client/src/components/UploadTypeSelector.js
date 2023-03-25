@@ -25,8 +25,11 @@ export default function UploadTypeSelector({currentType}) {
                 <MenuItem key={0} value="scripture-usfm" dir={directionText(appLang)}>
                     {i18n(appLang, "SELECT_SCRIPTURE_USFM_UPLOAD_TYPE")}
                 </MenuItem>
-                <MenuItem key={0} value="uw-notes" dir={directionText(appLang)}>
+                <MenuItem key={1} value="uw-notes" dir={directionText(appLang)}>
                     {i18n(appLang, "SELECT_UW_NOTES_UPLOAD_TYPE")}
+                </MenuItem>
+                <MenuItem key={2} value="tyndale-study-notes" dir={directionText(appLang)}>
+                    {i18n(appLang, "SELECT_TYNDALE_STUDY_NOTES_UPLOAD_TYPE")}
                 </MenuItem>
             </Select>
         </Grid>
