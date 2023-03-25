@@ -21,7 +21,6 @@ import {gql, useApolloClient} from "@apollo/client";
 
 const documentSuffixRegex = /^[A-Za-z0-9_().-]+.tsv$/;
 const documentRegex = /^[^\t\n]+(\t[^\t\n]+){3}\n/;
-const BookRegex = /([a-zA-Z0-9]{3})\.tsv$/;
 
 export default function TyndaleStudyNotesForm() {
     const client = useApolloClient();
@@ -29,14 +28,13 @@ export default function TyndaleStudyNotesForm() {
     async function createEntry(client) {
         try {
             const query = buildQuery();
-            console.log(query)
             await client.mutate({
                 mutation: gql`
         ${query}
       `,
             });
         } catch (err) {
-            setSubmitText("Error:" + err.msg);
+            setSubmitText("Error: " + JSON.stringify(err));
             return;
         }
         setSubmitText("Submitted");
@@ -119,7 +117,7 @@ export default function TyndaleStudyNotesForm() {
                     }
                     newUploadContent.push({
                         content: result,
-                        type: file.name.match(BookRegex)[1],
+                        type: "tyndaleStudyNotes",
                         name: file.name,
                     });
                     setFileValues(dedupe([...fileValues, ...newUploadContent]));
@@ -183,7 +181,7 @@ export default function TyndaleStudyNotesForm() {
         gqlBits.push("resources:[");
         for (const resource of fileValues) {
             gqlBits.push("{");
-            gqlBits.push(`bookCode: """JHN"""`);
+            gqlBits.push(`bookCode: """tyndaleStudyNotes"""`);
             gqlBits.push(`content:"""${replacing(resource.content)}"""`);
             gqlBits.push("}");
         }
@@ -285,7 +283,6 @@ export default function TyndaleStudyNotesForm() {
                 />
                 <Grid item xs={12}>
                     <Button
-                        type="submit"
                         variant="contained"
                         size="large"
                         style={{marginBottom: "20px", marginTop: "20px", fontFamily: fontFamily(appLang)}}

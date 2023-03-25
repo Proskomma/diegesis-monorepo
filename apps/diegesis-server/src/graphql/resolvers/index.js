@@ -20,6 +20,7 @@ const {
     initializeEmptyEntry,
     initializeEntryBookResourceCategory,
     writeEntryBookResource,
+    writeEntryResource,
 } = require("../../lib/dataLayers/fs");
 
 const UUID = require("pure-uuid");
@@ -31,8 +32,8 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
     const scalarRegexes = {
         OrgName: new RegExp(/^[A-Za-z0-9]{2,64}$/),
         EntryId: new RegExp(/^[A-Za-z0-9_-]{1,64}$/),
-        BookCode: new RegExp(/^[A-Z0-9]{3}$/),
-        ContentType: new RegExp(/^(USFM|USX|succinct)$/),
+        BookCode: new RegExp(/^[A-Z0-9]{3}$|^tyndaleStudyNotes$/),
+        ContentType: new RegExp(/^(USFM|USX|succinct|tyndaleStudyNotes)$/),
         scriptRegex: /^[A-Za-z0-9]{1,16}$/,
         abbreviationRegex: /^[A-Za-z][A-Za-z0-9]+$/,
     };
@@ -83,7 +84,7 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                 throw new Error(`Must be a string, not ${ast.kind}`);
             }
             if (!scalarRegexes.ContentType.test(ast.value)) {
-                throw new Error(`Expected USFM or USX`);
+                throw new Error(`Expected USFM, USX, succinct or TSV`);
             }
             return ast.value;
         },
@@ -837,24 +838,28 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                     lockEntry(config, config.name, id, revision, "archivist/add");
                     writeEntryMetadata(config, config.name, id, revision, entryMetadata);
 
-                    initializeEntryBookResourceCategory(
-                        config,
-                        config.name,
-                        id,
-                        revision,
-                        "original",
-                        resourceTypes[args.contentType].originalDir
-                    );
-                    for (const resource of args.resources) {
-                        writeEntryBookResource(
+                    if (args.contentType === 'tyndaleStudyNotes') {
+                        writeEntryResource(config, config.name, id, revision, "original", "studyNotes.tsv", args.resources[0].content);
+                    } else {
+                        initializeEntryBookResourceCategory(
                             config,
                             config.name,
                             id,
                             revision,
-                            resourceTypes[args.contentType].originalDir,
-                            `${resource.bookCode}.${resourceTypes[args.contentType].suffix}`,
-                            resource.content
+                            "original",
+                            resourceTypes[args.contentType].originalDir
                         );
+                        for (const resource of args.resources) {
+                            writeEntryBookResource(
+                                config,
+                                config.name,
+                                id,
+                                revision,
+                                resourceTypes[args.contentType].originalDir,
+                                `${resource.bookCode}.${resourceTypes[args.contentType].suffix}`,
+                                resource.content
+                            );
+                        }
                     }
                     unlockEntry(config, config.name, id, revision);
                 } catch (err) {
