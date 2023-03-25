@@ -29,6 +29,7 @@ export default function TyndaleStudyNotesForm() {
     async function createEntry(client) {
         try {
             const query = buildQuery();
+            console.log(query)
             await client.mutate({
                 mutation: gql`
         ${query}
@@ -182,7 +183,7 @@ export default function TyndaleStudyNotesForm() {
         gqlBits.push("resources:[");
         for (const resource of fileValues) {
             gqlBits.push("{");
-            gqlBits.push(`bookCode: """${replacing(resource.type)}"""`);
+            gqlBits.push(`bookCode: """JHN"""`);
             gqlBits.push(`content:"""${replacing(resource.content)}"""`);
             gqlBits.push("}");
         }
