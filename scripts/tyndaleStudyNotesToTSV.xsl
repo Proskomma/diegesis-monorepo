@@ -58,11 +58,11 @@
                 </xsl:otherwise>
             </xsl:choose>
         </xsl:variable>
-        <xsl:value-of select="generate-id()"/>
-        <xsl:text>&#09;</xsl:text>
         <xsl:value-of select="concat($refBook, ' ', $refFromCh, ':', $refFromV)"/>
         <xsl:text>&#09;</xsl:text>
         <xsl:value-of select="concat($refBook, ' ', $refToCh, ':', $refToV)"/>
+        <xsl:text>&#09;</xsl:text>
+        <xsl:value-of select="generate-id()"/>
         <xsl:text>&#09;</xsl:text>
         <xsl:for-each select="body/p">
             <xsl:apply-templates select="."/>

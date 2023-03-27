@@ -74,7 +74,11 @@ export default function BrowseBcvNotes({pk}) {
                         <Grid item xs={2} key={`${n}_ter`}>{r[1]}</Grid>,
                         <Grid item xs={7} key={`${n}_quad`}>
                             <ReactMarkdown>
-                                {r[3].replace(/\(See:[^)]+\)/g, "")}
+                                {
+                                    r[3]
+                                        .replace(/\\n/g, "\n")
+                                        .replace(/\(See:[^)]+\)/g, "")
+                                }
                             </ReactMarkdown>
                         </Grid>,
                     ]

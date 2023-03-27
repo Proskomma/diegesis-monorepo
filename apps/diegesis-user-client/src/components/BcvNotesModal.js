@@ -39,31 +39,56 @@ export default function BcvNotesModal({
             if (!bcvNoteRef) {
                 return;
             }
-            const bcvQueryString = `{
-              documents(withBook:"T01") {
-                tableSequences {
-                  rows(equals:[{colN:0 values:"""%ref%"""}] columns:1) {
-                    text
-                  }
-                } 
+            const tableDocSetQueryString = `{
+              docSets(withBook:"T01") {
+                id
+                tagsKv {
+                  key
+                  value
+                }
+                documents {
+                  bookCode: header(id:"bookCode")
+                  id
+                }
               }
-            }`.replace('%ref%', `${bcvNoteRef[0]} ${bcvNoteRef[1]}:${bcvNoteRef[2]}`);
-            const result = pk.gqlQuerySync(bcvQueryString);
-            const idRow = result.data.documents[0].tableSequences[0].rows.map(r => r[0].text)[0];
-            if (!idRow) {
-                return;
-            }
-            const idQueryString = `{
-              documents(withBook:"T00") {
+            }`;
+            const dsResult = pk.gqlQuerySync(tableDocSetQueryString);
+            const markdowns = [];
+            for (const docSet of dsResult.data.docSets) {
+                const bcvQueryString = `{
+                  t01Doc: document(id:"%t01DocId%") {
+                    tableSequences {
+                      rows(equals:[{colN:0 values:["""%ref%"""]}] columns:1) {
+                        text
+                      }
+                    }
+                  }
+                }`
+                    .replace('%t01DocId%',docSet.documents.filter(d => d.bookCode === "T01")[0].id)
+                    .replace('%ref%', `${bcvNoteRef[0]} ${bcvNoteRef[1]}:${bcvNoteRef[2]}`);
+                const bcvResult = pk.gqlQuerySync(bcvQueryString);
+                const idRow = bcvResult.data.t01Doc.tableSequences[0].rows.map(r => r[0].text)[0];
+                if (!idRow) {
+                    continue;
+                }
+                const idQueryString = `{
+              document(id:"%t00DocId%") {
                 tableSequences {
                   rows(equals:[{colN:2 values:[%ids%]}] columns:3) {
                     text
                   }
                 } 
               }
-            }`.replace('%ids%', `${idRow.split(',').map(v => `"""${v}"""`).join(',')}`);
-            const result2 = pk.gqlQuerySync(idQueryString);
-            const markdowns = result2.data.documents[0].tableSequences[0].rows.map(r => r[0].text);
+            }`
+                    .replace('%t00DocId%',docSet.documents.filter(d => d.bookCode === "T00")[0].id)
+                    .replace('%ids%', `${idRow.split(',').map(v => `"""${v}"""`).join(',')}`);
+                const idResult = pk.gqlQuerySync(idQueryString);
+                const idRows = idResult.data.document.tableSequences[0].rows;
+                if (idRows.length > 0) {
+                    markdowns.push("## " + docSet.tagsKv.filter(t => t.key === "title")[0].value);
+                }
+                idResult.data.document.tableSequences[0].rows.map(r => r[0].text).forEach(t => markdowns.push(t));
+            }
             setNotesMarkdown(markdowns.join('\n\n---\n\n'));
         },
         [bcvNoteRef, usedBlendables]
@@ -89,7 +114,11 @@ export default function BcvNotesModal({
                         {i18n(appLang, "BCV_NOTES_MODAL_TITLE")}
                         {bcvNoteRef && ` (${bcvNoteRef[0]} ${bcvNoteRef[1]}:${bcvNoteRef[2]})`}
                     </Typography>
-                    <ReactMarkdown>{notesMarkdown}</ReactMarkdown>
+                    <ReactMarkdown>{
+                        notesMarkdown
+                            .replace(/\\n/g, "\n")
+                            .replace(/\(See:[^)]+\)/g, "")
+                    }</ReactMarkdown>
                 </Box>
             </Fade>
         </Modal>
