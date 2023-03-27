@@ -29,6 +29,10 @@ export default function EntryDownloadPage({setAppLanguage}) {
             versification: {
                 mime: "text/plain",
                 suffix: "vrs.txt"
+            },
+            studyNotes: {
+                mime: "text/tab-separated-values",
+                suffix: "studyNotes.tsv"
             }
         }
         if (!downloadTypes[downloadType]) {
@@ -79,6 +83,10 @@ export default function EntryDownloadPage({setAppLanguage}) {
             sofriaBooks: {
                 mime: "application/json",
                 suffix: "sofria.json"
+            },
+            uwNotesBooks: {
+                mime: "text/tab-separated-values",
+                suffix: "uwtn.tsv"
             }
         }
         if (!downloadTypes[downloadType]) {
@@ -122,6 +130,7 @@ export default function EntryDownloadPage({setAppLanguage}) {
               perfBookCodes: bookCodes(type: "perf")
               simplePerfBookCodes: bookCodes(type: "simplePerf")
               sofriaBookCodes: bookCodes(type: "sofria")
+              uwNotesBookCodes: bookCodes(type: "uwNotes")
               succinctRecord: canonResource(type:"succinct") {type}
               vrsRecord: canonResource(type:"versification") {type}
               bookResourceTypes
@@ -159,7 +168,7 @@ export default function EntryDownloadPage({setAppLanguage}) {
     }
 
     let bookCodes = new Set([]);
-    for (const downloadType of ["usfm", "usx", "perf", "simplePerf", "sofria"]) {
+    for (const downloadType of ["usfm", "usx", "perf", "simplePerf", "sofria", "uwNotes"]) {
         entryInfo[`${downloadType}BookCodes`].forEach(b => bookCodes.add(b));
     }
 
