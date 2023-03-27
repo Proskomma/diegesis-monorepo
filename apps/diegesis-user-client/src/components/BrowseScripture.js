@@ -59,7 +59,16 @@ export default function BrowseScripture({pk, docId, setDocId, blendables, usedBl
         "versesLabels",
     ];
 
-    const [includedNames, setIncludedNames] = useState(allNames);
+    const initialNames = [
+        "titles",
+        "headings",
+        "paraStyles",
+        "characterMarkup",
+        "chapterLabels",
+        "versesLabels",
+    ];
+
+    const [includedNames, setIncludedNames] = useState(initialNames);
     const [includedFlags, setIncludedFlags] = useState({
         showWordAtts: true,
         showTitles: true,

@@ -104,5 +104,7 @@
     "SELECT_UPLOAD_TYPE":"Please select upload type",
     "SELECT_SCRIPTURE_USFM_UPLOAD_TYPE":"Scripture Usfm",
     "SELECT_UW_NOTES_UPLOAD_TYPE":"uW Notes",
-    "UPLOAD_TYPE":"Upload Type"
+    "UPLOAD_TYPE":"Upload Type",
+    "Add_Tyndale_Study_Notes_Document": "Add Tyndale Study Notes",
+    "SELECT_TYNDALE_STUDY_NOTES_UPLOAD_TYPE": "Tyndale Study Notes"
 }
