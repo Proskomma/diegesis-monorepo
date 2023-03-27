@@ -245,7 +245,6 @@ export default function BrowseScripture({pk, docId, setDocId, blendables, usedBl
                             value={includedNames}
                             onChange={handleIncludedChange}
                             input={<OutlinedInput label="Name"/>}
-                            sx={{width: 450}}
                         >
                             {allNames.map((name) => (
                                 <MenuItem key={name} value={name} style={getStyles(name)}>

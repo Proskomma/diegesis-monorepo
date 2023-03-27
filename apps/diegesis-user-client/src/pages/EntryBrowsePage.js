@@ -18,7 +18,6 @@ import SearchModal from "../components/SearchModal";
 import PrintModal from "../components/PrintModal";
 import PrintIcon from '@mui/icons-material/Print';
 
-
 export default function EntryBrowsePage({setAppLanguage}) {
     const appLang = useContext(AppLangContext);
     const {source, entryId, revision} = useParams();
@@ -104,7 +103,7 @@ export default function EntryBrowsePage({setAppLanguage}) {
                                 {setArrow(appLang)}
                             </RouterLink>
                         </Button>
-                        {i18n(appLang, "PROCESSING")}
+                        {i18n(appLang, "BROWSE_PAGE_PROCESSING")}
                     </Typography>
                     <Typography paragraph="true">
                         {i18n(appLang, "BROWSE_PAGE_CURRENTLY_WARNING")}
@@ -169,9 +168,10 @@ export default function EntryBrowsePage({setAppLanguage}) {
                         <Button onClick={handleOpenPrintModal}>
                             <PrintIcon color="primary" sx={{fontSize: 30}}/>
                         </Button>
-                                <Button onClick={handleOpenBlendModal}>
-                                    <Blender color="primary" sx={{fontSize: 30}}/>
-                                </Button>
+                        <Button onClick={handleOpenBlendModal}>
+                            <Blender color="primary" sx={{fontSize: 30}}/>
+                            {`(${Object.keys(usedBlendables).length})`}
+                        </Button>
                         <PrintModal
                             openPrintModal={openPrintModal}
                             handleClosePrintModal={handleClosePrintModal}
