@@ -7,9 +7,7 @@ import {
     OutlinedInput,
     Select,
     MenuItem,
-    Button,
 } from "@mui/material";
-import {Blender} from "@mui/icons-material";
 import {SofriaRenderFromProskomma} from "proskomma-json-tools";
 import sofria2WebActions from "../renderer/sofria2web";
 import DocSelector from "./DocSelector";
@@ -20,12 +18,9 @@ import i18n from "../i18n";
 import BlendModal from "./BlendModal";
 import BcvNotesModal from "./BcvNotesModal"
 
-export default function BrowseScripture({pk, docId, setDocId, blendables, usedBlendables, setUsedBlendables}) {
+export default function BrowseScripture({pk, docId, setDocId, blendables, usedBlendables, setUsedBlendables, openBlendModal, handleCloseBlendModal}) {
     const appLang = useContext(AppLangContext);
 
-    const [openBlendModal, setOpenBlendModal] = useState(false);
-    const handleOpenBlendModal = () => setOpenBlendModal(true);
-    const handleCloseBlendModal = () => setOpenBlendModal(false);
     const [bcvNoteRef, setBcvNoteRef] = useState(null);
     const handleCloseBcvNotesModal = () => setBcvNoteRef(null);
 
@@ -261,7 +256,7 @@ export default function BrowseScripture({pk, docId, setDocId, blendables, usedBl
                     </FormGroup>
                 </Box>
             </Grid>
-            <Grid item xs={6}>
+            <Grid item xs={12}>
                 <DocSelector
                     docs={docMenuItems}
                     docId={docId}
@@ -272,13 +267,6 @@ export default function BrowseScripture({pk, docId, setDocId, blendables, usedBl
                         scriptureData.updatedAtts
                     }
                 />
-            </Grid>
-            <Grid item xs={6}>
-                <Box display="flex" justifyContent="flex-end">
-                    <Button onClick={handleOpenBlendModal}>
-                        <Blender color="primary" sx={{fontSize: 30}}/>
-                    </Button>
-                </Box>
             </Grid>
             <BlendModal
                 openBlendModal={openBlendModal}
