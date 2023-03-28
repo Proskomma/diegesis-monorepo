@@ -5,11 +5,10 @@ import Footer from "../components/Footer";
 import AppLangContext from "../contexts/AppLangContext";
 import i18n from "../i18n";
 import {directionText, fontFamily} from "../i18n/languageDirection";
-import UwNotesForm from "../components/UwNotesForm";
+import TyndaleStudyNotesForm from "../components/TyndaleStudyNotesForm";
 import UploadTypeSelector from "../components/UploadTypeSelector";
 
-
-export default function AddUwNotesPage({setAppLanguage}) {
+export default function AddTyndaleStudyNotesPage({setAppLanguage}) {
     const appLang = useContext(AppLangContext);
 
     return (
@@ -22,10 +21,10 @@ export default function AddUwNotesPage({setAppLanguage}) {
                 sx={{mt: "100px"}}
                 style={{fontFamily: fontFamily(appLang)}}
             >
-                {i18n(appLang, "Add_uW_Notes_Document")}
+                {i18n(appLang, "Add_Tyndale_Study_Notes_Document")}
             </Typography>
-            <UploadTypeSelector currentType="uw-notes"/>
-            <UwNotesForm/>
+            <UploadTypeSelector currentType="tyndale-study-notes"/>
+            <TyndaleStudyNotesForm/>
             <Footer/>
         </Container>
     );

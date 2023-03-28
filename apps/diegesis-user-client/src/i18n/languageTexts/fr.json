@@ -97,11 +97,17 @@
     "BROWSE_PAGE_YET_WARNING":"Impossible de rendre cette nouvelle traduction pour le moment car le serveur n'a pas encore traité les nouvelles données : veuillez réessayer dans quelques minutes.",
     "SEARCH_NOT_VALID_QUERY":"Entrez un ou plusieurs numéros valides dans la zone de recherche...",
     "SEARCH_VALID_QUERY":"Requête valide détectée. Cliquez sur 'lancer la recherche' pour effectuer la recherche",
-    "SEARCH_NO_OCCURENCES":"Il n'y a pas d'occurrences de ce(s) numéro(s) dans le cadre sélectionné...",
-    "SEARCH_OCCURENCES_FOUND":"occurrences trouvées" ,
+    "SEARCH_NO_OCCURENCES":"Il n'y a pas d'occurrences de ce(s) terme(s) dans le cadre sélectionné...",
+    "SEARCH_OCCURENCES_FOUND":"Occurrences trouvées" ,
     "PAGE_SIZE":"Taille de la page",
     "COLUMNS":"Colonnes",
     "PREVIEW_DOCUMENT":"Aperçu du document",
     "INCLUDED_CONTENT":"Contenu inclus",
-    "LOADING":"Chargement"
+    "LOADING":"Chargement",
+    "SEARCH":"Recherche",
+    "SEARCH_TERMS":"Termes à rechercher",
+    "STRONGS":"Strongs",
+    "BC":"Chapitres de livre",
+    "TEXT":"Texte",
+    "NO_VALID_TERMS":"Aucun terme valide à rechercher pour le moment"
 }

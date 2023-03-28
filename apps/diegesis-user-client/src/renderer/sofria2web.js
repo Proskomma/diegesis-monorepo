@@ -8,6 +8,7 @@ const defaultSettings = {
     showVersesLabels: true,
     showCharacterMarkup: true,
     showParaStyles: true,
+    selectedBcvNotes: []
 }
 
 const sofria2WebActions = {
@@ -15,7 +16,7 @@ const sofria2WebActions = {
         {
             description: "Set up",
             test: () => true,
-            action: ({config, workspace, output}) => {
+            action: ({config, context, workspace, output}) => {
                 workspace.settings = {...defaultSettings, ...config}
                 workspace.webParas = [];
                 output.sofria = {};
@@ -23,6 +24,8 @@ const sofria2WebActions = {
                 workspace.currentSequence = output.sofria.sequence;
                 workspace.paraContentStack = [];
                 workspace.footnoteNo = 1;
+                workspace.bookCode = context.document.metadata.document.bookCode;
+                workspace.chapter = 0;
             },
         }
     ],
@@ -255,12 +258,17 @@ const sofria2WebActions = {
         {
             description: "Show chapter/verse markers",
             test: () => true,
-            action: ({config,context, workspace}) => {
+            action: ({config, context, workspace}) => {
                 const element = context.sequences[0].element;
                 if (element.subType === "chapter_label" && workspace.settings.showChapterLabels) {
+                    workspace.chapter = element.atts.number;
                     workspace.paraContentStack[0].content.push(config.renderers.chapter_label(element.atts.number));
                 } else if (element.subType === "verses_label" && workspace.settings.showVersesLabels) {
-                    workspace.paraContentStack[0].content.push(config.renderers.verses_label(element.atts.number));
+                    let bcv = [];
+                    if (config.selectedBcvNotes.length > 0) {
+                        bcv = [workspace.bookCode, workspace.chapter, element.atts.number]
+                    }
+                    workspace.paraContentStack[0].content.push(config.renderers.verses_label(element.atts.number, bcv, config.bcvNotesCallback));
                 }
             }
         },

@@ -20,10 +20,9 @@ import {useSnackbar} from "notistack";
 import {gql, useApolloClient} from "@apollo/client";
 
 const documentSuffixRegex = /^[A-Za-z0-9_().-]+.tsv$/;
-const documentRegex = /^[^\t\n]+(\t[^\t\n]+){6}\n/;
-const BookRegex = /([a-zA-Z0-9]{3})\.tsv$/;
+const documentRegex = /^[^\t\n]+(\t[^\t\n]+){3}\n/;
 
-export default function UwNotesForm() {
+export default function TyndaleStudyNotesForm() {
     const client = useApolloClient();
 
     async function createEntry(client) {
@@ -35,7 +34,7 @@ export default function UwNotesForm() {
       `,
             });
         } catch (err) {
-            setSubmitText("Error:" + err.msg);
+            setSubmitText("Error: " + JSON.stringify(err));
             return;
         }
         setSubmitText("Submitted");
@@ -118,7 +117,7 @@ export default function UwNotesForm() {
                     }
                     newUploadContent.push({
                         content: result,
-                        type: file.name.match(BookRegex)[1],
+                        type: "tyndaleStudyNotes",
                         name: file.name,
                     });
                     setFileValues(dedupe([...fileValues, ...newUploadContent]));
@@ -170,7 +169,7 @@ export default function UwNotesForm() {
     const buildQuery = () => {
         let gqlBits = [];
         gqlBits.push("mutation { createLocalEntry(");
-        gqlBits.push('contentType: "uwNotes"');
+        gqlBits.push('contentType: "tyndaleStudyNotes"');
         gqlBits.push("metadata:[");
         for (const [key, value] of Object.entries(formValues)) {
             gqlBits.push("{");
@@ -182,7 +181,7 @@ export default function UwNotesForm() {
         gqlBits.push("resources:[");
         for (const resource of fileValues) {
             gqlBits.push("{");
-            gqlBits.push(`bookCode: """${replacing(resource.type)}"""`);
+            gqlBits.push(`bookCode: """tyndaleStudyNotes"""`);
             gqlBits.push(`content:"""${replacing(resource.content)}"""`);
             gqlBits.push("}");
         }

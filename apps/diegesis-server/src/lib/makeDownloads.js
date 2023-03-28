@@ -166,7 +166,7 @@ parentPort.on("message", data => {
     const data2 = {...data, config: JSON.parse(data.configString)};
     if (["usfm", "usx", "succinct"].includes(data2.contentType)) {
         doScriptureDownloads(data2);
-    } else if (["uwNotes"].includes(data2.contentType)) {
+    } else if (["uwNotes", "tyndaleStudyNotes"].includes(data2.contentType)) {
         doBcvNotesDownloads(data2);
     } else {
         const contentTypeError = {

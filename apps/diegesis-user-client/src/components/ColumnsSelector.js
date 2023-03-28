@@ -6,7 +6,7 @@ import {
 } from "@mui/material";
 import { useContext } from "react";
 import AppLangContext from "../contexts/AppLangContext";
-import { directionText, FontFamily } from "../i18n/languageDirection";
+import { directionText, fontFamily } from "../i18n/languageDirection";
 
 export default function ColumnsSelector({ formLabelTitle, listItems,formatData ,setFormatData}) {
   const appLang = useContext(AppLangContext);
@@ -20,7 +20,7 @@ export default function ColumnsSelector({ formLabelTitle, listItems,formatData ,
         <FormGroup sx={{display:'flex',flexDirection:'row',alignItems:'flex-start'}} dir={directionText(appLang)}>
           <FormLabel
             id="page-size-group-label"
-            style={{ fontFamily: FontFamily(appLang) }}
+            style={{ fontFamily: fontFamily(appLang) }}
             sx={{marginRight:'5%',marginTop:'1%'}}
           >
             {formLabelTitle}
@@ -35,7 +35,7 @@ export default function ColumnsSelector({ formLabelTitle, listItems,formatData ,
             onChange={(e) => setFormatValue("nColumns", e.target.value)}
           >
             {listItems.map((nc, n) => (
-              <MenuItem key={n} value={nc} style={{ fontFamily: FontFamily(appLang) }}>
+              <MenuItem key={n} value={nc} style={{ fontFamily: fontFamily(appLang) }}>
                 {`${nc}`}
               </MenuItem>
             ))}

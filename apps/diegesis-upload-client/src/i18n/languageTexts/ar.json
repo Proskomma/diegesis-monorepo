@@ -99,5 +99,10 @@
     "ERROR_REGEX":"الحقل لا يتطابق مع التركيبة المطلوبة",
     "BYTES":"بايت",
     "LOADING":"تحميل",
-    "SELECT_FILE_TYPE":"الرجاء تحديد نوع الموارد التي تريد اضافتها"
+    "Add_Scripture_Usfm_Document":" إضافة وثيقة الكتاب المقدس (USFM)",
+    "Add_uW_Notes_Document":"أضف مستند ملاحظات (uW)",
+    "SELECT_UPLOAD_TYPE":"الرجاء تحديد نوع الوثيقة التي تريد تحميلها",
+    "SELECT_SCRIPTURE_USFM_UPLOAD_TYPE":"الكتاب المقدس(USFM)",
+    "SELECT_UW_NOTES_UPLOAD_TYPE":"ملاحظات (uW)",
+    "UPLOAD_TYPE":"نوع التحميل"
 }
