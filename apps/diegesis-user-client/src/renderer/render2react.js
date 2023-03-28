@@ -49,7 +49,18 @@ function InlineElement(props) {
 const renderers = {
     text: text => text,
     chapter_label: number => <span style={getStyles('marks', "chapter_label")}>{number}</span>,
-    verses_label: number => <span style={getStyles('marks', "verses_label")}>{number}</span>,
+    verses_label: (number, bcv, bcvCallback) =>
+        bcv && bcv.length === 3 ?
+            <span
+                onClick={() => bcvCallback(bcv)} style={{
+                    ...getStyles('marks', "verses_label"),
+                textDecoration: "underline",
+                color: "#00D"
+                }}
+            >
+                {number}
+            </span> :
+            <span style={getStyles('marks', "verses_label")}>{number}</span>,
     paragraph: (subType, content, footnoteNo) =>
         ["usfm:f", "usfm:x"].includes(subType) ?
             <InlineElement

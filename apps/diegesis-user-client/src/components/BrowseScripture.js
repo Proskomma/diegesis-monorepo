@@ -7,24 +7,22 @@ import {
     OutlinedInput,
     Select,
     MenuItem,
-    Button,
 } from "@mui/material";
-import {Blender} from "@mui/icons-material";
 import {SofriaRenderFromProskomma} from "proskomma-json-tools";
 import sofria2WebActions from "../renderer/sofria2web";
 import DocSelector from "./DocSelector";
 import AppLangContext from "../contexts/AppLangContext";
-import {directionText, FontFamily} from "../i18n/languageDirection";
-import {renderers} from "../renderer/render2react";
+import { directionText, fontFamily } from "../i18n/languageDirection";
+import { renderers } from "../renderer/render2react";
 import i18n from "../i18n";
 import BlendModal from "./BlendModal";
+import BcvNotesModal from "./BcvNotesModal"
 
-export default function BrowseScripture({pk, docId, setDocId}) {
+export default function BrowseScripture({pk, docId, setDocId, blendables, usedBlendables, setUsedBlendables, openBlendModal, handleCloseBlendModal}) {
     const appLang = useContext(AppLangContext);
 
-    const [openBlendModal, setOpenBlendModal] = useState(false);
-    const handleOpenBlendModal = () => setOpenBlendModal(true);
-    const handleCloseBlendModal = () => setOpenBlendModal(false);
+    const [bcvNoteRef, setBcvNoteRef] = useState(null);
+    const handleCloseBcvNotesModal = () => setBcvNoteRef(null);
 
     const [scriptureData, setScriptureData] = useState({
         menuQuery: null,
@@ -56,7 +54,16 @@ export default function BrowseScripture({pk, docId, setDocId}) {
         "versesLabels",
     ];
 
-    const [includedNames, setIncludedNames] = useState(allNames);
+    const initialNames = [
+        "titles",
+        "headings",
+        "paraStyles",
+        "characterMarkup",
+        "chapterLabels",
+        "versesLabels",
+    ];
+
+    const [includedNames, setIncludedNames] = useState(initialNames);
     const [includedFlags, setIncludedFlags] = useState({
         showWordAtts: true,
         showTitles: true,
@@ -126,7 +133,7 @@ export default function BrowseScripture({pk, docId, setDocId}) {
             showVersesLabels: includedFlags.showVersesLabels,
             updatedAtts: true,
         });
-    }, [includedFlags]);
+    }, [includedFlags, usedBlendables]);
 
     const docName = (d) => {
         return (
@@ -173,6 +180,10 @@ export default function BrowseScripture({pk, docId, setDocId}) {
                 showCharacterMarkup: scriptureData.showCharacterMarkup,
                 showChapterLabels: scriptureData.showChapterLabels,
                 showVersesLabels: scriptureData.showVersesLabels,
+                selectedBcvNotes: Object.entries(usedBlendables).filter(kv => kv[1]).map(kv => kv[0]).map(k => k.split('/')),
+                bcvNotesCallback: (bcv) => {
+                    setBcvNoteRef(bcv);
+                },
                 renderers,
             };
             const output = {};
@@ -207,7 +218,7 @@ export default function BrowseScripture({pk, docId, setDocId}) {
                 setDocId(newDocId);
             }
         }
-    }, [scriptureData, docId, includedNames]);
+    }, [scriptureData, docId, includedNames, usedBlendables]);
     const docMenuItems =
         scriptureData.menuQuery &&
         scriptureData.menuQuery.data &&
@@ -222,7 +233,7 @@ export default function BrowseScripture({pk, docId, setDocId}) {
         <Grid
             container
             dir={directionText(appLang)}
-            style={{fontFamily: FontFamily(appLang)}}
+            style={{fontFamily: fontFamily(appLang)}}
         >
             <Grid item xs={12}>
                 <Box sx={{marginRight: "5px"}}>
@@ -234,7 +245,6 @@ export default function BrowseScripture({pk, docId, setDocId}) {
                             value={includedNames}
                             onChange={handleIncludedChange}
                             input={<OutlinedInput label="Name"/>}
-                            sx={{width: 450}}
                         >
                             {allNames.map((name) => (
                                 <MenuItem key={name} value={name} style={getStyles(name)}>
@@ -245,7 +255,7 @@ export default function BrowseScripture({pk, docId, setDocId}) {
                     </FormGroup>
                 </Box>
             </Grid>
-            <Grid item xs={6}>
+            <Grid item xs={12}>
                 <DocSelector
                     docs={docMenuItems}
                     docId={docId}
@@ -257,16 +267,19 @@ export default function BrowseScripture({pk, docId, setDocId}) {
                     }
                 />
             </Grid>
-            <Grid item xs={6}>
-                <Box display="flex" justifyContent="flex-end">
-                    <Button onClick={handleOpenBlendModal}>
-                        <Blender color="primary" sx={{fontSize: 30}}/>
-                    </Button>
-                </Box>
-            </Grid>
             <BlendModal
                 openBlendModal={openBlendModal}
                 handleCloseBlendModal={handleCloseBlendModal}
+                blendables={blendables}
+                usedBlendables={usedBlendables}
+                setUsedBlendables={setUsedBlendables}
+            />
+            <BcvNotesModal
+                pk={pk}
+                openModal={!!bcvNoteRef}
+                bcvNoteRef={bcvNoteRef}
+                handleCloseBcvNotesModal={handleCloseBcvNotesModal}
+                usedBlendables={usedBlendables}
             />
             <Grid item xs={12}>
                 {scriptureData.rendered && docId === scriptureData.renderedDocId ? (

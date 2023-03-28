@@ -4,7 +4,7 @@ function directionText(lang) {
   return langTable[lang]["textDirection"];
 }
 
-const FontFamily = function FontFamily(lang) {
+const fontFamily = function fontFamily(lang) {
   const lTable = langTable[lang]
   return (lTable ? lTable['fontFamily'] : 'Arial')
 }
@@ -20,4 +20,4 @@ function otherDirectionText(lang) {
 function alignmentText(lang) {
   return langTable[lang]["textDirection"] === "rtl" ? "right" : "left";
 }
-export { directionText, alignmentText, otherDirectionText,FontFamily };
+export { directionText, alignmentText, otherDirectionText,fontFamily };

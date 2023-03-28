@@ -50,6 +50,8 @@ function doRenderCron(config) {
                                 taskSpecs.push([org, entryRecord.id, revision, 'usx']);
                             } else if (entryHasOriginal(config, org, entryRecord.id, revision, "uwNotesBooks")) {
                                 taskSpecs.push([org, entryRecord.id, revision, 'uwNotes']);
+                            } else if (entryHasOriginal(config, org, entryRecord.id, revision, "studyNotes.tsv")) {
+                                taskSpecs.push([org, entryRecord.id, revision, 'tyndaleStudyNotes']);
                             }
                         }
                     }

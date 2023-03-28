@@ -13,6 +13,7 @@ import AppLangContext, { AppLangProvider } from "./contexts/AppLangContext";
 import i18n from "./i18n";
 import AddScriptureUsfmPage from "./pages/AddScriptureUsfmPage";
 import AddUwNotesPage from "./pages/AddUwNotesPage";
+import AddTyndaleStudyNotesPage from "./pages/AddTyndaleStudyNotesPage";
 import { SnackbarProvider } from "notistack";
 
 function App() {
@@ -81,6 +82,11 @@ function App() {
           element: <AddUwNotesPage setAppLanguage={setAppLanguage} />,
           errorElement: <ErrorBoundary />,
       },
+      {
+          path: "/uploads/add-tyndale-study-notes",
+          element: <AddTyndaleStudyNotesPage setAppLanguage={setAppLanguage} />,
+          errorElement: <ErrorBoundary />,
+      }
   ]);
   return (
     <ApolloProvider client={client}>

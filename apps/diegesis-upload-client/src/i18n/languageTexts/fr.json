@@ -99,5 +99,10 @@
     "ERROR_REGEX":"Le champ ne correspond pas à l'expression régulière !",
     "BYTES":"OCTETS",
     "LOADING":"Chargement",
-    "SELECT_FILE_TYPE":"Veuillez sélectionner le type de ressources a ajouter"
+    "Add_Scripture_Usfm_Document":"Ajouter un document usfm biblique",
+    "Add_uW_Notes_Document":"Ajouter un document de notes uW",
+    "SELECT_UPLOAD_TYPE":"Veuillez sélectionner le type de téléchargement",
+    "SELECT_SCRIPTURE_USFM_UPLOAD_TYPE":"Écriture Usfm",
+    "SELECT_UW_NOTES_UPLOAD_TYPE":"Notes uW",
+    "UPLOAD_TYPE":"Type de téléchargement"
 }

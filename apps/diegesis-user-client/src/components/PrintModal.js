@@ -18,7 +18,7 @@ import AppLangContext from "../contexts/AppLangContext";
 import {
   alignmentText,
   directionText,
-  FontFamily,
+  fontFamily,
 } from "../i18n/languageDirection";
 import printModalResources from "../lib/printModalResources";
 import ColumnsSelector from "./ColumnsSelector";
@@ -154,7 +154,7 @@ export default function PrintModal({
             <Grid
               container
               dir={directionText(appLang)}
-              style={{ fontFamily: FontFamily(appLang) }}
+              style={{ fontFamily: fontFamily(appLang) }}
               sx={{ display: "flex", flexDirection: "column" }}
             >
               <Grid item sx={{ margin: "2%" }}>

@@ -17,8 +17,6 @@ export default function Header({children, setAppLanguage }) {
   const appLang = useContext(AppLangContext);
   const handleLanguageChange = (e) => setAppLanguage(e.target.value);
 
-  const isListView = () => window.location.pathname === `/uploads`;
-
   const linkBoxStyles = {
     m: 3,
   };
@@ -26,11 +24,10 @@ export default function Header({children, setAppLanguage }) {
   const selectedLinkStyles = {
     color: "#fff",
   };
-
   return (
     <AppBar position="fixed">
       <Toolbar dir={alignmentText(appLang) === "right" ? "rtl" : "ltr"}>
-        {!isListView() ? (
+        {window.location.pathname === `/uploads/` ? (
           <Box
             sx={{ display: "flex", flexDirection: "row", flexGrow: 1, m: 3 }}
           >
@@ -40,7 +37,7 @@ export default function Header({children, setAppLanguage }) {
           </Box>
         ) : (
           <Box sx={{ display: "flex", flexDirection: "row", flexGrow: 1 }}>
-            <RouterLink to={`/uploads`}>
+            <RouterLink to={`/uploads/`}>
               <Box sx={linkBoxStyles}>
                 <Home sx={selectedLinkStyles}/>
               </Box>

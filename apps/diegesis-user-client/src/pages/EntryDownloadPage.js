@@ -11,7 +11,7 @@ import Spinner from "../components/Spinner";
 import BookSelector from "../components/BookSelector";
 import i18n from "../i18n";
 import AppLangContext from "../contexts/AppLangContext";
-import {directionText, FontFamily} from "../i18n/languageDirection";
+import {directionText, fontFamily} from "../i18n/languageDirection";
 
 export default function EntryDownloadPage({setAppLanguage}) {
     const appLang = useContext(AppLangContext);
@@ -29,6 +29,10 @@ export default function EntryDownloadPage({setAppLanguage}) {
             versification: {
                 mime: "text/plain",
                 suffix: "vrs.txt"
+            },
+            studyNotes: {
+                mime: "text/tab-separated-values",
+                suffix: "studyNotes.tsv"
             }
         }
         if (!downloadTypes[downloadType]) {
@@ -79,6 +83,10 @@ export default function EntryDownloadPage({setAppLanguage}) {
             sofriaBooks: {
                 mime: "application/json",
                 suffix: "sofria.json"
+            },
+            uwNotesBooks: {
+                mime: "text/tab-separated-values",
+                suffix: "uwtn.tsv"
             }
         }
         if (!downloadTypes[downloadType]) {
@@ -122,6 +130,7 @@ export default function EntryDownloadPage({setAppLanguage}) {
               perfBookCodes: bookCodes(type: "perf")
               simplePerfBookCodes: bookCodes(type: "simplePerf")
               sofriaBookCodes: bookCodes(type: "sofria")
+              uwNotesBookCodes: bookCodes(type: "uwNotes")
               succinctRecord: canonResource(type:"succinct") {type}
               vrsRecord: canonResource(type:"versification") {type}
               bookResourceTypes
@@ -150,7 +159,7 @@ export default function EntryDownloadPage({setAppLanguage}) {
             <Container fixed className="homepage">
                 <Header setAppLanguage={setAppLanguage} selected="list"/>
                 <Box dir={directionText(appLang)} style={{marginTop: "100px"}}>
-                    <Typography variant="h4" paragraph="true" sx={{mt: "20px"}} style={{ fontFamily : FontFamily(appLang)}}>
+                    <Typography variant="h4" paragraph="true" sx={{mt: "20px"}} style={{ fontFamily : fontFamily(appLang)}}>
                         Processing on server - wait a while and hit "refresh"
                     </Typography>
                 </Box>
@@ -159,7 +168,7 @@ export default function EntryDownloadPage({setAppLanguage}) {
     }
 
     let bookCodes = new Set([]);
-    for (const downloadType of ["usfm", "usx", "perf", "simplePerf", "sofria"]) {
+    for (const downloadType of ["usfm", "usx", "perf", "simplePerf", "sofria", "uwNotes"]) {
         entryInfo[`${downloadType}BookCodes`].forEach(b => bookCodes.add(b));
     }
 
@@ -175,7 +184,7 @@ export default function EntryDownloadPage({setAppLanguage}) {
     return <Container fixed className="homepage">
         <Header setAppLanguage={setAppLanguage} selected="list"/>
         <Box dir={directionText(appLang)} style={{marginTop: "100px"}}>
-            <Typography variant="h4" paragraph="true" sx={{mt: "20px"}} style={{ fontFamily : FontFamily(appLang)}}>
+            <Typography variant="h4" paragraph="true" sx={{mt: "20px"}} style={{ fontFamily : fontFamily(appLang)}}>
                 <Button>
                     <RouterLink to={`/entry/details/${source}/${entryId}/${revision}`}
                                 relative="path"> {setArrow(appLang)}</RouterLink></Button>
@@ -183,7 +192,7 @@ export default function EntryDownloadPage({setAppLanguage}) {
             </Typography>
             <Grid container>
                 <Grid item xs={12}>
-                    <Typography variant="h5" paragraph="true" style={{ fontFamily : FontFamily(appLang)}}>{i18n(appLang, "ADMIN_DOWNLOAD_PAGE_TITLE")}</Typography>
+                    <Typography variant="h5" paragraph="true" style={{ fontFamily : fontFamily(appLang)}}>{i18n(appLang, "ADMIN_DOWNLOAD_PAGE_TITLE")}</Typography>
                 </Grid>
                 {
                     entryInfo.canonResources && entryInfo.canonResources
@@ -191,7 +200,7 @@ export default function EntryDownloadPage({setAppLanguage}) {
                         .map(
                             cr => <>
                                 <Grid item xs={4}>
-                                    <Typography variant="body1" paragraph="true" style={{ fontFamily : FontFamily(appLang)}}>{cr}</Typography>
+                                    <Typography variant="body1" paragraph="true" style={{ fontFamily : fontFamily(appLang)}}>{cr}</Typography>
                                 </Grid>
                                 <Grid item xs={8}>
                                     <Button onClick={() => downloadTranslation(cr)}>
@@ -206,7 +215,7 @@ export default function EntryDownloadPage({setAppLanguage}) {
                     <>
                         <Grid item xs={4} md={2}>
                             <Typography variant="h5"
-                                        paragraph="true" style={{ fontFamily : FontFamily(appLang)}}>{i18n(appLang, "ADMIN_DOWNLOAD_PAGE_STITLE")}</Typography>
+                                        paragraph="true" style={{ fontFamily : fontFamily(appLang)}}>{i18n(appLang, "ADMIN_DOWNLOAD_PAGE_STITLE")}</Typography>
                         </Grid>
                         <Grid item xs={8} md={10}>
                             <BookSelector bookCodes={Array.from(bookCodes)} selectedBook={selectedBook}

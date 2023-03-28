@@ -12,7 +12,7 @@ import ListViewControls from "../components/ListViewControls";
 import Spinner from "../components/Spinner";
 import Footer from "../components/Footer";
 import AppLangContext from "../contexts/AppLangContext";
-import { directionText, FontFamily } from "../i18n/languageDirection";
+import { directionText, fontFamily } from "../i18n/languageDirection";
 import i18n from '../i18n';
 
 export default function ListPage({ setAppLanguage }) {
@@ -65,7 +65,7 @@ export default function ListPage({ setAppLanguage }) {
     return <Container fixed className="listpage">
         <Header  setAppLanguage={setAppLanguage} selected="list" />
         <Box dir={directionText(appLang)} style={{marginTop: "100px"}}>
-            <Typography  variant="h4" paragraph="true" sx={{mt: "20px"}} style={{ fontFamily : FontFamily(appLang)}}>
+            <Typography  variant="h4" paragraph="true" sx={{mt: "20px"}} style={{ fontFamily : fontFamily(appLang)}}>
                 {entries}
                 <Button onClick={() => setShowSettings(!showSettings)}>
                     <Tune/>
