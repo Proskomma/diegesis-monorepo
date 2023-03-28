@@ -18,7 +18,7 @@ jobs:
           echo "DOCKER_TAGS=${DOCKER_TAGS}" >> $GITHUB_ENV
 
       - name: Publish Docker Github Action
-        uses: elgohr/Publish-Docker-Github-Action@v4
+        uses: elgohr/Publish-Docker-Github-Action@v5
         with:
           name: mvhsolutions/diegesis-server
           username: ${{ secrets.DOCKERHUB_USERNAME }}
