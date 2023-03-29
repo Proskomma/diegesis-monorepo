@@ -1,0 +1,31 @@
+{
+    "fr" : {
+        "englishName":"French",
+        "autonym":"Français",
+        "textDirection":"ltr",
+        "fontFamily":"Roboto , serif"
+    },
+    "en" : {
+        "englishName":"English",
+        "autonym":"English",
+        "textDirection":"ltr",
+        "fontFamily":"Roboto , serif"
+    },
+    "ar" : {
+        "englishName":"Arabic",
+        "autonym":"العربية",
+        "textDirection":"rtl",
+        "fontFamily":"IBM Plex Sans Arabic, serif"
+    },
+    "es" : {
+        "englishName":"Spanish",
+        "autonym":"español",
+        "textDirection":"ltr",
+        "fontFamily":"Roboto , serif"
+    },
+    "debug" : {
+        "englishName":"DEBUG",
+        "autonym":"DEBUG",
+        "fontFamily":"Roboto , serif"
+    }
+}

@@ -1,21 +1,34 @@
 {
   "name": "DEBUGSERVER",
-  "hostName": "0.0.0.0",
+  "hostName": "localhost",
   "port": 1234,
   "debug": true,
   "logAccess": false,
   "logFormat": "dev",
   "useCors": true,
-  "orgs": [],
+  "orgs": ["DBL","eBible","DCS","Vachan","DEBUGSERVER"],
   "processFrequency": "1 min",
-  "nWorkers": 8,
+  "nWorkers": 1,
   "verbose": true,
   "includeMutations": true,
   "sessionTimeoutInMins": 10,
   "staticPaths": [
     {
+      "path": "./src/static",
+      "url": "/static"
+    },
+    {
       "path": "../diegesis-admin-client/build",
       "url": "/admin"
+    },
+    {
+      "path": "../diegesis-upload-client/build",
+      "url": "/uploads",
+      "redirectTarget": "../diegesis-upload-client/build/index.html",
+      "redirects":[
+        "/uploads/add-scripture-usfm",
+        "/uploads/add-uw-notes"
+      ]
     },
     {
       "path": "../diegesis-user-client/build",

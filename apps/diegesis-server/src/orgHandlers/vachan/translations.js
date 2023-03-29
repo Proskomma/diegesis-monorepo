@@ -1,7 +1,14 @@
 const path = require("path");
-const fse = require("fs-extra");
-const {transPath} = require('../../lib/dataPaths.js');
 const appRoot = path.resolve(".");
+const {
+    initializeEmptyEntry,
+    deleteEntry,
+    initializeEntryBookResourceCategory,
+    lockEntry,
+    unlockEntry,
+    writeEntryBookResource,
+    writeEntryMetadata,
+} = require('../../lib/dataLayers/fs/');
 
 async function getTranslationsCatalog() {
 
@@ -36,28 +43,37 @@ async function getTranslationsCatalog() {
 }
 
 const fetchUsfm = async (org, trans, config) => {
-    const tp = transPath(config.dataPath, org.translationDir, trans.id, trans.revision);
-    if (!fse.pathExistsSync(tp)) {
-        fse.mkdirsSync(tp);
-    }
     try {
-        fse.writeJsonSync(path.join(tp, "lock.json"), {actor: "vachan2/translations", orgDir: org.translationDir, transId: trans.id, revision: trans.revision});
+        initializeEmptyEntry(config, org.name, trans.id, trans.revision);
+        lockEntry(config, org.name, trans.id, trans.revision, "vachan/translations");
+        initializeEntryBookResourceCategory(
+            config,
+            org.name,
+            trans.id,
+            trans.revision,
+            "original",
+            "usfmBooks"
+        );
+        writeEntryMetadata(config, org.name, trans.id, trans.revision, trans);
         const http = require(`${appRoot}/src/lib/http.js`);
         const downloadResponse = await http.getText(trans.downloadURL);
         const responseJson = downloadResponse.data;
-        const usfmBooksPath = path.join(tp, 'original', 'usfmBooks');
-        if (!fse.pathExistsSync(usfmBooksPath)) {
-            fse.mkdirsSync(usfmBooksPath);
-        }
-        fse.writeJsonSync(path.join(tp, 'metadata.json'), trans);
         for (const bookOb of JSON.parse(responseJson)) {
             const bookCode = bookOb.book.bookCode.toUpperCase();
-            fse.writeFileSync(path.join(usfmBooksPath, `${bookCode}.usfm`), bookOb.USFM);
+            writeEntryBookResource(
+                config,
+                org.name,
+                trans.id,
+                trans.revision,
+                "usfmBooks",
+                `${bookCode}.usfm`,
+                bookOb.USFM
+            );
         }
-        fse.remove(path.join(tp, "lock.json"));
+        unlockEntry(config, org.name, trans.id, trans.revision);
     } catch (err) {
         console.log(err);
-        fse.remove(tp);
+        deleteEntry(config, org.name, trans.id, trans.revision);
     }
 }
 
