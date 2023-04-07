@@ -11,17 +11,14 @@ import GqlError from "./GqlError";
 export default function Footer() {
 
     const appLang = useContext(AppLangContext);
-    const start = i18n(appLang,'FOOTER_START')
-    const end = i18n(appLang,'FOOTER_END')
-    const link = i18n(appLang,'FOOTER_LINK')
 
     const queryString = `{
   clientStructure {
-    footer(language: "es") {
+    footer(language: "%lang%") {
       body
     }
   }
-  }`;
+  }`.replace('%lang%', appLang);
 
     const {loading, error, data} = useQuery(
         gql`
@@ -37,10 +34,6 @@ export default function Footer() {
         return <GqlError error={error}/>;
     }
 
-
-    const linkStyles = {
-        color: "#FFF"
-    }
     return <Box dir={directionText(appLang)} id="footer" sx={{backgroundColor: "primary.main", color: "#FFF", p: 3}}>
         <ReactMarkdown>
             {!loading && !error && data.clientStructure.footer.body}
