@@ -16,6 +16,7 @@ const defaultConfig = {
     hostName: 'localhost',
     port: 2468,
     dataPath: path.resolve(appRoot, 'data'),
+    structurePath: path.resolve(appRoot, 'default_structure'),
     logAccess: false,
     logFormat: "combined",
     useCors: false,
@@ -102,19 +103,19 @@ function makeConfig(providedConfig) {
     }
     const config = defaultConfig;
     if (!providedConfig.name) {
-        croak(`ERROR: you must specify a server name`);
+        croak(`CONFIG ERROR: you must specify a server name`);
     }
     if (typeof providedConfig.name !== 'string') {
-        croak(`ERROR: name should be a string, not '${providedConfig.name}'`);
+        croak(`CONFIG ERROR: name should be a string, not '${providedConfig.name}'`);
     }
     const nameRE = new RegExp('^[A-Za-z][A-Za-z0-9_]*[A-Za-z0-9]$');
     if (!nameRE.test(providedConfig.name)) {
-        croak(`ERROR: name '${providedConfig.name}' contains illegal characters'`);
+        croak(`CONFIG ERROR: name '${providedConfig.name}' contains illegal characters'`);
     }
     config.name = providedConfig.name;
     if (providedConfig.hostName) {
         if (typeof providedConfig.hostName !== 'string') {
-            croak(`ERROR: hostName should be a string, not '${providedConfig.port}'`);
+            croak(`CONFIG ERROR: hostName should be a string, not '${providedConfig.port}'`);
         }
         config.hostName = providedConfig.hostName;
     }
@@ -124,27 +125,80 @@ function makeConfig(providedConfig) {
             providedConfig.port.toString().includes('.') ||
             providedConfig.port < 1 ||
             providedConfig.port > 65535) {
-            croak(`ERROR: port should be an integer between 1 and 65535, not '${providedConfig.port}'`);
+            croak(`CONFIG ERROR: port should be an integer between 1 and 65535, not '${providedConfig.port}'`);
         }
         config.port = providedConfig.port;
     }
     if (providedConfig.dataPath) {
         if (
             typeof providedConfig.dataPath !== 'string') {
-            croak(`ERROR: dataPath should be a string, not '${providedConfig.dataPath}'`);
+            croak(`CONFIG ERROR: dataPath should be a string, not '${providedConfig.dataPath}'`);
         }
         const fqPath = path.resolve(providedConfig.dataPath);
         if (!fse.existsSync(fqPath) || !fse.lstatSync(fqPath).isDirectory()) {
-            croak(`ERROR: dataPath '${fqPath}' does not exist or is not a directory`);
+            croak(`CONFIG ERROR: dataPath '${fqPath}' does not exist or is not a directory`);
         }
         config.dataPath = fqPath;
     }
+    const structurePath = providedConfig.structurePath || config.structurePath; // Always check structurePath
+    if (
+        typeof structurePath !== 'string') {
+        croak(`CONFIG ERROR: structurePath should be a string, not '${structurePath}'`);
+    }
+    const fqPath = path.resolve(structurePath);
+    if (!fse.existsSync(fqPath) || !fse.lstatSync(fqPath).isDirectory()) {
+        croak(`CONFIG ERROR: structurePath '${fqPath}' does not exist or is not a directory`);
+    }
+    const structureJsonPath = path.join(fqPath, 'structure.json');
+    if (!fse.existsSync(structureJsonPath) || fse.lstatSync(structureJsonPath).isDirectory()) {
+        croak(`CONFIG ERROR: structure.json in '${fqPath}' does not exist or is a directory`);
+    }
+    for (const structureDirName of ["pages", "metadata", "footer"]) {
+        const structureDir = path.join(fqPath, structureDirName);
+        if (!fse.existsSync(structureDir) || !fse.lstatSync(structureDir).isDirectory()) {
+            croak(`CONFIG ERROR: directory ${structureDirName} in '${fqPath}' does not exist or is not a directory`);
+        }
+    }
+    try {
+        const structureOb = fse.readJsonSync(structureJsonPath);
+        for (const structureKey of ["languages", "urls"]) {
+            if (!structureOb[structureKey]) {
+                croak(`CONFIG ERROR: Required key '${structureKey}' not found in structure.json`);
+            }
+            if (!Array.isArray(structureOb[structureKey])) {
+                croak(`CONFIG ERROR: Value of '${structureKey}' in structure.json must be an array, not ${JSON.stringify(structureOb[structureKey])}`);
+            }
+            for (const structureElement of structureOb[structureKey]) {
+                if (typeof structureElement !== 'string' || structureElement.length < 2) {
+                    croak(`CONFIG ERROR: Element of '${structureKey}' in structure.json must be a string with at least two characters, not '${structureElement}'`);
+                }
+            }
+        }
+        if (structureOb["languages"].length === 0) {
+            croak(`CONFIG ERROR: At least one language must be specified in structure.json`);
+        }
+        for (const lang of structureOb["languages"]) {
+            const structureLangMetadataPath = path.join(fqPath, 'metadata', `${lang}.json`);
+            if (!fse.existsSync(structureLangMetadataPath) || fse.lstatSync(structureLangMetadataPath).isDirectory()) {
+                croak(`CONFIG ERROR: Metadata JSON file for ${lang} in '${fqPath}' does not exist or is a directory`);
+            }
+        }
+        for (const url of [...structureOb["urls"], "home"]) {
+            const urlDir = path.join(fqPath, 'pages', url);
+            if (!fse.existsSync(urlDir) || !fse.lstatSync(urlDir).isDirectory()) {
+                croak(`CONFIG ERROR: '${url}' in '${fqPath}' pages directory does not exist or is not itself a directory`);
+            }
+        }
+    } catch (err) {
+        croak(`CONFIG ERROR: Exception while checking structure: ${JSON.stringify(err)}`);
+    }
+    config.structurePath = fqPath;
     if (providedConfig.staticPath) {
-        croak('ERROR: the staticPath config option has been replaced by staticPaths');
+        croak('CONFIG ERROR: the staticPath config option has been replaced by staticPaths');
     }
     if (providedConfig.staticPaths) {
         if (!Array.isArray(providedConfig.staticPaths)) {
-            croak(`ERROR: staticPaths, if present, should be an array, not '${providedConfig.staticPaths}'`);
+            croak(`CONFIG ERROR: staticPaths, if present, should be an array, not '${providedConfig.staticPaths}'`);
         }
         let specs = [];
         for (const staticPathSpec of providedConfig.staticPaths) {
@@ -155,44 +209,44 @@ function makeConfig(providedConfig) {
             }
             const spec = {};
             if (typeof staticPathSpec !== 'object' || Array.isArray(staticPathSpec)) {
-                croak(`ERROR: static path spec should be an object, not '${JSON.stringify(staticPathSpec)}'`);
+                croak(`CONFIG ERROR: static path spec should be an object, not '${JSON.stringify(staticPathSpec)}'`);
             }
             if (!staticPathSpec.path) {
-                croak(`ERROR: static path spec must contain a path: '${JSON.stringify(staticPathSpec)}'`);
+                croak(`CONFIG ERROR: static path spec must contain a path: '${JSON.stringify(staticPathSpec)}'`);
             }
             if (!staticPathSpec.url) {
-                croak(`ERROR: static path spec must contain a url: '${JSON.stringify(staticPathSpec)}'`);
+                croak(`CONFIG ERROR: static path spec must contain a url: '${JSON.stringify(staticPathSpec)}'`);
             }
             const fqPath = path.resolve(staticPathSpec.path);
             if (!fse.existsSync(fqPath) || !fse.lstatSync(fqPath).isDirectory()) {
-                croak(`ERROR: static path '${fqPath}' does not exist or is not a directory`);
+                croak(`CONFIG ERROR: static path '${fqPath}' does not exist or is not a directory`);
             }
             spec.path = fqPath;
             if (!staticPathSpec.url.startsWith('/')) {
-                croak(`ERROR: static url '${staticPathSpec.url}' does not begin with a /`);
+                croak(`CONFIG ERROR: static url '${staticPathSpec.url}' does not begin with a /`);
             }
             spec.url = staticPathSpec.url;
             if (staticPathSpec.redirectTarget) {
                 const fqPath = path.resolve(staticPathSpec.redirectTarget);
                 if (!fse.existsSync(fqPath)) {
-                    croak(`ERROR: redirectTarget '${fqPath}' does not exist`);
+                    croak(`CONFIG ERROR: redirectTarget '${fqPath}' does not exist`);
                 }
                 spec.redirectTarget = fqPath;
             }
             spec.redirects = [];
             if (staticPathSpec.redirects) {
                 if (!staticPathSpec.redirectTarget) {
-                    croak(`ERROR: cannot use 'redirects' without 'redirectTarget' in staticPaths`);
+                    croak(`CONFIG ERROR: cannot use 'redirects' without 'redirectTarget' in staticPaths`);
                 }
                 if (!Array.isArray(staticPathSpec.redirects)) {
-                    croak(`ERROR: static path redirects, if present, should be an array, not '${staticPathSpec.redirects}'`);
+                    croak(`CONFIG ERROR: static path redirects, if present, should be an array, not '${staticPathSpec.redirects}'`);
                 }
                 for (const redirect of staticPathSpec.redirects) {
                     if (typeof redirect !== 'string') {
-                        croak(`ERROR: redirect elements should be strings, not '${redirect}'`);
+                        croak(`CONFIG ERROR: redirect elements should be strings, not '${redirect}'`);
                     }
                     if (!redirect.startsWith('/')) {
-                        croak(`ERROR: redirect elements should start with '/' (from '${redirect}')`);
+                        croak(`CONFIG ERROR: redirect elements should start with '/' (from '${redirect}')`);
                     }
                 }
                 spec.redirects = staticPathSpec.redirects;
@@ -202,46 +256,46 @@ function makeConfig(providedConfig) {
         config.staticPaths = specs;
     }
     if (providedConfig.redirectToRoot) {
-        croak("ERROR: redirectToRoot has been replaced by 'redirects' inside static path specs");
+        croak("CONFIG ERROR: redirectToRoot has been replaced by 'redirects' inside static path specs");
     }
     if ('debug' in providedConfig) {
         if (typeof providedConfig.debug !== 'boolean') {
-            croak(`ERROR: debug should be boolean, not ${typeof providedConfig.debug}`);
+            croak(`CONFIG ERROR: debug should be boolean, not ${typeof providedConfig.debug}`);
         }
         config.debug = providedConfig.debug;
     }
     if ('logAccess' in providedConfig) {
         if (typeof providedConfig.logAccess !== 'boolean') {
-            croak(`ERROR: logAccess should be boolean, not ${typeof providedConfig.logAccess}`);
+            croak(`CONFIG ERROR: logAccess should be boolean, not ${typeof providedConfig.logAccess}`);
         }
         config.logAccess = providedConfig.logAccess;
     }
     if ('logFormat' in providedConfig) {
         if (!logFormatOptions.includes(providedConfig.logFormat)) {
-            croak(`ERROR: unknown logFormat option '${providedConfig.logFormat}' - should be one of ${logFormatOptions.join(', ')}`);
+            croak(`CONFIG ERROR: unknown logFormat option '${providedConfig.logFormat}' - should be one of ${logFormatOptions.join(', ')}`);
         }
         config.logFormat = providedConfig.logFormat;
     }
     if (providedConfig.accessLogPath) {
         if (
             typeof providedConfig.accessLogPath !== 'string') {
-            croak(`ERROR: accessLogPath, if present, should be a string, not '${providedConfig.accessLogPath}'`);
+            croak(`CONFIG ERROR: accessLogPath, if present, should be a string, not '${providedConfig.accessLogPath}'`);
         }
         config.accessLogPath = path.resolve(providedConfig.accessLogPath);
     }
     if ('includeMutations' in providedConfig) {
         if (typeof providedConfig.includeMutations !== 'boolean') {
-            croak(`ERROR: includeMutations should be boolean, not ${typeof providedConfig.includeMutations}`);
+            croak(`CONFIG ERROR: includeMutations should be boolean, not ${typeof providedConfig.includeMutations}`);
         }
         config.includeMutations = providedConfig.includeMutations;
     }
     if ('superusers' in providedConfig) {
         if (typeof providedConfig.superusers !== 'object' || Array.isArray(providedConfig.superusers)) {
-            croak(`ERROR: superusers, if present, should be an object, not '${JSON.stringify(providedConfig.superusers)}'`);
+            croak(`CONFIG ERROR: superusers, if present, should be an object, not '${JSON.stringify(providedConfig.superusers)}'`);
         }
         for (const suOb of Object.values(providedConfig.superusers)) {
             if (typeof suOb !== 'object' || Array.isArray(suOb)) {
-                croak(`ERROR: superuser records should be an object, not '${JSON.stringify(suOb)}'`);
+                croak(`CONFIG ERROR: superuser records should be an object, not '${JSON.stringify(suOb)}'`);
             }
             for (const suKey of Object.keys(suOb)) {
                 if (!superuserRecord[suKey]) {
@@ -249,20 +303,20 @@ function makeConfig(providedConfig) {
                 }
             }
             if (typeof suOb.password !== 'string') {
-                croak(`ERROR: superuser password hash should be a string, not '${JSON.stringify(suOb.password)}'`);
+                croak(`CONFIG ERROR: superuser password hash should be a string, not '${JSON.stringify(suOb.password)}'`);
             }
             if (!Array.isArray(suOb.roles)) {
-                croak(`ERROR: superuser roles should be an array, not '${JSON.stringify(suOb.roles)}'`);
+                croak(`CONFIG ERROR: superuser roles should be an array, not '${JSON.stringify(suOb.roles)}'`);
             }
             if (suOb.roles.length === 0) {
-                croak(`ERROR: superuser roles array should not be empty`);
+                croak(`CONFIG ERROR: superuser roles array should not be empty`);
             }
             for (const role of suOb.roles) {
                 if (typeof role !== 'string') {
-                    croak(`ERROR: superuser role should be a string, not '${JSON.stringify(role)}'`);
+                    croak(`CONFIG ERROR: superuser role should be a string, not '${JSON.stringify(role)}'`);
                 }
                 if (!superuserRoles.includes(role)) {
-                    croak(`ERROR: superuser role should be one of ${superuserRoles.join(', ')}, not '${role}'`);
+                    croak(`CONFIG ERROR: superuser role should be one of ${superuserRoles.join(', ')}, not '${role}'`);
                 }
             }
         }
@@ -274,19 +328,19 @@ function makeConfig(providedConfig) {
         if (
             typeof providedConfig.sessionTimeoutInMins !== 'number' ||
             !cronOptions[`${providedConfig.sessionTimeoutInMins} min`]) {
-            croak(`ERROR: sessionTimeoutInMins should be 1, 5, 10, 15, 20 or 30, not '${providedConfig.sessionTimeoutInMins}'`);
+            croak(`CONFIG ERROR: sessionTimeoutInMins should be 1, 5, 10, 15, 20 or 30, not '${providedConfig.sessionTimeoutInMins}'`);
         }
         config.sessionTimeoutInMins = providedConfig.sessionTimeoutInMins;
     }
     if ('useCors' in providedConfig) {
         if (typeof providedConfig.useCors !== 'boolean') {
-            croak(`ERROR: useCors should be boolean, not ${typeof providedConfig.useCors}`);
+            croak(`CONFIG ERROR: useCors should be boolean, not ${typeof providedConfig.useCors}`);
         }
         config.useCors = providedConfig.useCors;
     }
     if ('processFrequency' in providedConfig) {
         if (providedConfig.processFrequency !== 'never' && !(providedConfig.processFrequency in cronOptions)) {
-            croak(`ERROR: unknown processFrequency option '${providedConfig.processFrequency}' - should be one of never, ${Object.keys(cronOptions).join(', ')}`);
+            croak(`CONFIG ERROR: unknown processFrequency option '${providedConfig.processFrequency}' - should be one of never, ${Object.keys(cronOptions).join(', ')}`);
         }
         config.processFrequency = providedConfig.processFrequency;
     }
@@ -296,34 +350,34 @@ function makeConfig(providedConfig) {
             providedConfig.nWorkers.toString().includes('.') ||
             providedConfig.nWorkers < 1 ||
             providedConfig.nWorkers > 16) {
-            croak(`ERROR: nWorkers should be an integer between 1 and 16, not '${providedConfig.nWorkers}'`);
+            croak(`CONFIG ERROR: nWorkers should be an integer between 1 and 16, not '${providedConfig.nWorkers}'`);
         }
         config.nWorkers = providedConfig.nWorkers;
     }
     if ('deleteGenerated' in providedConfig) {
         if (typeof providedConfig.deleteGenerated !== 'boolean') {
-            croak(`ERROR: deleteGenerated should be boolean, not ${typeof providedConfig.useCors}`);
+            croak(`CONFIG ERROR: deleteGenerated should be boolean, not ${typeof providedConfig.useCors}`);
         }
         config.deleteGenerated = providedConfig.deleteGenerated;
     }
     if ('orgs' in providedConfig) {
         if (!Array.isArray(providedConfig.orgs)) {
-            croak(`ERROR: orgs should be an array, not '${providedConfig.orgs}'`);
+            croak(`CONFIG ERROR: orgs should be an array, not '${providedConfig.orgs}'`);
         }
         for (const org of providedConfig.orgs) {
             if (typeof org !== "string") {
-                croak(`ERROR: each orgs element should be a string, not '${JSON.stringify(org)}'`);
+                croak(`CONFIG ERROR: each orgs element should be a string, not '${JSON.stringify(org)}'`);
             }
-            const orgRE = new RegExp(/^[A-Z0-9][A-Za-z0-9_]{0,62}[A-Z0-9]$/);
-            if (!orgRE.text(org)) {
-                croak(`ERROR: each orgs element should match the regex '^[A-Z0-9][A-Za-z0-9_]{0,62}[A-Z0-9]$', not '${org}'`);
+            const orgRE = new RegExp(/^[A-Za-z0-9][A-Za-z0-9_]{0,62}[A-Za-z0-9]$/);
+            if (!orgRE.test(org)) {
+                croak(`CONFIG ERROR: each orgs element should match the regex '^[A-Za-z0-9][A-Za-z0-9_]{0,62}[A-Za-z0-9]$', not '${org}'`);
             }
         }
         config.orgs = providedConfig.orgs;
     }
     if ('localContent' in providedConfig) {
         if (typeof providedConfig.localContent !== 'boolean') {
-            croak(`ERROR: localContent should be boolean, not ${typeof providedConfig.localContent}`);
+            croak(`CONFIG ERROR: localContent should be boolean, not ${typeof providedConfig.localContent}`);
         }
         config.localContent = providedConfig.localContent;
         if (!config.localContent) {
@@ -332,12 +386,12 @@ function makeConfig(providedConfig) {
     }
     if (providedConfig.orgsConfig) {
         if (!Array.isArray(providedConfig.orgsConfig)) {
-            croak(`ERROR: orgsConfig, if present, should be an array, not '${providedConfig.orgsConfig}'`);
+            croak(`CONFIG ERROR: orgsConfig, if present, should be an array, not '${providedConfig.orgsConfig}'`);
         }
         config.orgsConfig = [];
         for (const orgConfig of providedConfig.orgsConfig) {
             if (typeof orgConfig !== 'object' || Array.isArray(orgConfig)) {
-                croak(`ERROR: each orgsConfig spec should be an object, not '${JSON.stringify(orgConfig)}'`);
+                croak(`CONFIG ERROR: each orgsConfig spec should be an object, not '${JSON.stringify(orgConfig)}'`);
             }
             const orgOb = {};
             for (const orgKey of Object.keys(orgConfig)) {
@@ -346,19 +400,19 @@ function makeConfig(providedConfig) {
                 }
             }
             if (!orgConfig.name) {
-                croak(`ERROR: each orgsConfig spec must have a name`);
+                croak(`CONFIG ERROR: each orgsConfig spec must have a name`);
             }
             if (!nameRE.test(orgConfig.name)) {
-                croak(`ERROR: orgsConfig name '${orgConfig.name}' for ${orgConfig.name} contains illegal characters'`);
+                croak(`CONFIG ERROR: orgsConfig name '${orgConfig.name}' for ${orgConfig.name} contains illegal characters'`);
             }
             orgOb.name = orgConfig.name;
             if (orgConfig.resourceTypes) {
                 if (!Array.isArray(orgConfig.resourceTypes)) {
-                    croak(`ERROR: orgsConfig resourceTypes for ${orgConfig.name}, if present, must be an array, not '${orgConfig.resourceTypes}'`);
+                    croak(`CONFIG ERROR: orgsConfig resourceTypes for ${orgConfig.name}, if present, must be an array, not '${orgConfig.resourceTypes}'`);
                 }
                 for (const resourceType of orgConfig.resourceTypes) {
                     if (typeof resourceType !== "string") {
-                        croak(`ERROR: each orgsConfig resourceType element for ${orgConfig.name} should be a string, not '${JSON.stringify(resourceType)}'`);
+                        croak(`CONFIG ERROR: each orgsConfig resourceType element for ${orgConfig.name} should be a string, not '${JSON.stringify(resourceType)}'`);
                     }
                 }
                 orgOb.resourceTypes = orgConfig.resourceTypes;
@@ -367,14 +421,14 @@ function makeConfig(providedConfig) {
             }
             if (orgConfig.resourceFormats) {
                 if (!Array.isArray(orgConfig.resourceFormats)) {
-                    croak(`ERROR: orgsConfig resourceFormats for ${orgConfig.name}, if present, must be an array, not '${orgConfig.resourceFormats}'`);
+                    croak(`CONFIG ERROR: orgsConfig resourceFormats for ${orgConfig.name}, if present, must be an array, not '${orgConfig.resourceFormats}'`);
                 }
                 for (const resourceFormat of orgConfig.resourceFormats) {
                     if (typeof resourceFormat !== "string") {
-                        croak(`ERROR: each orgsConfig resourceFormat element for ${orgConfig.name} should be a string, not '${JSON.stringify(resourceFormat)}'`);
+                        croak(`CONFIG ERROR: each orgsConfig resourceFormat element for ${orgConfig.name} should be a string, not '${JSON.stringify(resourceFormat)}'`);
                     }
                     if (!resourceFormats.includes(resourceFormat)) {
-                        croak(`ERROR: each orgsConfig resourceFormat element for ${orgConfig.name} should be one of ${resourceFormats.join(', ')}, not '${JSON.stringify(resourceFormat)}'`);
+                        croak(`CONFIG ERROR: each orgsConfig resourceFormat element for ${orgConfig.name} should be one of ${resourceFormats.join(', ')}, not '${JSON.stringify(resourceFormat)}'`);
                     }
                 }
                 orgOb.resourceFormats = orgConfig.resourceFormats;
@@ -383,11 +437,11 @@ function makeConfig(providedConfig) {
             }
             if (orgConfig.languages) {
                 if (!Array.isArray(orgConfig.languages)) {
-                    croak(`ERROR: orgsConfig languages for ${orgConfig.name}, if present, must be an array, not '${orgConfig.languages}'`);
+                    croak(`CONFIG ERROR: orgsConfig languages for ${orgConfig.name}, if present, must be an array, not '${orgConfig.languages}'`);
                 }
                 for (const language of orgConfig.languages) {
                     if (typeof language !== "string") {
-                        croak(`ERROR: each orgsConfig language element for ${orgConfig.name} should be a string, not '${JSON.stringify(language)}'`);
+                        croak(`CONFIG ERROR: each orgsConfig language element for ${orgConfig.name} should be a string, not '${JSON.stringify(language)}'`);
                     }
                 }
                 orgOb.languages = orgConfig.languages;
@@ -396,11 +450,11 @@ function makeConfig(providedConfig) {
             }
             if (orgConfig.owners) {
                 if (!Array.isArray(orgConfig.owners)) {
-                    croak(`ERROR: orgsConfig owners for ${orgConfig.name}, if present, must be an array, not '${orgConfig.owners}'`);
+                    croak(`CONFIG ERROR: orgsConfig owners for ${orgConfig.name}, if present, must be an array, not '${orgConfig.owners}'`);
                 }
                 for (const owner of orgConfig.owners) {
                     if (typeof owner !== "string") {
-                        croak(`ERROR: each orgsConfig owner element for ${orgConfig.name} should be a string, not '${JSON.stringify(owner)}'`);
+                        croak(`CONFIG ERROR: each orgsConfig owner element for ${orgConfig.name} should be a string, not '${JSON.stringify(owner)}'`);
                     }
                 }
                 orgOb.owners = orgConfig.owners;
@@ -409,18 +463,18 @@ function makeConfig(providedConfig) {
             }
             if (orgConfig.whitelist) {
                 if (!Array.isArray(orgConfig.whitelist)) {
-                    croak(`ERROR: orgsConfig whitelist for ${orgConfig.name}, if present, must be an array, not '${orgConfig.whitelist}'`);
+                    croak(`CONFIG ERROR: orgsConfig whitelist for ${orgConfig.name}, if present, must be an array, not '${orgConfig.whitelist}'`);
                 }
                 for (const white of orgConfig.whitelist) {
                     if (typeof white !== 'object' || Array.isArray(white)) {
-                        croak(`ERROR: orgsConfig whitelist elements for ${orgConfig.name} should be an object, not '${JSON.stringify(white)}'`);
+                        croak(`CONFIG ERROR: orgsConfig whitelist elements for ${orgConfig.name} should be an object, not '${JSON.stringify(white)}'`);
                     }
                     if (Object.keys(white).length === 0) {
-                        croak(`ERROR: orgsConfig whitelist elements for ${orgConfig.name} should contain at least one value`);
+                        croak(`CONFIG ERROR: orgsConfig whitelist elements for ${orgConfig.name} should contain at least one value`);
                     }
                     for (const whiteField of ["owner", "id", "revision"]) {
                         if (white[whiteField] && typeof white[whiteField] !== 'string') {
-                            croak(`ERROR: ${whiteField} field in orgsConfig whitelist elements for ${orgConfig.name} must be a string, not '${whiteField}'`);
+                            croak(`CONFIG ERROR: ${whiteField} field in orgsConfig whitelist elements for ${orgConfig.name} must be a string, not '${whiteField}'`);
                         }
                     }
                 }
@@ -430,18 +484,18 @@ function makeConfig(providedConfig) {
             }
             if (orgConfig.blacklist) {
                 if (!Array.isArray(orgConfig.blacklist)) {
-                    croak(`ERROR: orgsConfig blacklist for ${orgConfig.name}, if present, must be an array, not '${orgConfig.blacklist}'`);
+                    croak(`CONFIG ERROR: orgsConfig blacklist for ${orgConfig.name}, if present, must be an array, not '${orgConfig.blacklist}'`);
                 }
                 for (const black of orgConfig.blacklist) {
                     if (typeof black !== 'object' || Array.isArray(black)) {
-                        croak(`ERROR: orgsConfig blacklist elements for ${orgConfig.name} should be an object, not '${JSON.stringify(black)}'`);
+                        croak(`CONFIG ERROR: orgsConfig blacklist elements for ${orgConfig.name} should be an object, not '${JSON.stringify(black)}'`);
                     }
                     if (Object.keys(black).length === 0) {
-                        croak(`ERROR: orgsConfig blacklist elements for ${orgConfig.name} should contain at least one value`);
+                        croak(`CONFIG ERROR: orgsConfig blacklist elements for ${orgConfig.name} should contain at least one value`);
                     }
                     for (const blackField of ["owner", "id", "revision"]) {
                         if (black[blackField] && typeof black[blackField] !== 'string') {
-                            croak(`ERROR: ${blackField} field in orgsConfig blacklist elements for ${orgConfig.name} must be a string, not '${blackField}'`);
+                            croak(`CONFIG ERROR: ${blackField} field in orgsConfig blacklist elements for ${orgConfig.name} must be a string, not '${blackField}'`);
                         }
                     }
                 }
@@ -451,10 +505,10 @@ function makeConfig(providedConfig) {
             }
             if (orgConfig.syncFrequency) {
                 if (typeof orgConfig.syncFrequency !== 'string') {
-                    croak(`ERROR: orgsConfig syncFrequency for ${orgConfig.name}, if present, must be a string, not '${orgConfig.syncFrequency}'`);
+                    croak(`CONFIG ERROR: orgsConfig syncFrequency for ${orgConfig.name}, if present, must be a string, not '${orgConfig.syncFrequency}'`);
                 }
                 if (orgConfig.syncFrequency !== 'never' && !(orgConfig.syncFrequency in syncCronOptions)) {
-                    croak(`ERROR: unknown orgConfig syncFrequency option '${orgConfig.syncFrequency}' for ${orgConfig.name} - should be one of never, ${Object.keys(syncCronOptions).join(', ')}`);
+                    croak(`CONFIG ERROR: unknown orgConfig syncFrequency option '${orgConfig.syncFrequency}' for ${orgConfig.name} - should be one of never, ${Object.keys(syncCronOptions).join(', ')}`);
                 }
                 orgOb.syncFrequency = orgConfig.syncFrequency;
             } else {
@@ -462,7 +516,7 @@ function makeConfig(providedConfig) {
             }
             if (orgConfig.peerUrl) {
                 if (typeof orgConfig.peerUrl !== 'string') {
-                    croak(`ERROR: orgsConfig peerUrl for ${orgConfig.name}, if present, must be a string, not '${orgConfig.peerUrl}'`);
+                    croak(`CONFIG ERROR: orgsConfig peerUrl for ${orgConfig.name}, if present, must be a string, not '${orgConfig.peerUrl}'`);
                 }
                 orgOb.peerUrl = orgConfig.peerUrl;
             } else {
@@ -470,7 +524,7 @@ function makeConfig(providedConfig) {
             }
             if (orgConfig.etc) {
                 if (typeof orgConfig.etc !== 'object' || Array.isArray(orgConfig.etc)) {
-                    croak(`ERROR: orgsConfig etc for ${orgConfig.name}, if present, should be an object, not '${JSON.stringify(orgConfig.etc)}'`);
+                    croak(`CONFIG ERROR: orgsConfig etc for ${orgConfig.name}, if present, should be an object, not '${JSON.stringify(orgConfig.etc)}'`);
                 }
                 orgOb.etc = orgConfig.etc;
             } else {
@@ -481,7 +535,7 @@ function makeConfig(providedConfig) {
     }
     if ('verbose' in providedConfig) {
         if (typeof providedConfig.verbose !== 'boolean') {
-            croak(`ERROR: verbose should be boolean, not ${typeof providedConfig.verbose}`);
+            croak(`CONFIG ERROR: verbose should be boolean, not ${typeof providedConfig.verbose}`);
         }
         config.verbose = providedConfig.verbose;
     }
@@ -539,6 +593,7 @@ const configSummary = config => `  Server ${config.name} is listening on ${confi
     ${config.orgsConfig ? `${orgsConfigDescription(config.orgsConfig)}` : "No org configuration"}
     Local content ${config.localContent ? "en" : "dis"}abled
     Data directory is ${config.dataPath}
+    Structure directory is ${config.structurePath}
     ${config.staticPaths ? `${staticDescription(config.staticPaths)}` : "No static paths"}
     Process new data ${config.processFrequency === 'never' ? "disabled" : `every ${config.processFrequency}
     ${config.nWorkers} worker thread${config.nWorkers === 1 ? "" : "s"}
