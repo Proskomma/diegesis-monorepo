@@ -30,7 +30,7 @@ const generateId = () => btoa(new UUID(4)).substring(0, 12);
 
 const makeResolvers = async (orgsData, orgHandlers, config) => {
     const scalarRegexes = {
-        OrgName: new RegExp(/^[A-Z0-9][A-Za-z0-9_]{0,62}[A-Z0-9]$/),
+        OrgName: new RegExp(/^[A-Za-z0-9][A-Za-z0-9_]{0,62}[A-Za-z0-9]$/),
         EntryId: new RegExp(/^[A-Za-z0-9_-]{1,64}$/),
         BookCode: new RegExp(/^[A-Z0-9]{3}$|^tyndaleStudyNotes$/),
         ContentType: new RegExp(/^(USFM|USX|succinct|tyndaleStudyNotes)$/),
