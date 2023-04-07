@@ -73,10 +73,10 @@ COPY --from=0 /build/apps/diegesis-server/node_modules/ node_modules/
 COPY $server_loc/src/ src/
 COPY $server_loc/LICENSE .
 COPY $server_loc/package.json .
-COPY $server_loc/config/docker_config.json config/config.json
+COPY $server_loc/config/docker_config.json /app/config/config.json
 
 # Create data dir
-RUN mkdir data && chmod 777 data
+RUN mkdir /app/data && chown 2590:2590 /app/data
 
 EXPOSE 2468
 
@@ -84,4 +84,4 @@ EXPOSE 2468
 RUN addgroup -g 2590 -S diegesis && adduser -u 2590 -S -G diegesis diegesis
 USER diegesis
 
-CMD [ "node", "src/index.js", "config/config.json" ]
+CMD [ "node", "src/index.js", "/app/config/config.json" ]

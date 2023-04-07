@@ -13,6 +13,7 @@
     "includeMutations": true,
     "sessionTimeoutInMins": 30,
     "localContent": true,
+    "dataPath": "/app/data",
     "orgsConfig": [
       {
         "name": "eBible",
