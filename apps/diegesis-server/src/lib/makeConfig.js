@@ -310,6 +310,15 @@ function makeConfig(providedConfig) {
         if (!Array.isArray(providedConfig.orgs)) {
             croak(`ERROR: orgs should be an array, not '${providedConfig.orgs}'`);
         }
+        for (const org of providedConfig.orgs) {
+            if (typeof org !== "string") {
+                croak(`ERROR: each orgs element should be a string, not '${JSON.stringify(org)}'`);
+            }
+            const orgRE = new RegExp(/^[A-Z0-9][A-Za-z0-9_]{0,62}[A-Z0-9]$/);
+            if (!orgRE.text(org)) {
+                croak(`ERROR: each orgs element should match the regex '^[A-Z0-9][A-Za-z0-9_]{0,62}[A-Z0-9]$', not '${org}'`);
+            }
+        }
         config.orgs = providedConfig.orgs;
     }
     if ('localContent' in providedConfig) {
