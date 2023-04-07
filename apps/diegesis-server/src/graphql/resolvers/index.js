@@ -360,13 +360,16 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
 
     const queryResolver = {
         Query: {
-            name: root => config.name,
+            name: () => config.name,
             orgs: () => {
                 return Object.values(orgsData);
             },
             org: (root, args, context) => {
                 context.incidentLogger = config.incidentLogger;
                 return orgsData[args.name];
+            },
+            clientStructure: (root, args, context) => {
+                return context.clientStructure;
             },
             localEntries: (root, args) => {
                 let ret = [];
@@ -646,6 +649,16 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                 }
             },
         },
+        ClientStructure: {
+            languages: root => Object.keys(root.languages),
+            urls: root => ["home", ...root.urls],
+            metadata: (root, args) => root.languages[args.language],
+            footer: (root, args) => root.languages[args.language].footer,
+            page: (root, args) => root.languages[args.language].pages[args.url],
+        },
+        StructureResource: {
+            menuText: root => root.menuText.trim(),
+        }
     };
     const mutationResolver = {
         Mutation: {

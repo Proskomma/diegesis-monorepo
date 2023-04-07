@@ -21,7 +21,10 @@ const querySchema = gql`
             """The name of the organization"""
             name: OrgName!
         ): Org
-
+        
+        """The client structure"""
+        clientStructure: ClientStructure!
+        
         """Entries available across all sources on this server"""
         localEntries(
             """Only entries from these sources"""
@@ -54,7 +57,57 @@ const querySchema = gql`
             revision: String!
         ): LocalEntry
     }
+    
+    """Client Structure"""
+    type ClientStructure {
+    
+        """The i18n languages"""
+        languages: [String!]!
         
+        """The urls"""
+        urls: [String!]!
+        
+        """The structure metadata"""
+        metadata(
+            """The language code"""
+            language: String!
+        ): StructureMetadata!
+        
+        """The Footer"""
+        footer(
+            """The language code"""
+            language: String!
+        ): StructureResource!
+
+        """A page"""
+        page(
+            """The language code"""
+            language: String!
+            
+            """The page url"""
+            url: String!
+        ): StructureResource!
+    }
+    
+    """Site-wide metadata for a language"""
+    type StructureMetadata {
+        """The title of the site"""
+        title: String!
+    }
+    
+    """A structure resource for a page or footer"""
+    type StructureResource {
+        """The body (main content) as markdown"""
+        body: String!
+        
+        """The actual language returned"""
+        language: String!
+        
+        """The menu text"""
+        menuText: String!
+    
+    }
+    
     """An organization from which this server can serve data"""
     type Org {
 
@@ -307,6 +360,7 @@ const querySchema = gql`
         """The Metadata Value"""
         value : String!
     }
+    
     `;
 
 const mutationSchema = gql`
