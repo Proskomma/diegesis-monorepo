@@ -233,7 +233,7 @@ export default function SearchModal({
     const strongsMatchingInQuery = xre.match(searchQuery, StrongsRegex, "all");
     const strongsInQuery = [];
     for (const strong of strongsMatchingInQuery) {
-      strongsInQuery.push(strong.replace(/\"/g, ""));
+      strongsInQuery.push(strong.replace(/"/g, ""));
     }
     for (let id = 0; id < strongsInQuery.length; id++) {
       if (token.includes(strongsInQuery[id])) {

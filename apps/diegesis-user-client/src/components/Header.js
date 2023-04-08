@@ -5,10 +5,12 @@ import { Menu as MenuIcon } from "@mui/icons-material";
 import langTable from "../i18n/languages.json"
 import AppLangContext from "../contexts/AppLangContext";
 import { alignmentText } from "../i18n/languageDirection";
+import AppLangResourcesContext from "../contexts/AppLangResourcesContext";
 
 export default function Header({selected, children, setAppLanguage}) {
 
     const appLang = useContext(AppLangContext);
+    const appLangResources = useContext(AppLangResourcesContext);
     const [hamburgerOpen, setHamburgerOpen] = useState(false);
 
     const handleLanguageChange = e => setAppLanguage(e.target.value)
@@ -72,14 +74,17 @@ export default function Header({selected, children, setAppLanguage}) {
                         >
                             --
                         </MenuItem>
-                        {Object.entries(langTable).map((kv, n) => (
-                            <MenuItem
+                        {
+                            Object.entries(langTable)
+                                .filter(kv => (appLangResources.languages && appLangResources.languages.includes(kv[0])) || kv[0] === "en")
+                                .map((kv, n) => <MenuItem
                                 key={n}
                                 value={kv[0]}
                             >
                                 {kv[1].autonym}
                             </MenuItem>
-                        ))}
+                        )
+                        }
                     </Select>
                 </Box>
             </Toolbar>

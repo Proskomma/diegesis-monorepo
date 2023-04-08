@@ -1,11 +1,11 @@
-import React, { useState } from "react";
+import React, {useState, useEffect} from "react";
 import {
-  createBrowserRouter,
-  RouterProvider,
-  useRouteError,
+    createBrowserRouter,
+    RouterProvider,
+    useRouteError,
 } from "react-router-dom";
-import { ApolloProvider, ApolloClient, InMemoryCache } from "@apollo/client";
-import { createTheme, CssBaseline, ThemeProvider } from "@mui/material";
+import {ApolloProvider, ApolloClient, InMemoryCache, gql} from "@apollo/client";
+import {createTheme, CssBaseline, ThemeProvider} from "@mui/material";
 import "./App.css";
 import HomePage from "./pages/HomePage";
 import WhoPage from "./pages/WhoPage";
@@ -15,27 +15,52 @@ import EntryDetailsPage from "./pages/EntryDetailsPage";
 import EntryBrowsePage from "./pages/EntryBrowsePage";
 import EntrySearchPage from "./pages/EntrySearchPage";
 import EntryDownloadPage from "./pages/EntryDownloadPage";
-import { AppLangProvider } from "./contexts/AppLangContext";
+import {AppLangProvider} from "./contexts/AppLangContext";
+import {AppLangResourcesProvider} from "./contexts/AppLangResourcesContext";
 
 function App() {
-  const theme = createTheme({});
+    const theme = createTheme({});
 
-  const client = new ApolloClient({
-    uri: "/graphql",
-    cache: new InMemoryCache(),
-  });
+    const client = new ApolloClient({
+        uri: "/graphql",
+        cache: new InMemoryCache(),
+    });
 
-  function ErrorBoundary() {
-    let error = useRouteError();
-    console.error(error);
-    return (
-      <div>
-        An unexpected error has occurred: <i>{error.message}</i>
-      </div>
-    );
+    function ErrorBoundary() {
+        let error = useRouteError();
+        console.error(error);
+        return (
+            <div>
+                An unexpected error has occurred: <i>{error.message}</i>
+            </div>
+        );
+    }
+
+    const [appLanguage, setAppLanguage] = useState("en");
+    const [appLanguageResources, setAppLanguageResources] = useState({});
+
+    useEffect(
+        () => {
+            const doQuery = async () => {
+                const queryString = `{
+  clientStructure {
+    languages
+    urls
+    footer(language:"%lang%") {
+      body
+    }
   }
+  }`.replace('%lang%', appLanguage);
+                const result = await client.query({query: gql`${queryString}`});
+                const clientStructure = result.data.clientStructure;
+                // console.log(clientStructure);
+                setAppLanguageResources(clientStructure);
+            };
+            doQuery();
+        },
+        [appLanguage]
+    );
 
-  const [appLanguage, setAppLanguage] = useState("en");
     const router = createBrowserRouter([
         {
             path: "/",
@@ -78,16 +103,18 @@ function App() {
             errorElement: <ErrorBoundary/>
         }
     ]);
-  return (
-    <ApolloProvider client={client}>
-      <ThemeProvider theme={theme}>
-        <AppLangProvider value={appLanguage}>
-          <CssBaseline />
-          <RouterProvider router={router} />
-        </AppLangProvider>
-      </ThemeProvider>
-    </ApolloProvider>
-  );
+    return (
+        <ApolloProvider client={client}>
+            <ThemeProvider theme={theme}>
+                <AppLangResourcesProvider value={appLanguageResources}>
+                    <AppLangProvider value={appLanguage}>
+                        <CssBaseline/>
+                        <RouterProvider router={router}/>
+                    </AppLangProvider>
+                </AppLangResourcesProvider>
+            </ThemeProvider>
+        </ApolloProvider>
+    );
 }
 
 export default App;
