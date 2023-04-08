@@ -43,17 +43,20 @@ function App() {
         () => {
             const doQuery = async () => {
                 const queryString = `{
-  clientStructure {
-    languages
-    urls
-    footer(language:"%lang%") {
-      body
-    }
-  }
-  }`.replace('%lang%', appLanguage);
+                  clientStructure {
+                    languages
+                    urls
+                    urlData(language:"%lang%") {
+                       url
+                       menuText
+                    }
+                    footer(language:"%lang%") {
+                      body
+                    }
+                  }
+                  }`.replace(/%lang%/g, appLanguage);
                 const result = await client.query({query: gql`${queryString}`});
                 const clientStructure = result.data.clientStructure;
-                // console.log(clientStructure);
                 setAppLanguageResources(clientStructure);
             };
             doQuery();

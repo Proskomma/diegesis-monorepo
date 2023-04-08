@@ -61,11 +61,17 @@ const querySchema = gql`
     """Client Structure"""
     type ClientStructure {
     
-        """The i18n languages"""
+        """The i18n languages in order of priority"""
         languages: [String!]!
         
-        """The urls"""
+        """The urls in display order"""
         urls: [String!]!
+        
+        """Data for each url"""
+        urlData(
+            """The language code"""
+            language: String!
+        ) : [UrlData!]!
         
         """The structure metadata"""
         metadata(
@@ -106,6 +112,15 @@ const querySchema = gql`
         """The menu text"""
         menuText: String!
     
+    }
+    
+    """Url data"""
+    type UrlData {
+        """The url"""
+        url: String!
+        
+        """The localized menu slug"""
+        menuText: String!
     }
     
     """An organization from which this server can serve data"""

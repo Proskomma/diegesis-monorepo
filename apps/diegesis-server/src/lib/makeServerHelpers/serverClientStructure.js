@@ -3,21 +3,17 @@ const fse = require('fs-extra');
 
 function resourceForLanguage(structurePath, resourcePath, resourceName, selectedLanguage, languages) {
     const resourceDirPath = path.join(structurePath, resourcePath);
-    let ret = null;
+    let ret = "";
     for (const language of [selectedLanguage, ...languages]) {
         if (fse.existsSync(path.join(resourceDirPath, language))) {
             try {
                 ret = fse.readFileSync(path.join(resourceDirPath, language, resourceName)).toString();
             } catch (err) {
-                throw new Error(`Could not find ${resourceName} for ${resourcePath} in language ${language}`)
+                ret = "?"
             }
             break;
         }
     }
-    if (!ret) {
-        throw new Error(`Could not find content in any language for url '${resourcePath}'`);
-    }
-
     return ret;
 }
 
@@ -41,7 +37,7 @@ function serverClientStructure(config) {
             structureJson.languages
         );
         ret.languages[language].footer.menuText = "";
-        for (const url of [...structureJson.urls, "home"]) {
+        for (const url of ["home", ...structureJson.urls, "list"]) {
             ret.languages[language].pages[url] = {};
             ret.languages[language].pages[url].body = resourceForLanguage(
                 config.structurePath,

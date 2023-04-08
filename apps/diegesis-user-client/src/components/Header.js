@@ -45,16 +45,14 @@ export default function Header({selected, children, setAppLanguage}) {
                     >
 
                         <Box>
-                            <ListItemButton>
-                                <RouterLink to="/">
-                                    Home
-                                </RouterLink>
-                            </ListItemButton>
-                            <ListItemButton>
-                                <RouterLink to="/list">
-                                    List
-                                </RouterLink>
-                            </ListItemButton>
+                            {
+                                appLangResources.urlData &&
+                                    appLangResources.urlData.map(ud => <ListItemButton>
+                                        <RouterLink to={ud.url}>
+                                            {ud.menuText}
+                                        </RouterLink>
+                                    </ListItemButton>)
+                            }
                         </Box>
                     </Drawer>
                  </Box>

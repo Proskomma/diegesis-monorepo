@@ -651,7 +651,14 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
         },
         ClientStructure: {
             languages: root => Object.keys(root.languages),
-            urls: root => ["home", ...root.urls],
+            urls: root => ["home", ...root.urls, "list"],
+            urlData: (root, args) => ["home", ...root.urls, "list"].map(
+                url => {
+                    return {
+                        url,
+                        menuText: root.languages[args.language].pages[url].menuText.trim()
+                    }
+                }),
             metadata: (root, args) => root.languages[args.language],
             footer: (root, args) => root.languages[args.language].footer,
             page: (root, args) => root.languages[args.language].pages[args.url],
@@ -822,7 +829,7 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                 if (!resourceTypes[args.contentType]) {
                     throw new Error(`Content type '${args.contentType}' not supported`);
                 }
-               const fieldError = checkCreateLocalEntryFields(args.metadata, args.resources);
+                const fieldError = checkCreateLocalEntryFields(args.metadata, args.resources);
                 if (fieldError.length > 0) {
                     throw new Error(fieldError);
                 }
