@@ -7,7 +7,7 @@ import {
 import {ApolloProvider, ApolloClient, InMemoryCache, gql} from "@apollo/client";
 import {createTheme, CssBaseline, ThemeProvider} from "@mui/material";
 import "./App.css";
-import HomePage from "./pages/HomePage";
+import MarkdownPage from "./pages/MarkdownPage";
 import WhoPage from "./pages/WhoPage";
 import HowPage from "./pages/HowPage";
 import ListPage from "./pages/ListPage";
@@ -64,22 +64,27 @@ function App() {
         [appLanguage]
     );
 
+    const markdownPageRoutes = (structure) => {
+        let ret = [];
+        if (structure.urls) {
+            for (const url of structure.urls) {
+                if (url === 'list') {
+                    continue;
+                }
+                ret.push(
+                    {
+                        path: (url === 'home' ? '/' : `${url}`),
+                        element: <MarkdownPage setAppLanguage={setAppLanguage} url={url}/>,
+                        errorElement: <ErrorBoundary/>
+                    }
+                );
+            }
+        }
+        return ret;
+    }
+
     const router = createBrowserRouter([
-        {
-            path: "/",
-            element: <HomePage setAppLanguage={setAppLanguage}/>,
-            errorElement: <ErrorBoundary/>
-        },
-        {
-            path: "/who",
-            element: <WhoPage setAppLanguage={setAppLanguage}/>,
-            errorElement: <ErrorBoundary/>
-        },
-        {
-            path: "/how",
-            element: <HowPage setAppLanguage={setAppLanguage}/>,
-            errorElement: <ErrorBoundary/>
-        },
+        ...markdownPageRoutes(appLanguageResources),
         {
             path: "/list",
             element: <ListPage setAppLanguage={setAppLanguage}/>,

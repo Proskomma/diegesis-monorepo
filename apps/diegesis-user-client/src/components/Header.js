@@ -48,7 +48,7 @@ export default function Header({selected, children, setAppLanguage}) {
                             {
                                 appLangResources.urlData &&
                                     appLangResources.urlData.map(ud => <ListItemButton>
-                                        <RouterLink to={ud.url}>
+                                        <RouterLink to={`/${ud.url === 'home' ? "" : ud.url}`}>
                                             {ud.menuText}
                                         </RouterLink>
                                     </ListItemButton>)
