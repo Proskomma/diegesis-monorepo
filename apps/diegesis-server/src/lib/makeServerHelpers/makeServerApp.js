@@ -2,7 +2,7 @@ const express = require("express");
 const helmet = require("helmet");
 const path = require("path");
 const cookieParser = require('cookie-parser');
-
+const cors = require("cors");
 const appRoot = path.resolve(".");
 
 function makeServerApp(config) {
@@ -23,7 +23,7 @@ function makeServerApp(config) {
             next();
         });
     }
-
+    app.use(cors({ origin: '*' }))
     if (config.debug) {
         // DIY GraphQL form
         app.get('/gql_form', (req, res) => {

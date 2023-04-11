@@ -1,13 +1,14 @@
-import React, {useState, useEffect} from "react";
+import React, { useState, useEffect } from "react";
 import {
     createBrowserRouter,
     RouterProvider,
     useRouteError,
 } from "react-router-dom";
-import {ApolloProvider, ApolloClient, InMemoryCache, gql} from "@apollo/client";
-import {createTheme, CssBaseline, ThemeProvider} from "@mui/material";
+import { ApolloProvider, ApolloClient, InMemoryCache, gql } from "@apollo/client";
+import { createTheme, CssBaseline } from "@mui/material";
 import "./App.css";
 import MarkdownPage from "./pages/MarkdownPage";
+import HomePage from "./pages/HomePage";
 import WhoPage from "./pages/WhoPage";
 import HowPage from "./pages/HowPage";
 import ListPage from "./pages/ListPage";
@@ -15,14 +16,15 @@ import EntryDetailsPage from "./pages/EntryDetailsPage";
 import EntryBrowsePage from "./pages/EntryBrowsePage";
 import EntrySearchPage from "./pages/EntrySearchPage";
 import EntryDownloadPage from "./pages/EntryDownloadPage";
-import {AppLangProvider} from "./contexts/AppLangContext";
-import {AppLangResourcesProvider} from "./contexts/AppLangResourcesContext";
+import { AppLangProvider } from "./contexts/AppLangContext";
+import { AppLangResourcesProvider } from "./contexts/AppLangResourcesContext";
+import { ThemeProvider as UIKitThemeProvider } from '@eten-lab/ui-kit';
 
 function App() {
-    const theme = createTheme({});
+    // const theme = createTheme({});
 
     const client = new ApolloClient({
-        uri: "/graphql",
+        uri: "http://localhost:1234/graphql",
         cache: new InMemoryCache(),
     });
 
@@ -55,7 +57,7 @@ function App() {
                     }
                   }
                   }`.replace(/%lang%/g, appLanguage);
-                const result = await client.query({query: gql`${queryString}`});
+                const result = await client.query({ query: gql`${queryString}` });
                 const clientStructure = result.data.clientStructure;
                 setAppLanguageResources(clientStructure);
             };
@@ -74,8 +76,8 @@ function App() {
                 ret.push(
                     {
                         path: (url === 'home' ? '/' : `${url}`),
-                        element: <MarkdownPage setAppLanguage={setAppLanguage} url={url}/>,
-                        errorElement: <ErrorBoundary/>
+                        element: <MarkdownPage setAppLanguage={setAppLanguage} url={url} />,
+                        errorElement: <ErrorBoundary />
                     }
                 );
             }
@@ -85,6 +87,11 @@ function App() {
 
     const router = createBrowserRouter([
         ...markdownPageRoutes(appLanguageResources),
+        {
+            path: "/diegesis/home",
+            element: <HomePage />,
+            errorElement: <ErrorBoundary />
+        },
         {
             path: "/list",
             element: <ListPage setAppLanguage={setAppLanguage}/>,
@@ -111,16 +118,17 @@ function App() {
             errorElement: <ErrorBoundary/>
         }
     ]);
+
     return (
         <ApolloProvider client={client}>
-            <ThemeProvider theme={theme}>
+            <UIKitThemeProvider>
                 <AppLangResourcesProvider value={appLanguageResources}>
                     <AppLangProvider value={appLanguage}>
-                        <CssBaseline/>
-                        <RouterProvider router={router}/>
+                        <CssBaseline />
+                        <RouterProvider router={router} />
                     </AppLangProvider>
                 </AppLangResourcesProvider>
-            </ThemeProvider>
+            </UIKitThemeProvider>
         </ApolloProvider>
     );
 }
