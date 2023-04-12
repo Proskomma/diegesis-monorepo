@@ -1,115 +1,149 @@
-import React, {useState, useEffect, useMemo, useContext} from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import {
-    ApolloClient,
     gql,
-    InMemoryCache,
+    useApolloClient,
+    useQuery
 } from "@apollo/client";
-import {Container, Box, Typography, Button} from "@mui/material";
-import {Tune} from "@mui/icons-material";
-import Header from "../components/Header";
-import ListView from "../components/ListView";
-import ListViewControls from "../components/ListViewControls";
-import Spinner from "../components/Spinner";
-import Footer from "../components/Footer";
 import AppLangContext from "../contexts/AppLangContext";
-import { directionText, fontFamily } from "../i18n/languageDirection";
 import i18n from '../i18n';
+import { DiegesisUI } from '@eten-lab/ui-kit';
+const { EntriesPage, MOCK_PAGE_FOOTER_PROPS, MOCK_ENTRIES_DATA_TABLE_PROPS, MOCK_PAGE_HEADER_PROPS, MOCK_SIDE_NAV_PROPS, MOCK_ENTRIES_TOP_CONTROLS_PROPS } = DiegesisUI;
+
+
+//#region helper methods
+const getGQLQuery = (searchTerms = {}) => {
+    return `query {
+            localEntries {
+                source
+                types
+                transId
+                language
+                owner
+                revision
+                title
+            }
+        }`
+}
+//#endregion
+
 
 export default function ListPage({ setAppLanguage }) {
 
     const appLang = useContext(AppLangContext);
-    const [showSettings, setShowSettings] = useState(false);
-    const [searchOrg, setSearchOrg] = useState('all');
-    const [searchOwner, setSearchOwner] = useState('');
-    const [searchType, setSearchType] = useState('');
-    const [searchLang, setSearchLang] = useState('');
-    const [searchText, setSearchText] = useState('');
-    const [sortField, setSortField] = useState('title');
-    const [sortDirection, setSortDirection] = useState('a-z');
-    const [orgs, setOrgs] = useState([]);
-    const [features, setFeatures] = useState({
-        introductions: false,
-        headings: false,
-        footnotes: false,
-        xrefs: false,
-        strong: false,
-        lemma: false,
-        gloss: false,
-        content: false,
-        occurrences: false
-    });
-
-    const client = new ApolloClient(
-        {
-            uri: '/graphql',
-            cache: new InMemoryCache(),
-        }
+    const [selectControls, setSelectControls] = useState([])
+    const [tagConfig, setTagConfig] = useState({})
+    const [dataTable, setDataTable] = useState({
+        ...MOCK_ENTRIES_DATA_TABLE_PROPS
+    })
+    const [gqlQuery, setGQLQuery] = useState(getGQLQuery({}))
+    const { loading, error, data: entriesList } = useQuery(
+        gql`${gqlQuery}`,
     );
 
-    const memoClient = useMemo(() => client);
+    const client = useApolloClient();
 
     // runs once, when the page is rendered
-    useEffect(
-        () => {
-            const doOrgs = async () => {
-                const result = await memoClient.query({query: gql`{ orgs { id: name } }`});
-                setOrgs(result.data.orgs.map(o => o.id));
-            };
-            doOrgs();
-        },
-        []
-    );
-
-    const entries = i18n(appLang, "LIST_PAGE_ENTRIES");
-
-    return <Container fixed className="listpage">
-        <Header  setAppLanguage={setAppLanguage} selected="list" />
-        <Box dir={directionText(appLang)} style={{marginTop: "100px"}}>
-            <Typography  variant="h4" paragraph="true" sx={{mt: "20px"}} style={{ fontFamily : fontFamily(appLang)}}>
-                {entries}
-                <Button onClick={() => setShowSettings(!showSettings)}>
-                    <Tune/>
-                </Button>
-            </Typography>
+    useEffect(() => {
+        const initialSelectControlValues = [
             {
-                showSettings &&
-                <ListViewControls searchTerms ={{
-                    orgs,
-                    searchOrg,
-                    setSearchOrg,
-                    searchOwner,
-                    setSearchOwner,
-                    searchType,
-                    setSearchType,
-                    searchLang,
-                    setSearchLang,
-                    searchText,
-                    setSearchText,
-                    sortField,
-                    setSortField,
-                    sortDirection,
-                    setSortDirection,
-                    features,
-                    setFeatures
-                }}/>
+                label: i18n(appLang, "CONTROLS_TITLE"),
+                value: '',
+                options: [],
+                onChange: (value) => { onSelectControlValueChange(value, 0) }
+            },
+            {
+                label: i18n(appLang, "CONTROLS_OWNER"),
+                value: '',
+                options: [],
+                onChange: (value) => { onSelectControlValueChange(value, 1) }
+            },
+            {
+                label: i18n(appLang, "CONTROLS_TYPE"),
+                value: '',
+                options: [],
+                onChange: (value) => { onSelectControlValueChange(value, 2) }
+            },
+            {
+                label: i18n(appLang, "CONTROLS_LANGUAGE"),
+                value: '',
+                options: [],
+                onChange: (value) => { onSelectControlValueChange(value, 3) }
             }
-        </Box>
-        <Box dir={directionText(appLang)} style={{marginTop: "20px"}}>
-            {orgs.length > 0 ?
-                <ListView searchTerms={{
-                    org: searchOrg,
-                    owner: searchOwner,
-                    resourceType: searchType,
-                    lang: searchLang,
-                    text: searchText,
-                    features: features,
-                    sortField: sortField,
-                    sortDirection: sortDirection
-                }}/>
-                :
-                <Spinner/>
+        ]
+        setSelectControls(initialSelectControlValues);
+
+        const initialTagConfig = {
+            ...MOCK_ENTRIES_TOP_CONTROLS_PROPS.tagConfig,
+            tags: [
+                i18n(appLang, "CONTROLS_OT"),
+                i18n(appLang, "CONTROLS_NT"),
+                i18n(appLang, "CONTROLS_DC"),
+                i18n(appLang, "STATS_nIntroductions"),
+                i18n(appLang, "STATS_nHeadings"),
+                i18n(appLang, "STATS_nFootnotes"),
+                i18n(appLang, "STATS_nXrefs"),
+                i18n(appLang, "STATS_nStrong"),
+                i18n(appLang, "CONTROLS_LEMME"),
+                i18n(appLang, "CONTROLS_GLOSS"),
+                i18n(appLang, "STATS_nContent"),
+                i18n(appLang, "STATS_nOccurrences"),
+            ],
+            selectedTags: [],
+            onTagSelect: onTagSelect,
+        }
+        setTagConfig(initialTagConfig);
+
+        const doOrgs = async () => {
+            const result = await client.query({ query: gql`{ orgs { id: name } }` });
+            const clonedControls = [...initialSelectControlValues]
+            const ids = (result.data.orgs.map(o => o.id))
+            clonedControls[0].options = ids.map(org => ({ title: org, id: org })) || []
+            setSelectControls(clonedControls);
+        };
+        doOrgs();
+    }, []);
+
+    //#region events
+    const onSelectControlValueChange = (value, controlIdx) => {
+        setSelectControls((prevControls) => {
+            const clonedControls = [...prevControls]
+            clonedControls[controlIdx].value = value
+            return clonedControls
+        })
+    }
+
+    const onTagSelect = (idx) => {
+        setTagConfig((prevState) => {
+            const clonedSelectedTags = [...prevState.selectedTags];
+            const tag = prevState.tags[idx]
+            const tagIdx = clonedSelectedTags.findIndex(st => st === tag)
+            if (tagIdx > -1) {
+                clonedSelectedTags.splice(tagIdx, 1)
+            } else {
+                clonedSelectedTags.push(tag)
             }
-        </Box>
-        <Footer/>
-    </Container>
+            return ({ ...prevState, selectedTags: clonedSelectedTags })
+        })
+    }
+    //#endregion
+
+
+    const entriesPageProps = {
+        topControlProps: {
+            ...MOCK_ENTRIES_TOP_CONTROLS_PROPS,
+            titleText: i18n(appLang, "LIST_PAGE_ENTRIES"),
+            selectControls: selectControls,
+            tagConfig: tagConfig
+        },
+        headerProps: MOCK_PAGE_HEADER_PROPS,
+        footerProps: MOCK_PAGE_FOOTER_PROPS,
+        sideNavProps: MOCK_SIDE_NAV_PROPS,
+        entriesDataTable: dataTable,
+    }
+
+    return (
+        <>
+            <EntriesPage {...entriesPageProps} />
+        </>
+    )
 }

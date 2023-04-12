@@ -11,20 +11,22 @@ import MarkdownPage from "./pages/MarkdownPage";
 import HomePage from "./pages/HomePage";
 import WhoPage from "./pages/WhoPage";
 import HowPage from "./pages/HowPage";
-import ListPage from "./pages/ListPage";
 import EntryDetailsPage from "./pages/EntryDetailsPage";
 import EntryBrowsePage from "./pages/EntryBrowsePage";
 import EntrySearchPage from "./pages/EntrySearchPage";
 import EntryDownloadPage from "./pages/EntryDownloadPage";
+import OldListPage from "./pages/old/ListPage";
+import ListPage from "./pages/ListPage";
 import { AppLangProvider } from "./contexts/AppLangContext";
 import { AppLangResourcesProvider } from "./contexts/AppLangResourcesContext";
 import { ThemeProvider as UIKitThemeProvider } from '@eten-lab/ui-kit';
+import AppConfig from "./config";
 
 function App() {
     // const theme = createTheme({});
 
     const client = new ApolloClient({
-        uri: "http://localhost:1234/graphql",
+        uri: AppConfig.GRAPHQL_BASE_URL,
         cache: new InMemoryCache(),
     });
 
@@ -88,13 +90,8 @@ function App() {
     const router = createBrowserRouter([
         ...markdownPageRoutes(appLanguageResources),
         {
-            path: "/diegesis/home",
-            element: <HomePage />,
-            errorElement: <ErrorBoundary />
-        },
-        {
             path: "/list",
-            element: <ListPage setAppLanguage={setAppLanguage}/>,
+            element: <OldListPage setAppLanguage={setAppLanguage}/>,
             errorElement: <ErrorBoundary/>
         },
         {
@@ -116,7 +113,17 @@ function App() {
             path: "/entry/download/:source/:entryId/:revision",
             element: <EntryDownloadPage setAppLanguage={setAppLanguage}/>,
             errorElement: <ErrorBoundary/>
-        }
+        },
+        {
+            path: "/diegesis/home",
+            element: <HomePage />,
+            errorElement: <ErrorBoundary />
+        },
+        {
+            path: "/diegesis/list",
+            element: <ListPage setAppLanguage={setAppLanguage} />,
+            errorElement: <ErrorBoundary />
+        },
     ]);
 
     return (
