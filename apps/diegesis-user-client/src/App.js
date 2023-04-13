@@ -11,7 +11,8 @@ import MarkdownPage from "./pages/MarkdownPage";
 import HomePage from "./pages/HomePage";
 import WhoPage from "./pages/WhoPage";
 import HowPage from "./pages/HowPage";
-import EntryDetailsPage from "./pages/EntryDetailsPage";
+import OldEntryDetailsPage from "./pages/old/EntryDetailsPage";
+import EntryDetailPage from "./pages/EntryDetailsPage";
 import EntryBrowsePage from "./pages/EntryBrowsePage";
 import EntrySearchPage from "./pages/EntrySearchPage";
 import EntryDownloadPage from "./pages/EntryDownloadPage";
@@ -96,7 +97,7 @@ function App() {
         },
         {
             path: "/entry/details/:source/:entryId/:revision",
-            element: <EntryDetailsPage setAppLanguage={setAppLanguage}/>,
+            element: <OldEntryDetailsPage setAppLanguage={setAppLanguage}/>,
             errorElement: <ErrorBoundary/>
         },
         {
@@ -123,6 +124,11 @@ function App() {
             path: "/diegesis/list",
             element: <ListPage setAppLanguage={setAppLanguage} />,
             errorElement: <ErrorBoundary />
+        },
+        {
+            path: "/diegesis/entry/details",
+            element: <EntryDetailPage setAppLanguage={setAppLanguage}/>,
+            errorElement: <ErrorBoundary/>
         },
     ]);
 

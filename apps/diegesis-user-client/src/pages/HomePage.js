@@ -1,9 +1,23 @@
 import { DiegesisUI } from '@eten-lab/ui-kit/dist';
-const { HomePage: DiegesisHomePage } = DiegesisUI;
+const { HomePage: DiegesisHomePage,
+  MOCK_PAGE_HEADER_PROPS,
+  MOCK_LANDING_PROPS,
+  MOCK_PAGE_FOOTER_PROPS,
+  MOCK_ABOUT_DIEGESIS_PROPS,
+  MOCK_SIDE_NAV_PROPS,
+  MOCK_STAT_SECTION_PROPS
+} = DiegesisUI;
 
 export default function HomePage() {
-  const props = {}
+  const homePageProps = {
+    headerProps: MOCK_PAGE_HEADER_PROPS,
+    landingSectionProps: MOCK_LANDING_PROPS,
+    footerProps: MOCK_PAGE_FOOTER_PROPS,
+    aboutDiegesisProps: MOCK_ABOUT_DIEGESIS_PROPS,
+    sideNavProps: MOCK_SIDE_NAV_PROPS,
+    statSectionProps: MOCK_STAT_SECTION_PROPS,
+  };
   return (
-    <DiegesisHomePage {...props} />
+    <DiegesisHomePage {...homePageProps} />
   );
 }
