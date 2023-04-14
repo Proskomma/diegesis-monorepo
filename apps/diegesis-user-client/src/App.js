@@ -126,7 +126,7 @@ function App() {
             errorElement: <ErrorBoundary />
         },
         {
-            path: "/diegesis/entry/details",
+            path: "/diegesis/entry/details/:source/:entryId/:revision",
             element: <EntryDetailPage setAppLanguage={setAppLanguage}/>,
             errorElement: <ErrorBoundary/>
         },
