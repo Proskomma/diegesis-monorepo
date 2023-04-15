@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useContext, useState } from "react";
 import { DiegesisUI, MuiMaterial } from '@eten-lab/ui-kit';
 import { gql, useQuery } from "@apollo/client";
@@ -13,16 +13,15 @@ const { EntryDetailPage: DiegesisEntryDetail,
     MOCK_PAGE_HEADER_PROPS,
     MOCK_PAGE_FOOTER_PROPS,
     MOCK_SIDE_NAV_PROPS,
-    MOCK_ENTRY_DETAIL_TOP_CONTROL_PROPS,
     MOCK_ENTRY_DETAIL_PAGE_PROPS
 } = DiegesisUI;
 const { Box, Typography } = MuiMaterial;
 
 export default function EntryDetailPage({ setAppLanguage }) {
     const appLang = useContext(AppLangContext);
+    const navigate = useNavigate();
     const { source, entryId, revision } = useParams();
     const [selectedBook, setSelectedBook] = useState('');
-    const [selectedBookResource, setSelectedBookResource] = useState('');
 
     const queryString = `query {
             localEntry(
@@ -86,10 +85,12 @@ export default function EntryDetailPage({ setAppLanguage }) {
     }
     const contentString = contentTab.join(", ");
 
-    const onViewBtnClick = (e) => { }
+    const onViewBtnClick = (e) => {
+        navigate(`/v2/entry/browse/${source}/${entryId}/${revision}`)
+    }
     const onDownloadBtnClick = (e) => { }
     const onBookResourceSelect = (value) => {
-        setSelectedBookResource(value)
+        setSelectedBook(value)
     }
     const mapEntryToTblData = (entry) => {
         const result = [{ key: i18n(appLang, "ADMIN_DETAILS"), value: '' }]
@@ -113,8 +114,8 @@ export default function EntryDetailPage({ setAppLanguage }) {
     const getBookResourceControl = () => {
         if (entryInfo?.types?.includes('bible') && bookCodes.length > 0) {
             return ({
-                label: selectedBookResource,
-                value: selectedBookResource,
+                label: selectedBook,
+                value: selectedBook,
                 options: bookCodes?.map(bc => ({ id: bc, title: bc })),
                 onChange: onBookResourceSelect
             })

@@ -11,11 +11,12 @@ import MarkdownPage from "./pages/MarkdownPage";
 import HomePage from "./pages/HomePage";
 import WhoPage from "./pages/WhoPage";
 import HowPage from "./pages/HowPage";
-import OldEntryDetailsPage from "./pages/old/EntryDetailsPage";
 import EntryDetailPage from "./pages/EntryDetailsPage";
 import EntryBrowsePage from "./pages/EntryBrowsePage";
 import EntrySearchPage from "./pages/EntrySearchPage";
 import EntryDownloadPage from "./pages/EntryDownloadPage";
+import OldEntryBrowsePage from "./pages/old/EntryBrowsePage";
+import OldEntryDetailsPage from "./pages/old/EntryDetailsPage";
 import OldListPage from "./pages/old/ListPage";
 import ListPage from "./pages/ListPage";
 import { AppLangProvider } from "./contexts/AppLangContext";
@@ -102,7 +103,7 @@ function App() {
         },
         {
             path: "/entry/browse/:source/:entryId/:revision",
-            element: <EntryBrowsePage setAppLanguage={setAppLanguage}/>,
+            element: <OldEntryBrowsePage setAppLanguage={setAppLanguage}/>,
             errorElement: <ErrorBoundary/>
         },
         {
@@ -116,18 +117,23 @@ function App() {
             errorElement: <ErrorBoundary/>
         },
         {
-            path: "/diegesis/home",
+            path: "/v2/home",
             element: <HomePage />,
             errorElement: <ErrorBoundary />
         },
         {
-            path: "/diegesis/list",
+            path: "/v2/list",
             element: <ListPage setAppLanguage={setAppLanguage} />,
             errorElement: <ErrorBoundary />
         },
         {
-            path: "/diegesis/entry/details/:source/:entryId/:revision",
+            path: "/v2/entry/details/:source/:entryId/:revision",
             element: <EntryDetailPage setAppLanguage={setAppLanguage}/>,
+            errorElement: <ErrorBoundary/>
+        },
+        {
+            path: "/v2/entry/browse/:source/:entryId/:revision",
+            element: <EntryBrowsePage setAppLanguage={setAppLanguage}/>,
             errorElement: <ErrorBoundary/>
         },
     ]);
