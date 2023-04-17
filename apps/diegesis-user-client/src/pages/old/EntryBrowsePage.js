@@ -141,7 +141,6 @@ export default function EntryBrowsePage({setAppLanguage}) {
         }
     }
     if (entryInfo.types.includes('bible')) {
-        console.log('content type is bible')
         return (
             <Container fixed className="homepage">
                 <Header setAppLanguage={setAppLanguage} selected="list"/>
@@ -208,7 +207,6 @@ export default function EntryBrowsePage({setAppLanguage}) {
             </Container>
         );
     } else {
-        console.log('content type is other than bible')
         return (
             <Container fixed className="homepage">
                 <Header setAppLanguage={setAppLanguage} selected="list"/>
