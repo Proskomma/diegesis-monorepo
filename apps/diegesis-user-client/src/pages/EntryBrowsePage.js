@@ -145,7 +145,7 @@ export default function EntryBrowsePage({ setAppLanguage }) {
                             sx={{ mt: "20px" }}
                             style={{ fontFamily: fontFamily(appLang) }}
                         >
-                            <BackButton />&nbsp;&nbsp;
+                            <BackButton href={`/v2/entry/details/${source}/${entryId}/${revision}`} />&nbsp;&nbsp;
                             {entryInfo && entryInfo.title}
                             {!entryInfo && "Loading..."}
                             <Button onClick={handleOpenSearchModal}>
@@ -207,7 +207,7 @@ export default function EntryBrowsePage({ setAppLanguage }) {
                             sx={{ mt: "20px" }}
                             style={{ fontFamily: fontFamily(appLang) }}
                         >
-                            <BackButton />&nbsp;&nbsp;
+                            <BackButton href={`/v2/entry/details/${source}/${entryId}/${revision}`} />&nbsp;&nbsp;
                             {entryInfo && entryInfo.title}
                             {!entryInfo && "Loading..."}
                         </Typography>

@@ -1,19 +1,45 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 import {
     gql,
     useApolloClient,
     useQuery
 } from "@apollo/client";
+import { searchQuery } from '../lib/search';
 import AppLangContext from "../contexts/AppLangContext";
 import i18n from '../i18n';
-import { DiegesisUI } from '@eten-lab/ui-kit';
-const { EntriesPage, MOCK_PAGE_FOOTER_PROPS, MOCK_ENTRIES_DATA_TABLE_PROPS, MOCK_PAGE_HEADER_PROPS, MOCK_SIDE_NAV_PROPS, MOCK_ENTRIES_TOP_CONTROLS_PROPS } = DiegesisUI;
+import { DiegesisUI, MuiMaterial } from '@eten-lab/ui-kit';
+const { EntriesPage, MOCK_PAGE_FOOTER_PROPS, MOCK_PAGE_HEADER_PROPS, MOCK_SIDE_NAV_PROPS, MOCK_ENTRIES_TOP_CONTROLS_PROPS } = DiegesisUI;
+const { Button } = MuiMaterial;
 
+//#region data
+const DEFAULT_TAG_VALUES = {
+    introductions: false,
+    headings: false,
+    footnotes: false,
+    xrefs: false,
+    strong: false,
+    lemma: false,
+    gloss: false,
+    content: false,
+    occurrences: false
+}
+const GQL_DEFAULT_QUERY_PARAMS = {
+    org: 'all',
+    owner: '',
+    resourceType: '',
+    lang: '',
+    text: '',
+    features: DEFAULT_TAG_VALUES,
+    sortField: 'title',
+    sortDirection: 'a-z'
+}
+//#endregion
 
 //#region helper methods
 const getGQLQuery = (searchTerms = {}) => {
-    return `query {
-            localEntries {
+    return searchQuery(
+        `query {
+            localEntries%searchClause% {
                 source
                 types
                 transId
@@ -22,25 +48,24 @@ const getGQLQuery = (searchTerms = {}) => {
                 revision
                 title
             }
-        }`
+        }`,
+        searchTerms
+    )
 }
 //#endregion
-
 
 export default function ListPage({ setAppLanguage }) {
 
     const appLang = useContext(AppLangContext);
-    const [selectControls, setSelectControls] = useState([])
-    const [tagConfig, setTagConfig] = useState({})
-    const [dataTable, setDataTable] = useState({
-        ...MOCK_ENTRIES_DATA_TABLE_PROPS
-    })
-    const [gqlQuery, setGQLQuery] = useState(getGQLQuery({}))
-    const { loading, error, data: entriesList } = useQuery(
-        gql`${gqlQuery}`,
-    );
-
     const client = useApolloClient();
+    const refTagKeyValue = useRef();
+    const [selectControls, setSelectControls] = useState([]);
+    const [tagConfig, setTagConfig] = useState({});
+    const [dataTable, setDataTable] = useState({ cellsConfig: [], entries: [] })
+    const [gqlQueryParams, setGQLQueryParams] = useState({ ...GQL_DEFAULT_QUERY_PARAMS })
+    const { loading, error, data: entriesList } = useQuery(
+        gql`${getGQLQuery(gqlQueryParams)}`,
+    );
 
     // runs once, when the page is rendered
     useEffect(() => {
@@ -71,27 +96,72 @@ export default function ListPage({ setAppLanguage }) {
             }
         ]
         setSelectControls(initialSelectControlValues);
+        refTagKeyValue.current = Object.fromEntries([
+            [i18n(appLang, "CONTROLS_OT"), "OT"],
+            [i18n(appLang, "CONTROLS_NT"), "NT"],
+            [i18n(appLang, "CONTROLS_DC"), "DC"],
+            [i18n(appLang, "STATS_nIntroductions"), "introductions"],
+            [i18n(appLang, "STATS_nHeadings"), "headings"],
+            [i18n(appLang, "STATS_nFootnotes"), "footnotes"],
+            [i18n(appLang, "STATS_nXrefs"), "xrefs"],
+            [i18n(appLang, "STATS_nStrong"), "strong"],
+            [i18n(appLang, "CONTROLS_LEMME"), "lemma"],
+            [i18n(appLang, "CONTROLS_GLOSS"), "gloss"],
+            [i18n(appLang, "STATS_nContent"), "content"],
+            [i18n(appLang, "STATS_nOccurrences"), "occurrences"],
+        ]);
 
         const initialTagConfig = {
             ...MOCK_ENTRIES_TOP_CONTROLS_PROPS.tagConfig,
-            tags: [
-                i18n(appLang, "CONTROLS_OT"),
-                i18n(appLang, "CONTROLS_NT"),
-                i18n(appLang, "CONTROLS_DC"),
-                i18n(appLang, "STATS_nIntroductions"),
-                i18n(appLang, "STATS_nHeadings"),
-                i18n(appLang, "STATS_nFootnotes"),
-                i18n(appLang, "STATS_nXrefs"),
-                i18n(appLang, "STATS_nStrong"),
-                i18n(appLang, "CONTROLS_LEMME"),
-                i18n(appLang, "CONTROLS_GLOSS"),
-                i18n(appLang, "STATS_nContent"),
-                i18n(appLang, "STATS_nOccurrences"),
-            ],
+            tags: Object.keys(refTagKeyValue.current),
             selectedTags: [],
             onTagSelect: onTagSelect,
         }
         setTagConfig(initialTagConfig);
+
+        const cellConfig = [
+            {
+                id: 'types',
+                numeric: false,
+                disablePadding: true,
+                label: i18n(appLang, "RESOURCE_TYPES"),
+            },
+            {
+                id: 'source',
+                numeric: false,
+                disablePadding: false,
+                label: i18n(appLang, "CONTROLS_SOURCE"),
+            },
+            {
+                id: 'language',
+                numeric: false,
+                disablePadding: false,
+                label: i18n(appLang, "CONTROLS_LANGUAGE"),
+            },
+            {
+                id: 'title',
+                numeric: false,
+                disablePadding: true,
+                label: i18n(appLang, "CONTROLS_TITLE"),
+                render(value) {
+                    return (
+                        <Button
+                            className="no-padding"
+                            href={`/v2/entry/details/${value.source}/${value.transId}/${value.revision.replace(/\s/g, "__")}`}
+                            sx={{
+                                textTransform: 'none',
+                                fontWeight: 700,
+                                fontSize: '0.9rem',
+                                color: 'text.turquoise-light',
+                            }}
+                        >
+                            {value.title}
+                        </Button>
+                    );
+                },
+            }
+        ];
+        setDataTable({ entries: [], cellsConfig: cellConfig });
 
         const doOrgs = async () => {
             const result = await client.query({ query: gql`{ orgs { id: name } }` });
@@ -103,6 +173,29 @@ export default function ListPage({ setAppLanguage }) {
         doOrgs();
     }, []);
 
+    useEffect(() => {
+        if (selectControls && tagConfig) {
+            const clonedGQLParams = { ...gqlQueryParams }
+            clonedGQLParams.features = { ...DEFAULT_TAG_VALUES };
+            (tagConfig.selectedTags || []).forEach((tag) => {
+                clonedGQLParams.features[refTagKeyValue.current[tag]] = true;
+            })
+            setGQLQueryParams(clonedGQLParams);
+        }
+    }, [selectControls, tagConfig]);
+
+    useEffect(() => {
+        if (entriesList) {
+            const tblEntries = entriesList.localEntries.map(item => ({
+                types: item.types?.join(', ') || "?",
+                source: `${item.owner}@${item.source}`,
+                language: item.language,
+                title: item
+            }));
+            setDataTable({ ...dataTable, entries: tblEntries })
+        }
+    }, [entriesList])
+
     //#region events
     const onSelectControlValueChange = (value, controlIdx) => {
         setSelectControls((prevControls) => {
@@ -111,7 +204,6 @@ export default function ListPage({ setAppLanguage }) {
             return clonedControls
         })
     }
-
     const onTagSelect = (idx) => {
         setTagConfig((prevState) => {
             const clonedSelectedTags = [...prevState.selectedTags];
@@ -126,7 +218,6 @@ export default function ListPage({ setAppLanguage }) {
         })
     }
     //#endregion
-
 
     const entriesPageProps = {
         topControlProps: {

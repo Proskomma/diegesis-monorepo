@@ -136,6 +136,9 @@ export default function EntryDetailPage({ setAppLanguage }) {
                 onViewBtnClick: onViewBtnClick,
                 downloadBtnText: 'Download',
                 onDownloadBtnClick: onDownloadBtnClick
+            },
+            backBtnProps: {
+                href: '/v2/list'
             }
         },
         bookResource: {
