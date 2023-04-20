@@ -16,7 +16,8 @@ import SearchModal from "../components/SearchModal";
 import PrintModal from "../components/PrintModal";
 import PrintIcon from '@mui/icons-material/Print';
 import { DiegesisUI, MuiMaterial } from '@eten-lab/ui-kit';
-const { PageLayout, MOCK_VIEW_PAGE_PROPS, BackButton } = DiegesisUI;
+import SidebarNavOptions from "../config/SidebarNavOptions";
+const { PageLayout, MOCK_VIEW_PAGE_PROPS, BackButton, MOCK_SIDE_NAV_PROPS } = DiegesisUI;
 const { Container, Typography, Box, Button } = MuiMaterial;
 
 export default function EntryBrowsePage({ setAppLanguage }) {
@@ -90,7 +91,7 @@ export default function EntryBrowsePage({ setAppLanguage }) {
     };
 
 
-    const pageProps = { ...MOCK_VIEW_PAGE_PROPS };
+    const pageProps = { ...MOCK_VIEW_PAGE_PROPS, sideNavProps: { ...MOCK_SIDE_NAV_PROPS, options: SidebarNavOptions } };
     if (!entryInfo) {
         return (
             <PageLayout {...pageProps}>
@@ -145,7 +146,7 @@ export default function EntryBrowsePage({ setAppLanguage }) {
                             sx={{ mt: "20px" }}
                             style={{ fontFamily: fontFamily(appLang) }}
                         >
-                            <BackButton href={`/v2/entry/details/${source}/${entryId}/${revision}`} />&nbsp;&nbsp;
+                            <BackButton href={`/entry/details/${source}/${entryId}/${revision}`} />&nbsp;&nbsp;
                             {entryInfo && entryInfo.title}
                             {!entryInfo && "Loading..."}
                             <Button onClick={handleOpenSearchModal}>
@@ -207,7 +208,7 @@ export default function EntryBrowsePage({ setAppLanguage }) {
                             sx={{ mt: "20px" }}
                             style={{ fontFamily: fontFamily(appLang) }}
                         >
-                            <BackButton href={`/v2/entry/details/${source}/${entryId}/${revision}`} />&nbsp;&nbsp;
+                            <BackButton href={`/entry/details/${source}/${entryId}/${revision}`} />&nbsp;&nbsp;
                             {entryInfo && entryInfo.title}
                             {!entryInfo && "Loading..."}
                         </Typography>

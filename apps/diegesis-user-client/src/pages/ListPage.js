@@ -8,6 +8,7 @@ import { searchQuery } from '../lib/search';
 import AppLangContext from "../contexts/AppLangContext";
 import i18n from '../i18n';
 import { DiegesisUI, MuiMaterial } from '@eten-lab/ui-kit';
+import SidebarNavOptions from '../config/SidebarNavOptions';
 const { EntriesPage, MOCK_PAGE_FOOTER_PROPS, MOCK_PAGE_HEADER_PROPS, MOCK_SIDE_NAV_PROPS, MOCK_ENTRIES_TOP_CONTROLS_PROPS } = DiegesisUI;
 const { Button } = MuiMaterial;
 
@@ -147,7 +148,7 @@ export default function ListPage({ setAppLanguage }) {
                     return (
                         <Button
                             className="no-padding"
-                            href={`/v2/entry/details/${value.source}/${value.transId}/${value.revision.replace(/\s/g, "__")}`}
+                            href={`/entry/details/${value.source}/${value.transId}/${value.revision.replace(/\s/g, "__")}`}
                             sx={{
                                 textTransform: 'none',
                                 fontWeight: 700,
@@ -228,7 +229,7 @@ export default function ListPage({ setAppLanguage }) {
         },
         headerProps: MOCK_PAGE_HEADER_PROPS,
         footerProps: MOCK_PAGE_FOOTER_PROPS,
-        sideNavProps: MOCK_SIDE_NAV_PROPS,
+        sideNavProps: {...MOCK_SIDE_NAV_PROPS, options: SidebarNavOptions },
         entriesDataTable: dataTable,
     }
 

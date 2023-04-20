@@ -5,12 +5,10 @@ import {
     useRouteError,
 } from "react-router-dom";
 import { ApolloProvider, ApolloClient, InMemoryCache, gql } from "@apollo/client";
-import { createTheme, CssBaseline } from "@mui/material";
+import { CssBaseline } from "@mui/material";
 import "./App.css";
 import MarkdownPage from "./pages/MarkdownPage";
 import HomePage from "./pages/HomePage";
-import WhoPage from "./pages/WhoPage";
-import HowPage from "./pages/HowPage";
 import EntryDetailPage from "./pages/EntryDetailsPage";
 import EntryBrowsePage from "./pages/EntryBrowsePage";
 import EntrySearchPage from "./pages/EntrySearchPage";
@@ -23,6 +21,7 @@ import { AppLangProvider } from "./contexts/AppLangContext";
 import { AppLangResourcesProvider } from "./contexts/AppLangResourcesContext";
 import { ThemeProvider as UIKitThemeProvider } from '@eten-lab/ui-kit';
 import AppConfig from "./config";
+import AboutPage from "./pages/AboutPage";
 
 function App() {
     // const theme = createTheme({});
@@ -90,52 +89,62 @@ function App() {
     }
 
     const router = createBrowserRouter([
-        ...markdownPageRoutes(appLanguageResources),
+        // ...markdownPageRoutes(appLanguageResources),
         {
-            path: "/list",
+            path: "/v1/list",
             element: <OldListPage setAppLanguage={setAppLanguage}/>,
             errorElement: <ErrorBoundary/>
         },
         {
-            path: "/entry/details/:source/:entryId/:revision",
+            path: "/v1/entry/details/:source/:entryId/:revision",
             element: <OldEntryDetailsPage setAppLanguage={setAppLanguage}/>,
             errorElement: <ErrorBoundary/>
         },
         {
-            path: "/entry/browse/:source/:entryId/:revision",
+            path: "/v1/entry/browse/:source/:entryId/:revision",
             element: <OldEntryBrowsePage setAppLanguage={setAppLanguage}/>,
             errorElement: <ErrorBoundary/>
         },
         {
-            path: "/entry/search/:source/:entryId/:revision",
+            path: "/v1/entry/search/:source/:entryId/:revision",
             element: <EntrySearchPage setAppLanguage={setAppLanguage}/>,
             errorElement: <ErrorBoundary/>
         },
         {
-            path: "/entry/download/:source/:entryId/:revision",
+            path: "/v1/entry/download/:source/:entryId/:revision",
             element: <EntryDownloadPage setAppLanguage={setAppLanguage}/>,
             errorElement: <ErrorBoundary/>
         },
         {
-            path: "/v2/home",
+            path: "/",
             element: <HomePage />,
             errorElement: <ErrorBoundary />
         },
         {
-            path: "/v2/list",
+            path: "/home",
+            element: <HomePage />,
+            errorElement: <ErrorBoundary />
+        },
+        {
+            path: "/list",
             element: <ListPage setAppLanguage={setAppLanguage} />,
             errorElement: <ErrorBoundary />
         },
         {
-            path: "/v2/entry/details/:source/:entryId/:revision",
+            path: "/entry/details/:source/:entryId/:revision",
             element: <EntryDetailPage setAppLanguage={setAppLanguage}/>,
             errorElement: <ErrorBoundary/>
         },
         {
-            path: "/v2/entry/browse/:source/:entryId/:revision",
+            path: "/entry/browse/:source/:entryId/:revision",
             element: <EntryBrowsePage setAppLanguage={setAppLanguage}/>,
             errorElement: <ErrorBoundary/>
         },
+        {
+            path: '/about',
+            element: <AboutPage setAppLanguage={setAppLanguage} />,
+            errorElement: <ErrorBoundary />
+        }
     ]);
 
     return (

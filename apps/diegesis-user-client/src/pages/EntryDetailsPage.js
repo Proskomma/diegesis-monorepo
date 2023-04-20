@@ -9,6 +9,7 @@ import {
     directionText,
 } from "../i18n/languageDirection";
 import i18n from "../i18n";
+import SidebarNavOptions from "../config/SidebarNavOptions";
 const { EntryDetailPage: DiegesisEntryDetail,
     MOCK_PAGE_HEADER_PROPS,
     MOCK_PAGE_FOOTER_PROPS,
@@ -86,7 +87,7 @@ export default function EntryDetailPage({ setAppLanguage }) {
     const contentString = contentTab.join(", ");
 
     const onViewBtnClick = (e) => {
-        navigate(`/v2/entry/browse/${source}/${entryId}/${revision}`)
+        navigate(`/entry/browse/${source}/${entryId}/${revision}`)
     }
     const onDownloadBtnClick = (e) => { }
     const onBookResourceSelect = (value) => {
@@ -127,7 +128,7 @@ export default function EntryDetailPage({ setAppLanguage }) {
         ...MOCK_ENTRY_DETAIL_PAGE_PROPS,
         headerProps: MOCK_PAGE_HEADER_PROPS,
         footerProps: MOCK_PAGE_FOOTER_PROPS,
-        sideNavProps: MOCK_SIDE_NAV_PROPS,
+        sideNavProps: {...MOCK_SIDE_NAV_PROPS, options: SidebarNavOptions },
         tblData: mapEntryToTblData(entryInfo),
         topControlProps: {
             title: entryInfo.title,
@@ -138,7 +139,7 @@ export default function EntryDetailPage({ setAppLanguage }) {
                 onDownloadBtnClick: onDownloadBtnClick
             },
             backBtnProps: {
-                href: '/v2/list'
+                href: '/list'
             }
         },
         bookResource: {
