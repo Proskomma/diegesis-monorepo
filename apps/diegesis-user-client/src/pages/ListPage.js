@@ -8,7 +8,7 @@ import { searchQuery } from '../lib/search';
 import AppLangContext from "../contexts/AppLangContext";
 import i18n from '../i18n';
 import { DiegesisUI, MuiMaterial } from '@eten-lab/ui-kit';
-import SidebarNavOptions from '../config/SidebarNavOptions';
+import AppLangResourcesContext from '../contexts/AppLangResourcesContext';
 const { EntriesPage, MOCK_PAGE_FOOTER_PROPS, MOCK_PAGE_HEADER_PROPS, MOCK_SIDE_NAV_PROPS, MOCK_ENTRIES_TOP_CONTROLS_PROPS } = DiegesisUI;
 const { Button } = MuiMaterial;
 
@@ -67,6 +67,12 @@ export default function ListPage({ setAppLanguage }) {
     const { loading, error, data: entriesList } = useQuery(
         gql`${getGQLQuery(gqlQueryParams)}`,
     );
+    const appLangResources = useContext(AppLangResourcesContext);
+    const navOptions = appLangResources.urlData && appLangResources.urlData.map(item => ({
+        title: item.menuText,
+        variant: 'small',
+        href: `/${item.url === 'home' ? "" : item.url}`
+    }));
 
     // runs once, when the page is rendered
     useEffect(() => {
@@ -229,13 +235,11 @@ export default function ListPage({ setAppLanguage }) {
         },
         headerProps: MOCK_PAGE_HEADER_PROPS,
         footerProps: MOCK_PAGE_FOOTER_PROPS,
-        sideNavProps: {...MOCK_SIDE_NAV_PROPS, options: SidebarNavOptions },
+        sideNavProps: { ...MOCK_SIDE_NAV_PROPS, options: navOptions },
         entriesDataTable: dataTable,
     }
 
     return (
-        <>
-            <EntriesPage {...entriesPageProps} />
-        </>
+        <EntriesPage {...entriesPageProps} />
     )
 }
