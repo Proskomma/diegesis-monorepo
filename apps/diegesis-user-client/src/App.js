@@ -5,7 +5,8 @@ import {
     useRouteError,
 } from "react-router-dom";
 import {ApolloProvider, ApolloClient, InMemoryCache, gql} from "@apollo/client";
-import {createTheme, CssBaseline, ThemeProvider} from "@mui/material";
+import { CssBaseline } from "@mui/material";
+import { ThemeProvider as UIKitThemeProvider } from '@eten-lab/ui-kit';
 import "./App.css";
 import MarkdownPage from "./pages/MarkdownPage";
 import WhoPage from "./pages/WhoPage";
@@ -19,10 +20,9 @@ import {AppLangProvider} from "./contexts/AppLangContext";
 import {AppLangResourcesProvider} from "./contexts/AppLangResourcesContext";
 
 function App() {
-    const theme = createTheme({});
 
     const client = new ApolloClient({
-        uri: "/graphql",
+        uri: "http://localhost:1234/graphql",
         cache: new InMemoryCache(),
     });
 
@@ -113,14 +113,14 @@ function App() {
     ]);
     return (
         <ApolloProvider client={client}>
-            <ThemeProvider theme={theme}>
+            <UIKitThemeProvider>
                 <AppLangResourcesProvider value={appLanguageResources}>
                     <AppLangProvider value={appLanguage}>
                         <CssBaseline/>
                         <RouterProvider router={router}/>
                     </AppLangProvider>
                 </AppLangResourcesProvider>
-            </ThemeProvider>
+            </UIKitThemeProvider>
         </ApolloProvider>
     );
 }
