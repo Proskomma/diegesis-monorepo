@@ -17,6 +17,33 @@ if (fse.pathExistsSync(outputPath)) {
     throw new Error(`Input path ${outputPath} already exists\n${usage}`);
 }
 
+const unpackRef = ref => {
+    let [fromCV, toSomething] = ref.split('-');
+    if (!toSomething) {
+        toSomething = fromCV;
+    }
+    let [fromC, fromV] = fromCV.split(':');
+    if (!fromV) {
+        fromV = fromC;
+        fromC = 1;
+    }
+    let toC;
+    let toV;
+    if (toSomething.includes("-")) {
+        [toC, toV] = toSomething.split(':');
+        if (!toV) {
+            toV = toC;
+            toC = 1;
+        }
+    } else {
+        toC = fromC;
+        toV = toSomething;
+    }
+    const fromRef = `${currentBook} ${fromC}:${fromV}`;
+    const toRef = `${currentBook} ${toC}:${toV}`;
+    return [fromRef, toRef];
+}
+
 // Clean up text
 const paraPrefix = '<ParaStyle:BSB\\:';
 const inputLines = fse.readFileSync(inputPath)
@@ -102,65 +129,14 @@ for (currentBook of Object.values(bookMapping)) {
         )
     }
     // Generate footnote markdown
-    for (const [ref, mds] of Object.entries(bookNoteMarkdown[currentBook])) {
-        if (!ref) {
-            continue;
-        }
-        let [fromCV, toSomething] = ref.split('-');
-        if (!toSomething) {
-            toSomething = fromCV;
-        }
-        let [fromC, fromV] = fromCV.split(':');
-        if (!fromV) {
-            fromV = fromC;
-            fromC = 1;
-        }
-        let toC;
-        let toV;
-        if (toSomething.includes("-")) {
-            [toC, toV] = toSomething.split(':');
-            if (!toV) {
-                toV = toC;
-                toC = 1;
-            }
-        } else {
-            toC = fromC;
-            toV = toSomething;
-        }
-        const fromRef = `${currentBook} ${fromC}:${fromV}`;
-        const toRef = `${currentBook} ${toC}:${toV}`;
-        tsvLines.push(`${fromRef}\t${toRef}\t${noteN}\t${mds.join('\\n\\n')}`)
-        noteN++;
-    }
+
 
     // Generate main markdown and merge into TSV
     for (const [ref, mds] of Object.entries(bookNoteMarkdown[currentBook])) {
         if (!ref) {
             continue;
         }
-        let [fromCV, toSomething] = ref.split('-');
-        if (!toSomething) {
-            toSomething = fromCV;
-        }
-        let [fromC, fromV] = fromCV.split(':');
-        if (!fromV) {
-            fromV = fromC;
-            fromC = 1;
-        }
-        let toC;
-        let toV;
-        if (toSomething.includes("-")) {
-            [toC, toV] = toSomething.split(':');
-            if (!toV) {
-                toV = toC;
-                toC = 1;
-            }
-        } else {
-            toC = fromC;
-            toV = toSomething;
-        }
-        const fromRef = `${currentBook} ${fromC}:${fromV}`;
-        const toRef = `${currentBook} ${toC}:${toV}`;
+        const [fromRef, toRef] = unpackRef(ref);
         tsvLines.push(`${fromRef}\t${toRef}\t${noteN}\t${mds.join('\\n\\n')}`)
         noteN++;
     }
