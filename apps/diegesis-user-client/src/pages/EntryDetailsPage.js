@@ -1,28 +1,26 @@
-import {Container, Typography, Box, Button, Paper, Grid} from "@mui/material";
-import {useParams, Link as RouterLink} from "react-router-dom";
-import {ArrowBack, ArrowForward, AutoStories, Download} from "@mui/icons-material";
-import {gql, useQuery} from "@apollo/client";
-import GqlError from "../components/GqlError";
-
-import Header from "../components/Header";
-import Footer from "../components/Footer";
-import Spinner from "../components/Spinner";
-import BookSelector from "../components/BookSelector";
-
+import { useParams, useNavigate } from "react-router-dom";
+import { useContext, useState } from "react";
+import { DiegesisUI, MuiMaterial } from '@eten-lab/ui-kit';
+import { gql, useQuery } from "@apollo/client";
 import AppLangContext from "../contexts/AppLangContext";
+import Spinner from "../components/Spinner";
+import GqlError from "../components/GqlError";
 import {
     directionText,
-    alignmentText,
-    getAutonym,
-    fontFamily
 } from "../i18n/languageDirection";
-import {useContext, useState} from "react";
 import i18n from "../i18n";
+import PageLayout from "../components/PageLayout";
+import { Container } from "@mui/material";
+const { EntryDetailPage: DiegesisEntryDetail,
+    MOCK_ENTRY_DETAIL_PAGE_PROPS
+} = DiegesisUI;
+const { Box, Typography } = MuiMaterial;
 
-export default function EntryDetailsPage({setAppLanguage}) {
+export default function EntryDetailPage({ setAppLanguage }) {
     const appLang = useContext(AppLangContext);
-    const {source, entryId, revision} = useParams();
-    const [selectedBook, setSelectedBook] = useState("");
+    const navigate = useNavigate();
+    const { source, entryId, revision } = useParams();
+    const [selectedBook, setSelectedBook] = useState('');
 
     const queryString = `query {
             localEntry(
@@ -55,41 +53,24 @@ export default function EntryDetailsPage({setAppLanguage}) {
         .replace("%revision%", revision)
         .replace("%bookCode%", selectedBook);
 
-    const {loading, error, data} = useQuery(
+    const { loading, error, data } = useQuery(
         gql`
       ${queryString}
-    `
-    );
-    if (loading) {
-        return <Spinner/>;
-    }
-    if (error) {
-        return <GqlError error={error}/>;
-    }
+    `);
 
+    if (loading) return <Spinner />;
+    if (error) return <GqlError error={error} />;
     const entryInfo = data.localEntry;
-
-    const setArrow = (lang) => {
-        if (directionText(lang) === "ltr") {
-            return <ArrowBack color="primary"/>;
-        }
-        if (directionText(lang) === "rtl") {
-            return <ArrowForward color="primary"/>;
-        }
-    };
-
     if (!entryInfo) {
-        return (
-            <Container fixed className="homepage">
-                <Header setAppLanguage={setAppLanguage} selected="list"/>
-                <Box dir={directionText(appLang)} style={{marginTop: "100px"}}>
-                    <Typography variant="h4" paragraph="true" sx={{mt: "20px"}}>
-                        Processing on server - wait a while and hit "refresh"
-                    </Typography>
-                </Box>
+        return (<PageLayout>
+            <Container dir={directionText(appLang)} style={{ marginTop: "50px", marginBottom: "50px" }}>
+                <Typography variant="h4" paragraph="true" sx={{ mt: "20px" }}>
+                    Processing on server - wait a while and hit "refresh"
+                </Typography>
             </Container>
-        );
+        </PageLayout>)
     }
+
     const finalScript = i18n(appLang, "ADMIN_LANGUAGE_SCRIPT", [
         entryInfo.script,
     ]);
@@ -97,9 +78,6 @@ export default function EntryDetailsPage({setAppLanguage}) {
     if (entryInfo.bookCodes.length > 0) {
         bookCodes = [...entryInfo.bookCodes];
     }
-
-    const filteredStatsTab = entryInfo.bookStats.filter((bo) => bo.stat > 0);
-
     let contentTab = [];
     for (const stat of ["OT", "NT", "DC"]) {
         if (entryInfo[`n${stat}`] > 0) {
@@ -108,210 +86,78 @@ export default function EntryDetailsPage({setAppLanguage}) {
     }
     const contentString = contentTab.join(", ");
 
+    const onViewBtnClick = (e) => {
+        navigate(`/entry/browse/${source}/${entryId}/${revision}`)
+    }
+    const onDownloadBtnClick = (e) => { }
+    const onBookResourceSelect = (value) => {
+        setSelectedBook(value)
+    }
+    const mapEntryToTblData = (entry) => {
+        const result = [{ key: i18n(appLang, "ADMIN_DETAILS"), value: '' }]
+        result.push({ key: i18n(appLang, "ADMIN_DETAILS_ABBREVIATION"), value: entryInfo.abbreviation })
+        result.push({ key: i18n(appLang, "ADMIN_DETAILS_COPYRIGHT"), value: entryInfo.copyright })
+        result.push({ key: i18n(appLang, "ADMIN_DETAILS_LANGUAGE"), value: entryInfo.language })
+        result.push({ key: i18n(appLang, "ADMIN_DETAILS_DATA_SOURCE"), value: source })
+        result.push({ key: i18n(appLang, "ADMIN_DETAILS_OWNER"), value: entryInfo.owner })
+        result.push({ key: i18n(appLang, "ADMIN_DETAILS_ENTRY_ID"), value: entryId })
+        result.push({ key: i18n(appLang, "ADMIN_DETAILS_REVISION"), value: revision })
+        if (entryInfo.types.includes('bible')) {
+            result.push({ key: i18n(appLang, "ADMIN_DETAILS_CONTENT"), value: contentString || "?" })
+            result.push({ key: i18n(appLang, "ADMIN_DETAILS_CHAPTERS"), value: entryInfo.nChapters })
+            result.push({ key: i18n(appLang, "ADMIN_DETAILS_VERSES"), value: entryInfo.nVerses })
+        }
+        if (entryInfo.types.includes('bible') && selectedBook === "" && bookCodes.length > 0) {
+            result.push({ key: i18n(appLang, "ADMIN_DETAILS_ALERT"), value: '' })
+        }
+        return result
+    }
+    const getBookResourceControl = () => {
+        if (entryInfo?.types?.includes('bible') && bookCodes.length > 0) {
+            return ({
+                label: selectedBook,
+                value: selectedBook,
+                options: bookCodes?.map(bc => ({ id: bc, title: bc })),
+                onChange: onBookResourceSelect
+            })
+        }
+        return undefined
+    }
+    const pageProps = {
+        ...MOCK_ENTRY_DETAIL_PAGE_PROPS,
+        tblData: mapEntryToTblData(entryInfo),
+        topControlProps: {
+            title: entryInfo.title,
+            actionBtnsProps: {
+                viewBtnText: 'View',
+                onViewBtnClick: onViewBtnClick,
+                downloadBtnText: 'Download',
+                onDownloadBtnClick: onDownloadBtnClick
+            },
+            backBtnProps: {
+                href: '/list'
+            }
+        },
+        bookResource: {
+            label: i18n(appLang, "ADMIN_DETAILS_TITLE"),
+            selectControl: getBookResourceControl()
+        },
+        noPageLayout: true
+    }
     return (
-        <Container fixed className="homepage">
-            <Header setAppLanguage={setAppLanguage} selected="list"/>
-            <Box dir={directionText(appLang)} style={{marginTop: "100px"}}>
-                <Typography variant="h4" paragraph="true" sx={{mt: "20px"}} style={{fontFamily: fontFamily(appLang)}}>
-                    <Button>
-                        <RouterLink to="/list" relative="path">
-                            {setArrow(appLang)}
-                        </RouterLink>
-                    </Button>
-                    {entryInfo.title}
-                    <Button>
-                        <RouterLink to={`/entry/browse/${source}/${entryId}/${revision}`}>
-                            <AutoStories color="primary"/>
-                        </RouterLink>
-                    </Button>
-                    <Button>
-                        <RouterLink to={`/entry/download/${source}/${entryId}/${revision}`}>
-                            <Download color="primary"/>
-                        </RouterLink>
-                    </Button>
-                </Typography>
-                <Paper className="container">
-                    <Typography variant="h5" paragraph="true" style={{fontFamily: fontFamily(appLang)}}>
-                        {i18n(appLang, "ADMIN_DETAILS")}
-                    </Typography>
-
-                    <Grid container spacing={2}>
-                        <Grid
-                            item
-                            xs={4}
-                            style={{fontWeight: "bold", textAlign: alignmentText(appLang)}}
-                        >
-                <span dir={directionText(appLang)} style={{fontFamily: fontFamily(appLang)}}>
-                  {i18n(appLang, "ADMIN_DETAILS_ABBREVIATION")}
-                </span>
+        <PageLayout>
+            <DiegesisEntryDetail {...pageProps} />
+            {/* {entryInfo.types.includes('bible') && selectedBook !== "" &&
+                filteredStatsTab.map((bo) => (
+                    <>
+                        <Grid item xs={4} md={2} style={{ fontFamily: fontFamily(appLang) }}>
+                            {i18n(appLang, `STATS_${bo.field}`)}
                         </Grid>
-                        <Grid item xs={8} style={{textAlign: alignmentText(appLang)}}>
-                            <Grid item>{entryInfo.abbreviation}</Grid>
+                        <Grid item xs={8} md={10}>
+                            {bo.stat}
                         </Grid>
-                        <Grid
-                            item
-                            xs={4}
-                            style={{fontWeight: "bold", textAlign: alignmentText(appLang)}}
-                        >
-                <span dir={directionText(appLang)} style={{fontFamily: fontFamily(appLang)}}>
-                  {i18n(appLang, "ADMIN_DETAILS_COPYRIGHT")}
-                </span>
-                        </Grid>
-                        <Grid item xs={8} style={{textAlign: alignmentText(appLang)}}>
-                            <Grid item>{entryInfo.copyright}</Grid>
-                        </Grid>
-                        <Grid
-                            item
-                            xs={4}
-                            style={{fontWeight: "bold", textAlign: alignmentText(appLang)}}
-                        >
-                <span dir={directionText(appLang)} style={{fontFamily: fontFamily(appLang)}}>
-                  {i18n(appLang, "ADMIN_DETAILS_LANGUAGE")}
-                </span>
-                        </Grid>
-                        <Grid item xs={8} style={{textAlign: alignmentText(appLang)}}>
-                            {getAutonym(entryInfo.language)}
-                            {", "}
-                            {entryInfo.textDirection === "rtl"
-                                ? <span
-                                    style={{fontFamily: fontFamily(appLang)}}>{i18n(appLang, "ADMIN_TEXT_DIRECTION_RIGHT")}</span>
-                                : <span
-                                    style={{fontFamily: fontFamily(appLang)}}>{i18n(appLang, "ADMIN_TEXT_DIRECTION_LEFT")}{', '}</span>
-                            }
-                            {entryInfo.script ?
-                                <span style={{fontFamily: fontFamily(appLang)}}>{finalScript}</span> : ""}
-                        </Grid>
-                        <Grid
-                            item
-                            xs={4}
-                            style={{fontWeight: "bold", textAlign: alignmentText(appLang)}}
-                        >
-                <span dir={directionText(appLang)} style={{fontFamily: fontFamily(appLang)}}>
-                  {i18n(appLang, "ADMIN_DETAILS_DATA_SOURCE")}
-                </span>
-                        </Grid>
-                        <Grid item xs={8} style={{textAlign: alignmentText(appLang)}}>
-                            <Grid item>{source}</Grid>
-                        </Grid>
-                        <Grid
-                            item
-                            xs={4}
-                            style={{fontWeight: "bold", textAlign: alignmentText(appLang)}}
-                        >
-                <span dir={directionText(appLang)} style={{fontFamily: fontFamily(appLang)}}>
-                  {i18n(appLang, "ADMIN_DETAILS_OWNER")}
-                </span>
-                        </Grid>
-                        <Grid item xs={8} style={{textAlign: alignmentText(appLang)}}>
-                            <Grid item>{entryInfo.owner}</Grid>
-                        </Grid>
-                        <Grid
-                            item
-                            xs={4}
-                            style={{fontWeight: "bold", textAlign: alignmentText(appLang)}}
-                        >
-                <span dir={directionText(appLang)} style={{fontFamily: fontFamily(appLang)}}>
-                  {i18n(appLang, "ADMIN_DETAILS_ENTRY_ID")}
-                </span>
-                        </Grid>
-                        <Grid item xs={8} style={{textAlign: alignmentText(appLang)}}>
-                            <Grid item>{entryId}</Grid>
-                        </Grid>
-                        <Grid
-                            item
-                            xs={4}
-                            style={{fontWeight: "bold", textAlign: alignmentText(appLang)}}
-                        >
-                            {" "}
-                            <span dir={directionText(appLang)} style={{fontFamily: fontFamily(appLang)}}>
-                  {i18n(appLang, "ADMIN_DETAILS_REVISION")}
-                </span>
-                        </Grid>
-                        <Grid item xs={8} style={{textAlign: alignmentText(appLang)}}>
-                            <Grid item>{revision}</Grid>
-                        </Grid>
-                        {
-                            entryInfo.types.includes('bible') &&
-                            <>
-                                <Grid
-                                    item
-                                    xs={4}
-                                    style={{fontWeight: "bold", textAlign: alignmentText(appLang)}}
-                                >
-                <span dir={directionText(appLang)} style={{fontFamily: fontFamily(appLang)}}>
-                  {i18n(appLang, "ADMIN_DETAILS_CONTENT")}
-                </span>
-                                </Grid>
-                                <Grid item xs={8} style={{textAlign: alignmentText(appLang)}}>
-                                    <Grid item>{contentString || "?"}</Grid>
-                                </Grid>
-                                <Grid
-                                    item
-                                    xs={4}
-                                    style={{fontWeight: "bold", textAlign: alignmentText(appLang)}}
-                                >
-                                    {" "}
-                                    <span dir={directionText(appLang)} style={{fontFamily: fontFamily(appLang)}}>
-                  {i18n(appLang, "ADMIN_DETAILS_CHAPTERS")}
-                </span>
-                                </Grid>
-                                <Grid item xs={8} style={{textAlign: alignmentText(appLang)}}>
-                                    <Grid item>{`${entryInfo.nChapters || "?"}`}</Grid>
-                                </Grid>
-                                <Grid
-                                    item
-                                    xs={4}
-                                    style={{fontWeight: "bold", textAlign: alignmentText(appLang)}}
-                                >
-                <span dir={directionText(appLang)} style={{fontFamily: fontFamily(appLang)}}>
-                  {i18n(appLang, "ADMIN_DETAILS_VERSES")}
-                </span>
-                                </Grid>
-                                <Grid item xs={8} style={{textAlign: alignmentText(appLang)}}>
-                                    <Grid item>{`${entryInfo.nVerses || "?"}`}</Grid>
-                                </Grid>
-                            </>
-                        }
-                        {entryInfo.types.includes('bible') && bookCodes.length > 0 && (
-                            <>
-                                <Grid item xs={12}>
-                                    <Typography variant="h4" paragraph="true" sx={{mt: "20px"}}
-                                                style={{fontFamily: fontFamily(appLang)}}>
-                                        {i18n(appLang, "ADMIN_DETAILS_TITLE")}
-                                    </Typography>
-                                </Grid>
-                                <Grid item xs={12}>
-                                    <BookSelector
-                                        bookCodes={bookCodes}
-                                        selectedBook={selectedBook}
-                                        setSelectedBook={setSelectedBook}
-                                    />
-                                </Grid>
-                            </>
-                        )}
-                        {entryInfo.types.includes('bible') && selectedBook !== "" &&
-                        filteredStatsTab.map((bo) => (
-                            <>
-                                <Grid item xs={4} md={2} style={{fontFamily: fontFamily(appLang)}}>
-                                    {i18n(appLang, `STATS_${bo.field}`)}
-                                </Grid>
-                                <Grid item xs={8} md={10}>
-                                    {bo.stat}
-                                </Grid>
-                            </>
-                        ))}
-                        {entryInfo.types.includes('bible') && selectedBook === "" && bookCodes.length > 0 && (
-                            <Grid item>
-                                <Typography
-                                    style={{textAlign: alignmentText(appLang), fontFamily: fontFamily(appLang)}}>
-                                    {i18n(appLang, "ADMIN_DETAILS_ALERT")}
-                                </Typography>
-                            </Grid>
-                        )}
-                    </Grid>
-                </Paper>
-                <Footer/>
-            </Box>
-        </Container>
-    );
+                    </>
+                ))} */}
+        </PageLayout>
+    )
 }

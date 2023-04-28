@@ -41,7 +41,7 @@ export default function ListPage({ setAppLanguage }) {
 
     const client = new ApolloClient(
         {
-            uri: '/graphql',
+            uri: 'http://localhost:1234/graphql',
             cache: new InMemoryCache(),
         }
     );
