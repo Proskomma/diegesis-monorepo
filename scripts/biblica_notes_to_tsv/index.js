@@ -51,6 +51,8 @@ const inputLines = fse.readFileSync(inputPath)
     .replace(/\x00/g, "")
     .replace(/\x19 /g, "’")
     .replace(/\x13 /g, "-")
+    .replace(/‒/g, "-")
+    .replace(/\x92/g, "")
     .split(/[\r\t\n]+/)
     .filter(l => l.startsWith(paraPrefix))
 
@@ -95,10 +97,47 @@ for (const inputLine of inputLines) {
     }
 }
 
-// Make markdown for main note
 const bookNoteMarkdown = {};
 const bookFootnoteMarkdown = {};
 const tsvLines = [];
+// Make footnotes
+for (currentBook of Object.values(bookMapping)) {
+    /*
+    if (currentBook !== "MAT") {
+        continue;
+    }
+     */
+    bookFootnoteMarkdown[currentBook] = {};
+    let currentRef = null;
+    for (let bookLine of bookLines[currentBook]) {
+        const refRE = xre("^<ParaStyle:BSB\\\\:NarrativeNotes\\\\:m><CharStyle:bd>([^<]+)<CharStyle:>");
+        const refMatch = xre.exec(bookLine, refRE);
+        if (refMatch) {
+            currentRef = refMatch[1].replace(/ /g, "");
+            bookFootnoteMarkdown[currentBook][currentRef] = [];
+            bookLine = xre.replace(bookLine, refRE, "");
+        } else {
+            const refRE = xre("^<ParaStyle:BSB\\\\:NarrativeNotes\\\\:.>");
+            bookLine = xre.replace(bookLine, refRE, "");
+        }
+        const footnoteRef = xre("<ParaStyle:notes\\\\:[^>]+>(.*?)<FootnoteEnd:>");
+        bookFootnoteMarkdown[currentBook][currentRef] = xre
+            .match(bookLine, footnoteRef, "all")
+            .map(m =>
+                "- " + m
+                    .replace(/[ \t\n\r]/g, " ")
+                    .replace(/<ParaStyle:notes\\:[^>]+>/g, "")
+                    .replace(/<FootnoteEnd:>/g, "")
+                    .replace(/<CharStyle:fr>([^<]+?)<CharStyle:>/g, "")
+                    .replace(/<CharStyle:fk>([^<]+?)<CharStyle:>/g, (r, p1) => `**${p1.trim()}** `)
+                    .replace(/<CharStyle:ft>([^<]+?)<CharStyle:>/g, "$1")
+                    .replace(/<CharStyle:it>([^<]+?)<CharStyle:>/g, (r, p1) => `*${p1.trim()}*`)
+                    .replace(/<CharStyle:w>([^<]+?)<CharStyle:>/g, (r, p1) => `*${p1.trim()}*`)
+                    .trim()
+            )
+    }
+}
+// Make markdown for main note
 let noteN = 1;
 for (currentBook of Object.values(bookMapping)) {
     /*
@@ -125,19 +164,18 @@ for (currentBook of Object.values(bookMapping)) {
                 .replace(/<CharStyle:[kb]>([^<]+)<CharStyle:>/g, "**$1**")
                 .replace(/<CharStyle:it>([^<]+)<CharStyle:>/g, "*$1*")
                 .replace(/<CharStyle:w>([^<]+)<CharStyle:>/g, "*$1*")
+                .replace(/[ \t\n\r]/g, " ")
                 .trim()
         )
     }
-    // Generate footnote markdown
 
-
-    // Generate main markdown and merge into TSV
+    // Merge into TSV
     for (const [ref, mds] of Object.entries(bookNoteMarkdown[currentBook])) {
         if (!ref) {
             continue;
         }
         const [fromRef, toRef] = unpackRef(ref);
-        tsvLines.push(`${fromRef}\t${toRef}\t${noteN}\t${mds.join('\\n\\n')}`)
+        tsvLines.push(`${fromRef}\t${toRef}\t${noteN}\t${mds.join('\\n\\n') + '\\n\\n' + bookFootnoteMarkdown[currentBook][ref].join('\\n\\n')}`)
         noteN++;
     }
 }
