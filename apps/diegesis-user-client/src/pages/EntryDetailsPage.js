@@ -10,11 +10,15 @@ import {
 } from "../i18n/languageDirection";
 import i18n from "../i18n";
 import PageLayout from "../components/PageLayout";
-import { Container } from "@mui/material";
-const { EntryDetailPage: DiegesisEntryDetail,
-    MOCK_ENTRY_DETAIL_PAGE_PROPS
-} = DiegesisUI;
-const { Box, Typography } = MuiMaterial;
+const { EntryDetailUI, MOCK_ENTRY_DETAIL_PAGE_PROPS } = DiegesisUI;
+const { BookResourceBox, BottomActionBtns, BottomBackBtn, InfoGrid, SectionDivider, TopControls } = EntryDetailUI;
+const { Typography, Box, Container, styled } = MuiMaterial;
+
+const cellsConfig = [
+    { id: 'key', disablePadding: true, label: '', numeric: false },
+    { id: 'value', disablePadding: false, label: '', numeric: false },
+    { id: 'emptyColumn1', disablePadding: false, label: '', numeric: false },
+]
 
 export default function EntryDetailPage({ setAppLanguage }) {
     const appLang = useContext(AppLangContext);
@@ -107,9 +111,6 @@ export default function EntryDetailPage({ setAppLanguage }) {
             result.push({ key: i18n(appLang, "ADMIN_DETAILS_CHAPTERS"), value: entryInfo.nChapters })
             result.push({ key: i18n(appLang, "ADMIN_DETAILS_VERSES"), value: entryInfo.nVerses })
         }
-        if (entryInfo.types.includes('bible') && selectedBook === "" && bookCodes.length > 0) {
-            result.push({ key: i18n(appLang, "ADMIN_DETAILS_ALERT"), value: '' })
-        }
         return result
     }
     const getBookResourceControl = () => {
@@ -126,6 +127,7 @@ export default function EntryDetailPage({ setAppLanguage }) {
     const pageProps = {
         ...MOCK_ENTRY_DETAIL_PAGE_PROPS,
         tblData: mapEntryToTblData(entryInfo),
+        tblCells: cellsConfig,
         topControlProps: {
             title: entryInfo.title,
             actionBtnsProps: {
@@ -144,20 +146,56 @@ export default function EntryDetailPage({ setAppLanguage }) {
         },
         noPageLayout: true
     }
+
+    const filteredStatsTab = entryInfo.bookStats.filter((bo) => bo.stat > 0);
+
     return (
         <PageLayout>
-            <DiegesisEntryDetail {...pageProps} />
-            {/* {entryInfo.types.includes('bible') && selectedBook !== "" &&
-                filteredStatsTab.map((bo) => (
-                    <>
-                        <Grid item xs={4} md={2} style={{ fontFamily: fontFamily(appLang) }}>
-                            {i18n(appLang, `STATS_${bo.field}`)}
-                        </Grid>
-                        <Grid item xs={8} md={10}>
-                            {bo.stat}
-                        </Grid>
-                    </>
-                ))} */}
+            <Box component={'div'} width={'100%'} height={'100%'}>
+                <br />
+                <Container component={'div'}>
+                    <TopControls {...pageProps.topControlProps} />
+                </Container>
+                <StyledDetailSection>
+                    <SectionDivider />
+                    <InfoGrid tblCells={pageProps.tblCells} tblData={pageProps.tblData} />
+                    {pageProps.bookResource?.selectControl ? (
+                        <BookResourceBox {...pageProps.bookResource} />
+                    ) : (
+                        <></>
+                    )}
+                    {
+                        entryInfo.types.includes('bible') && selectedBook !== "" &&
+                        <BookResourceStats appLang={appLang} stats={filteredStatsTab} />
+                    }
+                    {entryInfo.types.includes('bible') && selectedBook === "" && bookCodes.length > 0 && (
+                        <Typography marginTop={'20px'}>
+                            {i18n(appLang, "ADMIN_DETAILS_ALERT")}
+                        </Typography>
+                    )}
+                    <SectionDivider marginTop={3} marginBottom={3} />
+                    <BottomActionBtns {...pageProps.topControlProps?.actionBtnsProps} />
+                    <BottomBackBtn {...pageProps.backBtnProps} />
+                </StyledDetailSection>
+            </Box>
         </PageLayout>
     )
 }
+
+const BookResourceStats = ({ stats = [], appLang }) => {
+    const data = [{ key: '', value: '' }];
+    data.push(...stats.map((bo) => ({
+        key: i18n(appLang, `STATS_${bo.field}`),
+        value: bo.stat
+    })));
+    return (
+        <InfoGrid tblCells={cellsConfig} tblData={data} />
+    )
+}
+
+const StyledDetailSection = styled(Container)(({ theme }) => ({
+    marginTop: '3rem',
+    [theme.breakpoints.down('sm')]: {
+        marginTop: '1.5rem',
+    },
+}));
