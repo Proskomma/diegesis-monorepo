@@ -10,8 +10,9 @@ import {
 } from "../i18n/languageDirection";
 import i18n from "../i18n";
 import PageLayout from "../components/PageLayout";
-const { EntryDetailUI, MOCK_ENTRY_DETAIL_PAGE_PROPS } = DiegesisUI;
-const { BookResourceBox, BottomActionBtns, BottomBackBtn, InfoGrid, SectionDivider, TopControls } = EntryDetailUI;
+const { EntryDetailUI, FlexibleDesign } = DiegesisUI;
+const { BottomBackBtn, InfoGrid } = EntryDetailUI;
+const { FlexibleTopControls, FlexibleSectionDivider, FlexibleActionButtons, FlexibleBookResourceBox, FlexibleBottomActionButtons } = FlexibleDesign.FlexibleEntryDetailUI;
 const { Typography, Box, Container, styled } = MuiMaterial;
 
 const cellsConfig = [
@@ -25,7 +26,6 @@ export default function EntryDetailPage({ setAppLanguage }) {
     const navigate = useNavigate();
     const { source, entryId, revision } = useParams();
     const [selectedBook, setSelectedBook] = useState('');
-
     const queryString = `query {
             localEntry(
               source:"""%source%"""
@@ -125,15 +125,12 @@ export default function EntryDetailPage({ setAppLanguage }) {
         return undefined
     }
     const pageProps = {
-        ...MOCK_ENTRY_DETAIL_PAGE_PROPS,
         tblData: mapEntryToTblData(entryInfo),
         tblCells: cellsConfig,
         topControlProps: {
             title: entryInfo.title,
             actionBtnsProps: {
-                viewBtnText: 'View',
                 onViewBtnClick: onViewBtnClick,
-                downloadBtnText: 'Download',
                 onDownloadBtnClick: onDownloadBtnClick
             },
             backBtnProps: {
@@ -148,19 +145,18 @@ export default function EntryDetailPage({ setAppLanguage }) {
     }
 
     const filteredStatsTab = entryInfo.bookStats.filter((bo) => bo.stat > 0);
-
     return (
         <PageLayout>
             <Box component={'div'} width={'100%'} height={'100%'}>
                 <br />
                 <Container component={'div'}>
-                    <TopControls {...pageProps.topControlProps} />
+                    <FlexibleTopControls {...pageProps.topControlProps} />
                 </Container>
                 <StyledDetailSection>
-                    <SectionDivider />
+                    <FlexibleSectionDivider />
                     <InfoGrid tblCells={pageProps.tblCells} tblData={pageProps.tblData} />
                     {pageProps.bookResource?.selectControl ? (
-                        <BookResourceBox {...pageProps.bookResource} />
+                        <FlexibleBookResourceBox {...pageProps.bookResource} />
                     ) : (
                         <></>
                     )}
@@ -173,8 +169,8 @@ export default function EntryDetailPage({ setAppLanguage }) {
                             {i18n(appLang, "ADMIN_DETAILS_ALERT")}
                         </Typography>
                     )}
-                    <SectionDivider marginTop={3} marginBottom={3} />
-                    <BottomActionBtns {...pageProps.topControlProps?.actionBtnsProps} />
+                    <FlexibleSectionDivider marginTop={3} marginBottom={3} />
+                    <FlexibleBottomActionButtons {...pageProps.topControlProps} />
                     <BottomBackBtn {...pageProps.backBtnProps} />
                 </StyledDetailSection>
             </Box>

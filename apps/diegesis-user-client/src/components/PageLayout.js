@@ -1,8 +1,8 @@
 import { useContext } from 'react';
 import AppLangResourcesContext from '../contexts/AppLangResourcesContext';
 import { DiegesisUI } from '@eten-lab/ui-kit';
-import { ReactMarkdown } from 'react-markdown/lib/react-markdown';
-const { PageLayout: DiegesisPageLayout, MOCK_PAGE_HEADER_PROPS, MOCK_SIDE_NAV_PROPS } = DiegesisUI;
+const { MOCK_SIDE_NAV_PROPS, FlexibleDesign } = DiegesisUI;
+const { FlexiblePageLayout } = FlexibleDesign;
 
 export default function PageLayout(props) {
     const appLangResources = useContext(AppLangResourcesContext);
@@ -11,16 +11,12 @@ export default function PageLayout(props) {
         variant: 'small',
         href: `/${item.url === 'home' ? "" : item.url}`
     }));
-    const baseLayoutProps = {
-        headerProps: MOCK_PAGE_HEADER_PROPS,
+    const pageProps = {
         sideNavProps: { ...MOCK_SIDE_NAV_PROPS, options: navOptions },
-        footerProps: {
-            markdownContent: <ReactMarkdown>{appLangResources.footer && appLangResources.footer.body}</ReactMarkdown>,
-        }
     }
     return (
-        <DiegesisPageLayout {...baseLayoutProps}>
+        <FlexiblePageLayout sideNavProps={pageProps.sideNavProps}>
             {props.children}
-        </DiegesisPageLayout>
+        </FlexiblePageLayout>
     );
 }

@@ -1,12 +1,12 @@
-import React, {useState, useEffect} from "react";
+import React, { useState, useEffect } from "react";
 import {
     createBrowserRouter,
     RouterProvider,
     useRouteError,
 } from "react-router-dom";
-import {ApolloProvider, ApolloClient, InMemoryCache, gql} from "@apollo/client";
+import { ApolloProvider, ApolloClient, InMemoryCache, gql } from "@apollo/client";
 import { CssBaseline } from "@mui/material";
-import { ThemeProvider as UIKitThemeProvider } from '@eten-lab/ui-kit';
+import { ThemeProvider as UIKitThemeProvider, DiegesisUI } from '@eten-lab/ui-kit';
 import "./App.css";
 import MarkdownPage from "./pages/MarkdownPage";
 import WhoPage from "./pages/WhoPage";
@@ -16,13 +16,15 @@ import EntryDetailsPage from "./pages/EntryDetailsPage";
 import EntryBrowsePage from "./pages/EntryBrowsePage";
 import EntrySearchPage from "./pages/EntrySearchPage";
 import EntryDownloadPage from "./pages/EntryDownloadPage";
-import {AppLangProvider} from "./contexts/AppLangContext";
-import {AppLangResourcesProvider} from "./contexts/AppLangResourcesContext";
+import { AppLangProvider } from "./contexts/AppLangContext";
+import { AppLangResourcesProvider } from "./contexts/AppLangResourcesContext";
+const { UIConfigContextProvider } = DiegesisUI.FlexibleDesign;
+
 
 function App() {
 
     const client = new ApolloClient({
-        uri: 'http://localhost:1234/graphql',
+        uri: "http://localhost:1234/graphql",
         cache: new InMemoryCache(),
     });
 
@@ -55,7 +57,7 @@ function App() {
                     }
                   }
                   }`.replace(/%lang%/g, appLanguage);
-                const result = await client.query({query: gql`${queryString}`});
+                const result = await client.query({ query: gql`${queryString}` });
                 const clientStructure = result.data.clientStructure;
                 setAppLanguageResources(clientStructure);
             };
@@ -74,8 +76,8 @@ function App() {
                 ret.push(
                     {
                         path: (url === 'home' ? '/' : `${url}`),
-                        element: <MarkdownPage setAppLanguage={setAppLanguage} url={url}/>,
-                        errorElement: <ErrorBoundary/>
+                        element: <MarkdownPage setAppLanguage={setAppLanguage} url={url} />,
+                        errorElement: <ErrorBoundary />
                     }
                 );
             }
@@ -87,39 +89,41 @@ function App() {
         ...markdownPageRoutes(appLanguageResources),
         {
             path: "/list",
-            element: <ListPage setAppLanguage={setAppLanguage}/>,
-            errorElement: <ErrorBoundary/>
+            element: <ListPage setAppLanguage={setAppLanguage} />,
+            errorElement: <ErrorBoundary />
         },
         {
             path: "/entry/details/:source/:entryId/:revision",
-            element: <EntryDetailsPage setAppLanguage={setAppLanguage}/>,
-            errorElement: <ErrorBoundary/>
+            element: <EntryDetailsPage setAppLanguage={setAppLanguage} />,
+            errorElement: <ErrorBoundary />
         },
         {
             path: "/entry/browse/:source/:entryId/:revision",
-            element: <EntryBrowsePage setAppLanguage={setAppLanguage}/>,
-            errorElement: <ErrorBoundary/>
+            element: <EntryBrowsePage setAppLanguage={setAppLanguage} />,
+            errorElement: <ErrorBoundary />
         },
         {
             path: "/entry/search/:source/:entryId/:revision",
-            element: <EntrySearchPage setAppLanguage={setAppLanguage}/>,
-            errorElement: <ErrorBoundary/>
+            element: <EntrySearchPage setAppLanguage={setAppLanguage} />,
+            errorElement: <ErrorBoundary />
         },
         {
             path: "/entry/download/:source/:entryId/:revision",
-            element: <EntryDownloadPage setAppLanguage={setAppLanguage}/>,
-            errorElement: <ErrorBoundary/>
+            element: <EntryDownloadPage setAppLanguage={setAppLanguage} />,
+            errorElement: <ErrorBoundary />
         }
     ]);
     return (
         <ApolloProvider client={client}>
             <UIKitThemeProvider>
-                <AppLangResourcesProvider value={appLanguageResources}>
-                    <AppLangProvider value={appLanguage}>
-                        <CssBaseline/>
-                        <RouterProvider router={router}/>
-                    </AppLangProvider>
-                </AppLangResourcesProvider>
+                <UIConfigContextProvider>
+                    <AppLangResourcesProvider value={appLanguageResources}>
+                        <AppLangProvider value={appLanguage}>
+                            <CssBaseline />
+                            <RouterProvider router={router} />
+                        </AppLangProvider>
+                    </AppLangResourcesProvider>
+                </UIConfigContextProvider>
             </UIKitThemeProvider>
         </ApolloProvider>
     );
