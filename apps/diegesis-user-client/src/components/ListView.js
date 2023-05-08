@@ -14,6 +14,12 @@ export default function ListView({searchTerms}) {
     const appLang = useContext(AppLangContext);
     const queryString = searchQuery(
         `query {
+            entryEnums {
+                languages
+                types
+                owners
+                sources
+            }
             localEntries%searchClause% {
                 source
                 types
@@ -68,6 +74,7 @@ export default function ListView({searchTerms}) {
     if (error) {
         return <GqlError error={error}/>
     }
+    console.log(data.entryEnums);
     let displayRows = [];
     data.localEntries.forEach(
         lt => {
