@@ -8,8 +8,9 @@ import { searchQuery } from '../lib/search';
 import AppLangContext from "../contexts/AppLangContext";
 import i18n from '../i18n';
 import { DiegesisUI, MuiMaterial } from '@eten-lab/ui-kit';
-import AppLangResourcesContext from '../contexts/AppLangResourcesContext';
-const { EntriesPage, MOCK_PAGE_FOOTER_PROPS, MOCK_PAGE_HEADER_PROPS, MOCK_SIDE_NAV_PROPS, MOCK_ENTRIES_TOP_CONTROLS_PROPS } = DiegesisUI;
+import PageLayout from '../components/PageLayout';
+const { FlexibleDesign, MOCK_ENTRIES_TOP_CONTROLS_PROPS } = DiegesisUI;
+const { FlexibleEntriesPage } = FlexibleDesign;
 const { Button } = MuiMaterial;
 
 //#region data
@@ -64,16 +65,9 @@ export default function ListPage({ setAppLanguage }) {
     const [tagConfig, setTagConfig] = useState({});
     const [dataTable, setDataTable] = useState({ cellsConfig: [], entries: [] })
     const [gqlQueryParams, setGQLQueryParams] = useState({ ...GQL_DEFAULT_QUERY_PARAMS })
-    const { loading, error, data: entriesList } = useQuery(
+    const { data: entriesList } = useQuery(
         gql`${getGQLQuery(gqlQueryParams)}`,
     );
-    const appLangResources = useContext(AppLangResourcesContext);
-    const navOptions = appLangResources.urlData && appLangResources.urlData.map(item => ({
-        title: item.menuText,
-        variant: 'small',
-        href: `/${item.url === 'home' ? "" : item.url}`
-    }));
-
     // runs once, when the page is rendered
     useEffect(() => {
         const initialSelectControlValues = [
@@ -246,14 +240,13 @@ export default function ListPage({ setAppLanguage }) {
                 placeholder: 'Bible in Basic English'
             }
         },
-        headerProps: MOCK_PAGE_HEADER_PROPS,
-        footerProps: MOCK_PAGE_FOOTER_PROPS,
-        sideNavProps: { ...MOCK_SIDE_NAV_PROPS, options: navOptions },
         entriesDataTable: dataTable,
         noPageLayout: true
     }
 
     return (
-        <EntriesPage {...pageProps} />
+        <PageLayout>
+            <FlexibleEntriesPage {...pageProps} />
+        </PageLayout>
     )
 }
