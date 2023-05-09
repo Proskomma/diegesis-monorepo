@@ -12,7 +12,7 @@ import i18n from "../i18n";
 import PageLayout from "../components/PageLayout";
 const { EntryDetailUI, FlexibleDesign } = DiegesisUI;
 const { BottomBackBtn, InfoGrid } = EntryDetailUI;
-const { FlexibleTopControls, FlexibleSectionDivider, FlexibleActionButtons, FlexibleBookResourceBox, FlexibleBottomActionButtons } = FlexibleDesign.FlexibleEntryDetailUI;
+const { FlexibleTopControls, FlexibleSectionDivider, FlexibleBookResourceBox, FlexibleBottomActionButtons } = FlexibleDesign.FlexibleEntryDetailUI;
 const { Typography, Box, Container, styled } = MuiMaterial;
 
 const cellsConfig = [
