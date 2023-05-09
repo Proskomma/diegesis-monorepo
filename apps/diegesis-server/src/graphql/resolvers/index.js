@@ -371,6 +371,33 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
             clientStructure: (root, args, context) => {
                 return context.clientStructure;
             },
+            entryEnums: root => {
+                const enums = {
+                    languages: new Set([]),
+                    types:  new Set([]),
+                    sources:  new Set([]),
+                    owners:  new Set([])
+                };
+                for (const orgSource of Object.keys(orgsData)) {
+                    for (const entryRecord of orgEntries(config, orgSource)) {
+                        for (const revision of entryRecord.revisions) {
+                            const revisionRecord = readEntryMetadata(config, orgSource, entryRecord.id, revision);
+                            enums.languages.add(revisionRecord.languageCode);
+                            enums.sources.add(revisionRecord.source);
+                            enums.owners.add(revisionRecord.owner);
+                            for (const resourceType of revisionRecord.resourceTypes) {
+                                enums.types.add(resourceType);
+                            }
+                        }
+                    }
+                }
+                return {
+                    languages: Array.from(enums.languages),
+                    types: Array.from(enums.types),
+                    sources: Array.from(enums.sources),
+                    owners: Array.from(enums.owners)
+                };
+            },
             localEntries: (root, args) => {
                 let ret = [];
                 for (const org of Object.keys(orgsData)) {

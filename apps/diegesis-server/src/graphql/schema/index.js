@@ -22,6 +22,9 @@ const querySchema = gql`
             name: OrgName!
         ): Org
         
+        """Existing values for local entry fields"""
+        entryEnums : EntryEnums
+        
         """The client structure"""
         clientStructure: ClientStructure!
         
@@ -56,6 +59,14 @@ const querySchema = gql`
             """The entry revision"""
             revision: String!
         ): LocalEntry
+    }
+    
+    """Entry Enums"""
+    type EntryEnums {
+        types: [String!]!
+        languages: [String!]!
+        owners: [String!]!
+        sources: [String!]!
     }
     
     """Client Structure"""
