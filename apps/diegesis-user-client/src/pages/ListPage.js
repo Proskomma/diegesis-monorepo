@@ -10,7 +10,7 @@ import i18n from '../i18n';
 import { DiegesisUI, MuiMaterial } from '@eten-lab/ui-kit';
 import PageLayout from '../components/PageLayout';
 const { FlexibleDesign, MOCK_ENTRIES_TOP_CONTROLS_PROPS } = DiegesisUI;
-const { FlexibleEntriesPage } = FlexibleDesign;
+const { FlexibleEntriesListPage } = FlexibleDesign.FlexibleEntriesListUI;
 const { Button } = MuiMaterial;
 
 //#region data
@@ -246,7 +246,7 @@ export default function ListPage({ setAppLanguage }) {
 
     return (
         <PageLayout>
-            <FlexibleEntriesPage {...pageProps} />
+            <FlexibleEntriesListPage {...pageProps} />
         </PageLayout>
     )
 }
