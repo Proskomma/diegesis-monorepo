@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useContext, useRef } from 'react';
 import {
     gql,
-    useApolloClient,
     useQuery
 } from "@apollo/client";
 import { searchQuery } from '../lib/search';
@@ -41,6 +40,12 @@ const GQL_DEFAULT_QUERY_PARAMS = {
 const getGQLQuery = (searchTerms = {}) => {
     return searchQuery(
         `query {
+            entryEnums {
+                languages
+                types
+                owners
+                sources
+            }
             localEntries%searchClause% {
                 source
                 types
@@ -59,15 +64,24 @@ const getGQLQuery = (searchTerms = {}) => {
 export default function ListPage({ setAppLanguage }) {
 
     const appLang = useContext(AppLangContext);
-    const client = useApolloClient();
     const refTagKeyValue = useRef();
     const [selectControls, setSelectControls] = useState([]);
     const [tagConfig, setTagConfig] = useState({});
     const [dataTable, setDataTable] = useState({ cellsConfig: [], entries: [] })
     const [gqlQueryParams, setGQLQueryParams] = useState({ ...GQL_DEFAULT_QUERY_PARAMS })
-    const { data: entriesList } = useQuery(
+    const { data: entriesData } = useQuery(
         gql`${getGQLQuery(gqlQueryParams)}`,
     );
+    const { data: entryEnums } = useQuery(gql`
+    query {
+        entryEnums {
+            languages
+            types
+            owners
+            sources
+        }
+    }`);
+
     // runs once, when the page is rendered
     useEffect(() => {
         const initialSelectControlValues = [
@@ -163,16 +177,28 @@ export default function ListPage({ setAppLanguage }) {
             }
         ];
         setDataTable({ entries: [], cellsConfig: cellConfig });
-
-        const doOrgs = async () => {
-            const result = await client.query({ query: gql`{ orgs { id: name } }` });
-            const clonedControls = [...initialSelectControlValues]
-            const ids = (result.data.orgs.map(o => o.id))
-            clonedControls[0].options = [{ title: i18n(appLang, "CONTROLS_ALL"), id: 'all' }, ...ids.map(org => ({ title: org, id: org }))]
-            setSelectControls(clonedControls);
-        };
-        doOrgs();
+       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+    useEffect(() => {
+        if (!entryEnums?.entryEnums) return
+        const clonedControls = [...selectControls]
+        const { languages, owners, sources, types } = entryEnums.entryEnums;
+        if (sources) {
+            clonedControls[0].options = [{ title: i18n(appLang, "CONTROLS_ALL"), id: 'all' }, ...sources.map(s => ({ title: s, id: s }))];
+        }
+        if (owners) {
+            clonedControls[1].options = owners.map(o => ({ title: o, id: o }));
+        }
+        if (types) {
+            clonedControls[2].options = types.map(t => ({ title: t, id: t }));
+        }
+        if (languages) {
+            clonedControls[3].options = languages.map(l => ({ title: l, id: l }));
+        }
+        setSelectControls(clonedControls);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [entryEnums?.entryEnums]);
 
     useEffect(() => {
         if (selectControls && tagConfig) {
@@ -187,11 +213,12 @@ export default function ListPage({ setAppLanguage }) {
             clonedGQLParams.lang = selectControls?.[3]?.value || '';
             setGQLQueryParams(clonedGQLParams);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectControls, tagConfig]);
 
     useEffect(() => {
-        if (entriesList) {
-            const tblEntries = entriesList.localEntries.map(item => ({
+        if (entriesData) {
+            const tblEntries = entriesData.localEntries.map(item => ({
                 types: item.types?.join(', ') || "?",
                 source: `${item.owner}@${item.source}`,
                 language: item.language,
@@ -199,7 +226,8 @@ export default function ListPage({ setAppLanguage }) {
             }));
             setDataTable({ ...dataTable, entries: tblEntries })
         }
-    }, [entriesList]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [entriesData]);
 
     //#region events
     const onSelectControlValueChange = (value, controlIdx) => {
