@@ -109,5 +109,7 @@
     "STRONGS":"Strongs",
     "BC":"Chapitres de livre",
     "TEXT":"Texte",
-    "NO_VALID_TERMS":"Aucun terme valide à rechercher pour le moment"
+    "NO_VALID_TERMS":"Aucun terme valide à rechercher pour le moment",
+    "MARGIN_TOP": "Marge supérieure",
+    "MARGIN_BOTTOM": "Marge inférieure"
 }

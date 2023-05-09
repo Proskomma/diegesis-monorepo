@@ -111,5 +111,7 @@
     "TEXT":"Text",
     "NO_VALID_TERMS":"No valid terms to search yet",
     "BLEND_MODAL_TITLE": "Blend in Resources",
-    "BCV_NOTES_MODAL_TITLE": "Notes"
+    "BCV_NOTES_MODAL_TITLE": "Notes",
+    "MARGIN_TOP": "Margin Top",
+    "MARGIN_BOTTOM": "Margin Bottom"
 }

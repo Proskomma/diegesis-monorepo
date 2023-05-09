@@ -24,6 +24,8 @@ import printModalResources from "../lib/printModalResources";
 import ColumnsSelector from "./ColumnsSelector";
 import PageSizeSelector from "./PageSizeSelector";
 import i18n from "../i18n";
+import MarginSelector from "./MarginSelector";
+import GapSelector from "./GapSelector";
 
 const printModalStyle = {
   position: "absolute",
@@ -48,7 +50,6 @@ export default function PrintModal({
   const appLang = useContext(AppLangContext);
 
   const allNames = [
-    "wordAtts",
     "titles",
     "headings",
     "introductions",
@@ -65,6 +66,11 @@ export default function PrintModal({
   const [formatData, setFormatData] = useState({
     pageFormat: "A4P",
     nColumns: 1,
+    pageMarginTop: 10,
+    pageMarginBottom: 10,
+    pageMarginInside: 10,
+    pageMarginOutside: 10,
+    columnsGap: 5,
   });
 
   const getStyles = (name) => {
@@ -100,7 +106,14 @@ export default function PrintModal({
       "%pageHeight%",
       printModalResources.pageSizes[formatData.pageFormat].height,
     ],
+    ["%pageMarginTop%", formatData.pageMarginTop],
+    ["%pageMarginBottom%", formatData.pageMarginBottom],
+    ["%pageMarginInside%", formatData.pageMarginInside],
+    ["%pageMarginOutside%", formatData.pageMarginOutside],
+    ["%pageMarginInsideLeft%", formatData.pageMarginInside],
+    ["%pageMarginOutsideLeft%", formatData.pageMarginOutside],
     ["%nColumns%", formatData.nColumns],
+    ["%columnGap%", formatData.columnsGap],
   ]);
 
   const makeIncludedFlags = (allN, includedN) => {
@@ -109,10 +122,13 @@ export default function PrintModal({
       ret[`show${name.substring(0, 1).toUpperCase()}${name.substring(1)}`] =
         includedN.includes(name);
     }
+    ret.showWordAtts = false;
     return ret;
   };
 
   const onPrintClick = () => {
+    console.log(formatData);
+    console.log(pageCss);
     const paras = printModalResources.doRender({
       pk,
       scriptureData: makeIncludedFlags(allNames, includedNames),
@@ -130,7 +146,8 @@ export default function PrintModal({
   };
 
   const columnsList = [1, 2, 3];
-
+  const MarginsList = [10, 15, 20, 25, 30, 35, 40, 45, 50];
+  const GapsList = [5, 10, 15, 20, 25];
   return (
     <>
       <Modal
@@ -153,6 +170,7 @@ export default function PrintModal({
             </Typography>
             <Grid
               container
+              spacing={2}
               dir={directionText(appLang)}
               style={{ fontFamily: fontFamily(appLang) }}
               sx={{ display: "flex", flexDirection: "column" }}
@@ -165,7 +183,10 @@ export default function PrintModal({
                     alignItems: "flex-start",
                   }}
                 >
-                  <InputLabel id="included-content-group-label" sx={{marginRight:'5%',marginTop:'2%'}}>
+                  <InputLabel
+                    id="included-content-group-label"
+                    sx={{ marginRight: "5%", marginTop: "2%" }}
+                  >
                     {i18n(appLang, "INCLUDED_CONTENT")}
                   </InputLabel>
                   <Select
@@ -175,30 +196,115 @@ export default function PrintModal({
                     value={includedNames}
                     onChange={handleIncludedChange}
                     input={<OutlinedInput label="Name" />}
-                    sx={{width: 450}}
+                    sx={{ width: 450 }}
                   >
-                    {allNames.map((name) => (
-                      <MenuItem key={name} value={name} style={getStyles(name)}>
-                        {name}
-                      </MenuItem>
-                    ))}
+                    {allNames.map((name) => {
+                      return (
+                        <MenuItem
+                          key={name}
+                          value={name}
+                          style={getStyles(name)}
+                        >
+                          {name}
+                        </MenuItem>
+                      );
+                    })}
                   </Select>
                 </FormGroup>
               </Grid>
-              <Grid item sx={{ margin: "2%" }}>
-                <PageSizeSelector
-                  formLabelTitle={i18n(appLang, "PAGE_SIZE")}
-                  listItems={printModalResources.pageSizes}
-                  formatData={formatData}
-                  setFormatData={setFormatData}
-                />
+
+              <Grid
+                item
+                style={{ fontFamily: fontFamily(appLang) }}
+                sx={{
+                  display: "flex",
+                  flexDirection: "row",
+                  justifyContent: "space-around",
+                }}
+              >
+                <Grid item sx={{ margin: "2%" }} xs={6}>
+                  <PageSizeSelector
+                    formLabelTitle={i18n(appLang, "PAGE_SIZE")}
+                    listItems={printModalResources.pageSizes}
+                    formatData={formatData}
+                    setFormatData={setFormatData}
+                  />
+                </Grid>
+                <Grid item sx={{ margin: "2%" }} xs={6}>
+                  <ColumnsSelector
+                    formLabelTitle={i18n(appLang, "COLUMNS")}
+                    listItems={columnsList}
+                    formatData={formatData}
+                    setFormatData={setFormatData}
+                  />
+                </Grid>
               </Grid>
+
+              <Grid
+                item
+                style={{ fontFamily: fontFamily(appLang) }}
+                sx={{
+                  display: "flex",
+                  flexDirection: "row",
+                  justifyContent: "space-around",
+                }}
+              >
+                <Grid item sx={{ margin: "2%" }} xs={6}>
+                  <MarginSelector
+                    formLabelTitle={i18n(appLang, "MARGIN_TOP")}
+                    listItems={MarginsList}
+                    formatData={formatData}
+                    setFormatData={setFormatData}
+                    nameOfProp={"pageMarginTop"}
+                  />
+                </Grid>
+                <Grid item sx={{ margin: "2%" }} xs={6}>
+                  <MarginSelector
+                    formLabelTitle={i18n(appLang, "MARGIN_BOTTOM")}
+                    listItems={MarginsList}
+                    formatData={formatData}
+                    setFormatData={setFormatData}
+                    nameOfProp={"pageMarginBottom"}
+                  />
+                </Grid>
+              </Grid>
+
+              <Grid
+                item
+                style={{ fontFamily: fontFamily(appLang) }}
+                sx={{
+                  display: "flex",
+                  flexDirection: "row",
+                  justifyContent: "space-around",
+                }}
+              >
+                <Grid item sx={{ margin: "2%" }} xs={6}>
+                  <MarginSelector
+                    formLabelTitle={"Margin Inside"}
+                    listItems={MarginsList}
+                    formatData={formatData}
+                    setFormatData={setFormatData}
+                    nameOfProp={"pageMarginInside"}
+                  />
+                </Grid>
+                <Grid item sx={{ margin: "2%" }} xs={6}>
+                  <MarginSelector
+                    formLabelTitle={"Margin Outside"}
+                    listItems={MarginsList}
+                    formatData={formatData}
+                    setFormatData={setFormatData}
+                    nameOfProp={"pageMarginOutside"}
+                  />
+                </Grid>
+              </Grid>
+
               <Grid item sx={{ margin: "2%" }}>
-                <ColumnsSelector
-                  formLabelTitle={i18n(appLang, "COLUMNS")}
-                  listItems={columnsList}
+                <GapSelector
+                  formLabelTitle={"Columns Gap"}
+                  listItems={GapsList}
                   formatData={formatData}
                   setFormatData={setFormatData}
+                  nameOfProp={"columnsGap"}
                 />
               </Grid>
             </Grid>
