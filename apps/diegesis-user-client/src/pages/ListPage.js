@@ -4,16 +4,17 @@ import {
     gql,
     InMemoryCache,
 } from "@apollo/client";
-import {Container, Box, Typography, Button} from "@mui/material";
+import { MuiMaterial } from '@eten-lab/ui-kit';
 import {Tune} from "@mui/icons-material";
-import Header from "../components/Header";
 import ListView from "../components/ListView";
 import ListViewControls from "../components/ListViewControls";
 import Spinner from "../components/Spinner";
-import Footer from "../components/Footer";
 import AppLangContext from "../contexts/AppLangContext";
 import { directionText, fontFamily } from "../i18n/languageDirection";
 import i18n from '../i18n';
+import PageLayout from '../components/PageLayout';
+const { Container, Typography, Button } = MuiMaterial;
+
 
 export default function ListPage({ setAppLanguage }) {
 
@@ -62,9 +63,8 @@ export default function ListPage({ setAppLanguage }) {
 
     const entries = i18n(appLang, "LIST_PAGE_ENTRIES");
 
-    return <Container fixed className="listpage">
-        <Header  setAppLanguage={setAppLanguage} selected="list" />
-        <Box dir={directionText(appLang)} style={{marginTop: "100px"}}>
+    return <PageLayout>
+        <Container dir={directionText(appLang)} style={{marginTop: "50px"}}>
             <Typography  variant="h4" paragraph="true" sx={{mt: "20px"}} style={{ fontFamily : fontFamily(appLang)}}>
                 {entries}
                 <Button onClick={() => setShowSettings(!showSettings)}>
@@ -93,8 +93,8 @@ export default function ListPage({ setAppLanguage }) {
                     setFeatures
                 }}/>
             }
-        </Box>
-        <Box dir={directionText(appLang)} style={{marginTop: "20px"}}>
+        </Container>
+        <Container dir={directionText(appLang)} style={{marginTop: "20px", marginBottom: '50px'}}>
             {orgs.length > 0 ?
                 <ListView searchTerms={{
                     org: searchOrg,
@@ -109,7 +109,6 @@ export default function ListPage({ setAppLanguage }) {
                 :
                 <Spinner/>
             }
-        </Box>
-        <Footer/>
-    </Container>
+        </Container>
+    </PageLayout>
 }
