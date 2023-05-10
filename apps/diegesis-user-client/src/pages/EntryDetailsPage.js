@@ -1,11 +1,9 @@
-import {Container, Typography, Box, Button, Paper, Grid} from "@mui/material";
+import {Container, Typography, Button, Paper, Grid} from "@mui/material";
 import {useParams, Link as RouterLink} from "react-router-dom";
 import {ArrowBack, ArrowForward, AutoStories, Download} from "@mui/icons-material";
 import {gql, useQuery} from "@apollo/client";
 import GqlError from "../components/GqlError";
 
-import Header from "../components/Header";
-import Footer from "../components/Footer";
 import Spinner from "../components/Spinner";
 import BookSelector from "../components/BookSelector";
 
@@ -18,6 +16,7 @@ import {
 } from "../i18n/languageDirection";
 import {useContext, useState} from "react";
 import i18n from "../i18n";
+import PageLayout from "../components/PageLayout";
 
 export default function EntryDetailsPage({setAppLanguage}) {
     const appLang = useContext(AppLangContext);
@@ -80,14 +79,13 @@ export default function EntryDetailsPage({setAppLanguage}) {
 
     if (!entryInfo) {
         return (
-            <Container fixed className="homepage">
-                <Header setAppLanguage={setAppLanguage} selected="list"/>
-                <Box dir={directionText(appLang)} style={{marginTop: "100px"}}>
+            <PageLayout>
+                <Container dir={directionText(appLang)} style={{marginTop: "50px", marginBottom: "50px"}}>
                     <Typography variant="h4" paragraph="true" sx={{mt: "20px"}}>
                         Processing on server - wait a while and hit "refresh"
                     </Typography>
-                </Box>
-            </Container>
+                </Container>
+            </PageLayout>
         );
     }
     const finalScript = i18n(appLang, "ADMIN_LANGUAGE_SCRIPT", [
@@ -109,9 +107,8 @@ export default function EntryDetailsPage({setAppLanguage}) {
     const contentString = contentTab.join(", ");
 
     return (
-        <Container fixed className="homepage">
-            <Header setAppLanguage={setAppLanguage} selected="list"/>
-            <Box dir={directionText(appLang)} style={{marginTop: "100px"}}>
+        <PageLayout>
+            <Container dir={directionText(appLang)} style={{marginTop: "50px", marginBottom: "50px"}}>
                 <Typography variant="h4" paragraph="true" sx={{mt: "20px"}} style={{fontFamily: fontFamily(appLang)}}>
                     <Button>
                         <RouterLink to="/list" relative="path">
@@ -310,8 +307,7 @@ export default function EntryDetailsPage({setAppLanguage}) {
                         )}
                     </Grid>
                 </Paper>
-                <Footer/>
-            </Box>
-        </Container>
+            </Container>
+        </PageLayout>
     );
 }

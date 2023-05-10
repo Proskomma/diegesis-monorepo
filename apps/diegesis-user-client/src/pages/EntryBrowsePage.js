@@ -6,8 +6,6 @@ import {gql, useQuery} from "@apollo/client";
 import {Proskomma} from "proskomma-core";
 import GqlError from "../components/GqlError";
 import SearchIcon from "@mui/icons-material/Search";
-import Header from "../components/Header";
-import Footer from "../components/Footer";
 import Spinner from "../components/Spinner";
 import BrowseScripture from "../components/BrowseScripture";
 import BrowseBcvNotes from "../components/BrowseBcvNotes";
@@ -17,6 +15,7 @@ import i18n from "../i18n";
 import SearchModal from "../components/SearchModal";
 import PrintModal from "../components/PrintModal";
 import PrintIcon from '@mui/icons-material/Print';
+import PageLayout from "../components/PageLayout";
 
 export default function EntryBrowsePage({setAppLanguage}) {
     const appLang = useContext(AppLangContext);
@@ -92,8 +91,7 @@ export default function EntryBrowsePage({setAppLanguage}) {
 
     if (!entryInfo) {
         return (
-            <Container fixed className="homepage">
-                <Header selected="list"/>
+            <PageLayout>
                 <Box dir={directionText(appLang)} style={{marginTop: "100px"}}>
                     <Typography variant="h4" paragraph="true" sx={{mt: "20px"}}>
                         <Button>
@@ -109,7 +107,7 @@ export default function EntryBrowsePage({setAppLanguage}) {
                         {i18n(appLang, "BROWSE_PAGE_CURRENTLY_WARNING")}
                     </Typography>
                 </Box>
-            </Container>
+            </PageLayout>
         );
     }
 
@@ -143,9 +141,8 @@ export default function EntryBrowsePage({setAppLanguage}) {
     }
     if (entryInfo.types.includes('bible')) {
         return (
-            <Container fixed className="homepage">
-                <Header setAppLanguage={setAppLanguage} selected="list"/>
-                <Box style={{marginTop: "100px"}}>
+            <PageLayout>
+                <Container style={{marginTop: "50px", marginBottom: "50px"}}>
                     <Typography
                         dir={directionText(appLang)}
                         variant="h4"
@@ -203,15 +200,13 @@ export default function EntryBrowsePage({setAppLanguage}) {
                             {i18n(appLang, "BROWSE_PAGE_YET_WARNING")}
                         </Typography>
                     )}
-                    <Footer/>
-                </Box>
-            </Container>
+                </Container>
+            </PageLayout>
         );
     } else {
         return (
-            <Container fixed className="homepage">
-                <Header setAppLanguage={setAppLanguage} selected="list"/>
-                <Box style={{marginTop: "100px"}}>
+            <PageLayout>
+                <Container style={{marginTop: "50px", marginBottom: "50px"}}>
                     <Typography
                         dir={directionText(appLang)}
                         variant="h4"
@@ -240,9 +235,8 @@ export default function EntryBrowsePage({setAppLanguage}) {
                             {i18n(appLang, "BROWSE_PAGE_YET_WARNING")}
                         </Typography>
                     )}
-                    <Footer/>
-                </Box>
-            </Container>
+                </Container>
+            </PageLayout>
         );
     }
 }
