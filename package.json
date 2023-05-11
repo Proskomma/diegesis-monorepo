@@ -13,5 +13,8 @@
   "devDependencies": {
     "@nrwl/nx-cloud": "latest",
     "nx": "14.8.6"
+  },
+  "dependencies": {
+    "react-ace": "^10.1.0"
   }
 }

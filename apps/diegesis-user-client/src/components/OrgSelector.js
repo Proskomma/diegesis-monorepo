@@ -9,7 +9,6 @@ export default function OrgSelector({orgs, searchOrg, setSearchOrg}) {
     const appLang = useContext(AppLangContext);
     return (
         <Select
-            
             id="org_selector"
             value={searchOrg}
             label="Organization"
@@ -36,7 +35,6 @@ export default function OrgSelector({orgs, searchOrg, setSearchOrg}) {
                     {option}
                 </MenuItem>
             ))}
-
         </Select>
     )
 }
