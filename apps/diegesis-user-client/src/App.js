@@ -18,14 +18,13 @@ import EntrySearchPage from "./pages/EntrySearchPage";
 import EntryDownloadPage from "./pages/EntryDownloadPage";
 import { AppLangProvider } from "./contexts/AppLangContext";
 import { AppLangResourcesProvider } from "./contexts/AppLangResourcesContext";
-const { FlexibleDesign } = DiegesisUI;
-const { UIConfigContextProvider } = FlexibleDesign;
+const { UIConfigContextProvider } = DiegesisUI.FlexibleDesign;
 
 
 function App() {
 
     const client = new ApolloClient({
-        uri: "/graphql",
+        uri: "graphql",
         cache: new InMemoryCache(),
     });
 
