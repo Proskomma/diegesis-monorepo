@@ -19,7 +19,7 @@
     "fs": "npm:crypto-browserify",
     "graphql": "^16.6.0",
     "proskomma-core": "0.9.10",
-    "proskomma-json-tools": "^0.6.6",
+    "proskomma-json-tools": "^0.7.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-markdown": "8.0.5",

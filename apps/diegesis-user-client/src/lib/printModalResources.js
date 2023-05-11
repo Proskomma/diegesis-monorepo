@@ -5,7 +5,8 @@ import { renderers } from "../renderer/render2html";
 const printModalResources = {
   pageCssTemplate: `
         body{
-          font-family : "Liberation Sans";
+          font-family : [Verdana, Arial, Helvetica, "Roboto", "Liberation Sans", sans-serif,
+          Garamond, "Times New Roman", "Noto Serif", "Liberation Serif", serif];
         }
         
         @page {
