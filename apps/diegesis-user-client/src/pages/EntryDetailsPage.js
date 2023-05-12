@@ -90,10 +90,6 @@ export default function EntryDetailPage({ setAppLanguage }) {
     }
     const contentString = contentTab.join(", ");
 
-    const onViewBtnClick = (e) => {
-        navigate(`/entry/browse/${source}/${entryId}/${revision}`)
-    }
-    const onDownloadBtnClick = (e) => { }
     const onBookResourceSelect = (value) => {
         setSelectedBook(value)
     }
@@ -129,9 +125,9 @@ export default function EntryDetailPage({ setAppLanguage }) {
         tblCells: cellsConfig,
         topControlProps: {
             title: entryInfo.title,
-            actionBtnsProps: {
-                onViewBtnClick: onViewBtnClick,
-                onDownloadBtnClick: onDownloadBtnClick
+            actionButtonProps: {
+                downloadBtnHref: `/entry/download/${source}/${entryId}/${revision}`,
+                viewBtnHref: `/entry/browse/${source}/${entryId}/${revision}`,
             },
             backBtnProps: {
                 href: '/list'
@@ -171,7 +167,7 @@ export default function EntryDetailPage({ setAppLanguage }) {
                     )}
                     <FlexibleSectionDivider marginTop={3} marginBottom={3} />
                     <FlexibleBottomActionButtons {...pageProps.topControlProps} />
-                    <BottomBackBtn {...pageProps.backBtnProps} />
+                    <BottomBackBtn {...pageProps.topControlProps.backBtnProps} />
                 </StyledDetailSection>
             </Box>
         </PageLayout>
