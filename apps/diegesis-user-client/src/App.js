@@ -16,27 +16,27 @@ import EntryDetailsPage from "./pages/EntryDetailsPage";
 import EntryBrowsePage from "./pages/EntryBrowsePage";
 import EntrySearchPage from "./pages/EntrySearchPage";
 import EntryDownloadPage from "./pages/EntryDownloadPage";
+import UIConfigPage from "./pages/UIConfigPage";
 import { AppLangProvider } from "./contexts/AppLangContext";
 import { AppLangResourcesProvider } from "./contexts/AppLangResourcesContext";
 const { UIConfigContextProvider } = DiegesisUI.FlexibleDesign;
 
+function ErrorBoundary() {
+    let error = useRouteError();
+    console.error(error);
+    return (
+        <div>
+            An unexpected error has occurred: <i>{error.message}</i>
+        </div>
+    );
+}
 
 function App() {
 
     const client = new ApolloClient({
-        uri: "graphql",
+        uri: "http://localhost:1234/graphql",
         cache: new InMemoryCache(),
     });
-
-    function ErrorBoundary() {
-        let error = useRouteError();
-        console.error(error);
-        return (
-            <div>
-                An unexpected error has occurred: <i>{error.message}</i>
-            </div>
-        );
-    }
 
     const [appLanguage, setAppLanguage] = useState("en");
     const [appLanguageResources, setAppLanguageResources] = useState({});
@@ -115,7 +115,12 @@ function App() {
             path: "/entry/download/:source/:entryId/:revision",
             element: <EntryDownloadPage setAppLanguage={setAppLanguage} />,
             errorElement: <ErrorBoundary />
-        }
+        },
+        {
+            path: "/ui-config",
+            element: <UIConfigPage setAppLanguage={setAppLanguage} />,
+            errorElement: <ErrorBoundary />
+        },
     ]);
     return (
         <ApolloProvider client={client}>
