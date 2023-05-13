@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { DiegesisUI, MuiMaterial } from '@eten-lab/ui-kit';
 const { Button, Drawer } = MuiMaterial;
-const { UIConfigContextProvider, UIConfigControlPanel, FlexibleHome, FlexibleEntryDetailUI, FlexibleEntriesListUI } = DiegesisUI.FlexibleDesign;
+const { UIConfigControlPanel, FlexibleHome, FlexibleEntryDetailUI, FlexibleEntriesListUI } = DiegesisUI.FlexibleDesign;
 const { FlexibleEntriesListPage } = FlexibleEntriesListUI;
 const { FlexibleEntryDetail } = FlexibleEntryDetailUI;
 
@@ -17,8 +17,13 @@ export default function UIConfigPage({ setAppLanguage }) {
         setOpen((open) => !open);
     };
 
+    const onConfigSave = (config) => {
+        //@todo:: save config on server end
+        console.log('//@todo:: save config on server end', config);
+    }
+
     return (
-        <UIConfigContextProvider>
+        <>
             <Button onClick={toggleDrawer} variant="contained">
                 Open Setting Panel
             </Button>
@@ -37,8 +42,8 @@ export default function UIConfigPage({ setAppLanguage }) {
                     },
                 }}
             >
-                <UIConfigControlPanel />
+                <UIConfigControlPanel onConfigSave={onConfigSave} />
             </Drawer>
-        </UIConfigContextProvider>
+        </>
     )
 }
