@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { DiegesisUI, MuiMaterial } from '@eten-lab/ui-kit';
+import { gql, useApolloClient } from '@apollo/client';
 const { Button, Drawer } = MuiMaterial;
 const { UIConfigControlPanel, FlexibleHome, FlexibleEntryDetailUI, FlexibleEntriesListUI } = DiegesisUI.FlexibleDesign;
 const { FlexibleEntriesListPage } = FlexibleEntriesListUI;
@@ -7,6 +8,8 @@ const { FlexibleEntryDetail } = FlexibleEntryDetailUI;
 
 export default function UIConfigPage({ setAppLanguage }) {
     const [open, setOpen] = useState(false);
+    const gqlClient = useApolloClient();
+
     const toggleDrawer = (event) => {
         if (
             event.type === 'keydown' &&
@@ -17,9 +20,35 @@ export default function UIConfigPage({ setAppLanguage }) {
         setOpen((open) => !open);
     };
 
-    const onConfigSave = (config) => {
-        //@todo:: save config on server end
-        console.log('//@todo:: save config on server end', config);
+    const onConfigSave = async (config) => {
+        try {
+            const query = `
+            mutation SaveFlexibleUIConfig(
+                $className: String!
+                $componentName: String!
+                $configPath: String!
+                $contents: JSON
+                $flexibles: [JSON!]
+                $markdowns: JSON
+                $styles: JSON
+                $uiConfigs: JSON
+              ) {
+                saveFlexibleUIConfig(
+                  className: $className
+                  componentName: $componentName
+                  configPath: $configPath
+                  contents: $contents
+                  flexibles: $flexibles
+                  markdowns: $markdowns
+                  styles: $styles
+                  uiConfigs: $uiConfigs
+                )
+              }`;
+            await gqlClient.mutate({ mutation: gql`${query}`, variables: { ...config } });
+        } catch (err) {
+            console.error('failed to save flexible ui config', err);
+            return;
+        }
     }
 
     return (

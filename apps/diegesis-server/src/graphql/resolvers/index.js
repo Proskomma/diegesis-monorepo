@@ -1,4 +1,4 @@
-const {GraphQLScalarType, Kind} = require("graphql");
+const { GraphQLScalarType, Kind } = require("graphql");
 const {
     entryExists,
     entryRevisionExists,
@@ -140,6 +140,20 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
             }
             return ast.value;
         },
+    });
+
+    const jsonScaler = new GraphQLScalarType({
+        name: 'JSON',
+        description: 'Parse json',
+        serialize(value) {
+            return value;
+        },
+        parseValue(value) {
+            return value;
+        },
+        parseLiteral(ast) {
+            return ast.value;
+        }
     });
 
     const entryInColorList = (colorList, entry) => {
@@ -354,6 +368,7 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
         EntryId: entryIdScalar,
         BookCode: bookCodeScalar,
         ContentType: ContentTypeScalar,
+        JSON: jsonScaler,
     };
 
     const lowerCaseArray = (arr) => arr.map((e) => e.trim().toLocaleLowerCase());
@@ -913,6 +928,10 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                     deleteEntry(config, config.name, id, revision);
                     throw err;
                 }
+                return true;
+            },
+            saveFlexibleUIConfig: async (root, args) => {
+                console.log('resolver => saveFlexibleUIConfig', args);
                 return true;
             },
         },
