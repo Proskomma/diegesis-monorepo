@@ -60,6 +60,11 @@ const querySchema = gql`
             """The entry revision"""
             revision: String!
         ): LocalEntry
+
+        """An flexible ui config for all pages, if it exists"""
+        getFlexibleUIConfig(
+            id: String
+        ): FlexibleUIConfig
     }
     
     """Entry Enums"""
@@ -366,6 +371,28 @@ const querySchema = gql`
 
         """Is the resource original?"""
         isOriginal: Boolean!
+    }
+
+    """Flexible ui config"""
+    type FlexibleUIConfig {
+        """Element Id"""
+        id: String!
+        """Element Class Name"""
+        className: String
+        """Flexible Component Name"""
+        componentName: String!
+        """Flexible Component Config Path"""
+        configPath: String!
+        """Flexible Component Contents"""
+        contents: JSON
+        """Flexible Component Child Flexible Components"""
+        flexibles: [JSON!]
+        """Flexible Component Markdowns"""
+        markdowns: JSON
+        """Flexible Component Styles Config"""
+        styles: JSON
+        """Flexible Component UI Config"""
+        uiConfigs: JSON
     }    
     
     """Resource Element"""
@@ -441,6 +468,8 @@ const mutationSchema = gql`
         ) : Boolean!
 
         saveFlexibleUIConfig (
+            """Element Id"""
+            id: String!
             """Element Class Name"""
             className: String
             """Flexible Component Name"""

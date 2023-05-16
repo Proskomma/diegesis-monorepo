@@ -2,13 +2,14 @@ import React, { useState } from 'react'
 import { DiegesisUI, MuiMaterial } from '@eten-lab/ui-kit';
 import { gql, useApolloClient } from '@apollo/client';
 const { Button, Drawer } = MuiMaterial;
-const { UIConfigControlPanel, FlexibleHome, FlexibleEntryDetailUI, FlexibleEntriesListUI } = DiegesisUI.FlexibleDesign;
+const { UIConfigControlPanel, FlexibleHome, FlexibleEntryDetailUI, FlexibleEntriesListUI, useUIConfigContext } = DiegesisUI.FlexibleDesign;
 const { FlexibleEntriesListPage } = FlexibleEntriesListUI;
 const { FlexibleEntryDetail } = FlexibleEntryDetailUI;
 
 export default function UIConfigPage({ setAppLanguage }) {
     const [open, setOpen] = useState(false);
     const gqlClient = useApolloClient();
+    const { queryUIConfig } = useUIConfigContext();
 
     const toggleDrawer = (event) => {
         if (
@@ -20,11 +21,13 @@ export default function UIConfigPage({ setAppLanguage }) {
         setOpen((open) => !open);
     };
 
-    const onConfigSave = async (config) => {
+    const onConfigSave = async () => {
         try {
+            const rootConfig = queryUIConfig('/')
             const query = `
             mutation SaveFlexibleUIConfig(
-                $className: String!
+                $id: String!
+                $className: String
                 $componentName: String!
                 $configPath: String!
                 $contents: JSON
@@ -34,6 +37,7 @@ export default function UIConfigPage({ setAppLanguage }) {
                 $uiConfigs: JSON
               ) {
                 saveFlexibleUIConfig(
+                  id: $id
                   className: $className
                   componentName: $componentName
                   configPath: $configPath
@@ -44,7 +48,7 @@ export default function UIConfigPage({ setAppLanguage }) {
                   uiConfigs: $uiConfigs
                 )
               }`;
-            await gqlClient.mutate({ mutation: gql`${query}`, variables: { ...config } });
+            await gqlClient.mutate({ mutation: gql`${query}`, variables: { ...rootConfig } });
         } catch (err) {
             console.error('failed to save flexible ui config', err);
             return;

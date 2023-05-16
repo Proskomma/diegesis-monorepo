@@ -158,6 +158,7 @@ const originalEntryResources = (config, orgName, transId, transRevision) => {
 const generatedEntryResources = (config, orgName, transId, transRevision) => {
     return _entryResources(config, orgName, transId, transRevision, "generated");
 }
+
 const entryResources = (config, orgName, transId, transRevision) => {
     return [
         ...originalEntryResources(config, orgName, transId, transRevision),
@@ -692,6 +693,17 @@ const readEntryBookResource = (config, orgName, transId, transRevision, resource
     }
 }
 
+const readFlexibleUIConfig = (config) => {
+    try {
+        if (typeof config.name !== "string") {
+            throw new Error('orgName should be string');
+        }
+        return fse.readJsonSync(path.join(config.dataPath, translationDir(config.name), `uiConfig.json`));
+    } catch (err) {
+        throw new Error(`Error from readFlexibleUIConfig: ${err.message}`);
+    }
+}
+
 // Write
 
 const writeEntryBookResource = (config, orgName, transId, transRevision, resourceCategory, resourceName, rawContent) => {
@@ -763,6 +775,22 @@ const writeEntryResource = (config, orgName, transId, transRevision, resourceOri
     }
 }
 
+const writeFlexibleUIConfig = (config, objData) => {
+    try {
+    if (typeof config.name !== "string") {
+        throw new Error('orgName should be string in writeFlexibleUIConfig');
+    }
+    const originPath = path.resolve(config.dataPath, translationDir(config.name));
+    if (!fse.pathExistsSync(originPath)) {
+        fse.mkdirsSync(originPath);
+    }
+    const dataPath = path.join(originPath, `uiConfig.json`);
+    fse.writeFileSync(dataPath, JSON.stringify(objData));
+    } catch (err) {
+        throw new Error(`Error from writeFlexibleUIConfig: ${err.message}`);
+    }
+}
+
 module.exports = {
     initializeOrg,
     orgExists,
@@ -808,4 +836,6 @@ module.exports = {
     originalEntryBookResourceCategories,
     generatedEntryBookResourceCategories,
     entryBookResourceCategories,
+    writeFlexibleUIConfig,
+    readFlexibleUIConfig
 }
