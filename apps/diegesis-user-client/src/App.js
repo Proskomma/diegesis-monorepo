@@ -19,7 +19,7 @@ import EntryDownloadPage from "./pages/EntryDownloadPage";
 import UIConfigPage from "./pages/UIConfigPage";
 import { AppLangProvider } from "./contexts/AppLangContext";
 import { AppLangResourcesProvider } from "./contexts/AppLangResourcesContext";
-const { UIConfigContextProvider } = DiegesisUI.FlexibleDesign;
+const { UIConfigContextProvider, useUIConfigContext } = DiegesisUI.FlexibleDesign;
 
 function ErrorBoundary() {
     let error = useRouteError();
@@ -31,6 +31,18 @@ function ErrorBoundary() {
     );
 }
 
+function UIConfigUpdate({ uiConfig, children }) {
+    const { mutateUIConfig } = useUIConfigContext();
+
+    useEffect(() => {
+        if (uiConfig) {
+            mutateUIConfig('/', uiConfig);
+        }
+    }, [uiConfig])
+
+    return <>{children}</>
+}
+
 function App() {
 
     const client = new ApolloClient({
@@ -40,6 +52,29 @@ function App() {
 
     const [appLanguage, setAppLanguage] = useState("en");
     const [appLanguageResources, setAppLanguageResources] = useState({});
+    const [uiConfig, setUIConfig] = useState(null);
+
+    useEffect(() => {
+        const getFlexibleUIConfig = async () => {
+            const getQuery = `
+            query GetFlexibleUIConfig($compId: String!) {
+                getFlexibleUIConfig(id: $compId) {
+                  id
+                  componentName
+                  flexibles
+                  contents
+                  configPath
+                  uiConfigs
+                  markdowns
+                  styles
+                }
+              }`
+            const result = await client.query({ query: gql`${getQuery}`, variables: { compId: 'root' } });
+            const config = result.data?.getFlexibleUIConfig;
+            setUIConfig(config);
+        }
+        getFlexibleUIConfig();
+    }, [])
 
     useEffect(
         () => {
@@ -129,7 +164,9 @@ function App() {
                     <AppLangResourcesProvider value={appLanguageResources}>
                         <AppLangProvider value={appLanguage}>
                             <CssBaseline />
-                            <RouterProvider router={router} />
+                            <UIConfigUpdate uiConfig={uiConfig}>
+                                <RouterProvider router={router} />
+                            </UIConfigUpdate>
                         </AppLangProvider>
                     </AppLangResourcesProvider>
                 </UIConfigContextProvider>

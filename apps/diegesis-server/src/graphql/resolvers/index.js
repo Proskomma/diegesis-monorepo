@@ -486,7 +486,7 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                 return localEntry(orgsData[args.source].name, args.id, args.revision);
             },
             getFlexibleUIConfig: (root, args) => {
-                return readFlexibleUIConfig(config);
+                return readFlexibleUIConfig(config, args.id);
             },
         },
         LocalEntry: {

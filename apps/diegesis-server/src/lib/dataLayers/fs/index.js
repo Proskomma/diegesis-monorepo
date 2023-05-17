@@ -3,7 +3,8 @@ const {
     orgPath,
     transPath,
     transParentPath,
-    translationDir
+    translationDir,
+    uiConfigDir
 } = require("./dataPaths.js");
 const path = require("path");
 
@@ -693,14 +694,15 @@ const readEntryBookResource = (config, orgName, transId, transRevision, resource
     }
 }
 
-const readFlexibleUIConfig = (config) => {
+const readFlexibleUIConfig = (config, id) => {
     try {
         if (typeof config.name !== "string") {
             throw new Error('orgName should be string');
         }
-        return fse.readJsonSync(path.join(config.dataPath, translationDir(config.name), `uiConfig.json`));
+        const compUIConfigPath = path.join(uiConfigDir(config.dataPath, translationDir(config.name)), `${id}.json`);
+        return fse.readJsonSync(compUIConfigPath);
     } catch (err) {
-        throw new Error(`Error from readFlexibleUIConfig: ${err.message}`);
+        return null;
     }
 }
 
@@ -775,17 +777,17 @@ const writeEntryResource = (config, orgName, transId, transRevision, resourceOri
     }
 }
 
-const writeFlexibleUIConfig = (config, objData) => {
+const writeFlexibleUIConfig = (config, objData, transId, transRevision) => {
     try {
-    if (typeof config.name !== "string") {
-        throw new Error('orgName should be string in writeFlexibleUIConfig');
-    }
-    const originPath = path.resolve(config.dataPath, translationDir(config.name));
-    if (!fse.pathExistsSync(originPath)) {
-        fse.mkdirsSync(originPath);
-    }
-    const dataPath = path.join(originPath, `uiConfig.json`);
-    fse.writeFileSync(dataPath, JSON.stringify(objData));
+        if (typeof config.name !== "string") {
+            throw new Error('orgName should be string in writeFlexibleUIConfig');
+        }
+        const originPath = uiConfigDir(config.dataPath, translationDir(config.name), transId, transRevision);
+        if (!fse.pathExistsSync(originPath)) {
+            fse.mkdirsSync(originPath);
+        }
+        const dataPath = path.join(originPath, `${objData.id}.json`);
+        fse.writeFileSync(dataPath, JSON.stringify(objData));
     } catch (err) {
         throw new Error(`Error from writeFlexibleUIConfig: ${err.message}`);
     }
