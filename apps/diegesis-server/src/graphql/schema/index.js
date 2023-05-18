@@ -386,7 +386,7 @@ const querySchema = gql`
         """Flexible Component Contents"""
         contents: JSON
         """Flexible Component Child Flexible Components"""
-        flexibles: [JSON!]
+        flexibles: JSON
         """Flexible Component Markdowns"""
         markdowns: JSON
         """Flexible Component Styles Config"""
@@ -479,7 +479,7 @@ const mutationSchema = gql`
             """Flexible Component Contents"""
             contents: JSON
             """Flexible Component Child Flexible Components"""
-            flexibles: [JSON!]
+            flexibles: JSON
             """Flexible Component Markdowns"""
             markdowns: JSON
             """Flexible Component Styles Config"""

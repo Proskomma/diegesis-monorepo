@@ -9,7 +9,7 @@ const { FlexibleEntryDetail } = FlexibleEntryDetailUI;
 export default function UIConfigPage({ setAppLanguage }) {
     const [open, setOpen] = useState(false);
     const gqlClient = useApolloClient();
-    const { queryUIConfig } = useUIConfigContext();
+    const { getRootUIConfig } = useUIConfigContext();
 
     const toggleDrawer = (event) => {
         if (
@@ -23,7 +23,7 @@ export default function UIConfigPage({ setAppLanguage }) {
 
     const onConfigSave = async () => {
         try {
-            const rootConfig = queryUIConfig('/')
+            const rootConfig = getRootUIConfig()
             const query = `
             mutation SaveFlexibleUIConfig(
                 $id: String!
@@ -31,7 +31,7 @@ export default function UIConfigPage({ setAppLanguage }) {
                 $componentName: String!
                 $configPath: String!
                 $contents: JSON
-                $flexibles: [JSON!]
+                $flexibles: JSON
                 $markdowns: JSON
                 $styles: JSON
                 $uiConfigs: JSON

@@ -31,15 +31,13 @@ function ErrorBoundary() {
     );
 }
 
-function UIConfigUpdate({ uiConfig, children }) {
-    const { mutateUIConfig } = useUIConfigContext();
-
+function PopulateUIConfig({ uiConfig, children }) {
+    const { setRootUIConfig } = useUIConfigContext();
     useEffect(() => {
         if (uiConfig) {
-            mutateUIConfig('/', uiConfig);
+            setRootUIConfig(JSON.parse(JSON.stringify(uiConfig)));
         }
-    }, [uiConfig])
-
+    }, [uiConfig, setRootUIConfig]);
     return <>{children}</>
 }
 
@@ -53,7 +51,7 @@ function App() {
     const [appLanguage, setAppLanguage] = useState("en");
     const [appLanguageResources, setAppLanguageResources] = useState({});
     const [uiConfig, setUIConfig] = useState(null);
-
+    
     useEffect(() => {
         const getFlexibleUIConfig = async () => {
             const getQuery = `
@@ -74,7 +72,7 @@ function App() {
             setUIConfig(config);
         }
         getFlexibleUIConfig();
-    }, [])
+    }, []);
 
     useEffect(
         () => {
@@ -164,9 +162,9 @@ function App() {
                     <AppLangResourcesProvider value={appLanguageResources}>
                         <AppLangProvider value={appLanguage}>
                             <CssBaseline />
-                            <UIConfigUpdate uiConfig={uiConfig}>
+                            <PopulateUIConfig uiConfig={uiConfig}>
                                 <RouterProvider router={router} />
-                            </UIConfigUpdate>
+                            </PopulateUIConfig>
                         </AppLangProvider>
                     </AppLangResourcesProvider>
                 </UIConfigContextProvider>
