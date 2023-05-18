@@ -44,7 +44,7 @@ function PopulateUIConfig({ uiConfig, children }) {
 function App() {
 
     const client = new ApolloClient({
-        uri: "http://localhost:1234/graphql",
+        uri: "/graphql",
         cache: new InMemoryCache(),
     });
 
