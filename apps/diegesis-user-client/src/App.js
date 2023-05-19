@@ -9,8 +9,6 @@ import { CssBaseline } from "@mui/material";
 import { ThemeProvider as UIKitThemeProvider, DiegesisUI } from '@eten-lab/ui-kit';
 import "./App.css";
 import MarkdownPage from "./pages/MarkdownPage";
-import WhoPage from "./pages/WhoPage";
-import HowPage from "./pages/HowPage";
 import ListPage from "./pages/ListPage";
 import EntryDetailsPage from "./pages/EntryDetailsPage";
 import EntryBrowsePage from "./pages/EntryBrowsePage";
@@ -19,7 +17,9 @@ import EntryDownloadPage from "./pages/EntryDownloadPage";
 import UIConfigPage from "./pages/UIConfigPage";
 import { AppLangProvider } from "./contexts/AppLangContext";
 import { AppLangResourcesProvider } from "./contexts/AppLangResourcesContext";
-const { UIConfigContextProvider, useUIConfigContext } = DiegesisUI.FlexibleDesign;
+import LoginPage from "./pages/LoginPage";
+import AppContextProvider from "./contexts/AppContext";
+const { UIConfigContextProvider } = DiegesisUI.FlexibleDesign;
 
 function ErrorBoundary() {
     let error = useRouteError();
@@ -31,48 +31,15 @@ function ErrorBoundary() {
     );
 }
 
-function PopulateUIConfig({ uiConfig, children }) {
-    const { setRootUIConfig } = useUIConfigContext();
-    useEffect(() => {
-        if (uiConfig) {
-            setRootUIConfig(JSON.parse(JSON.stringify(uiConfig)));
-        }
-    }, [uiConfig, setRootUIConfig]);
-    return <>{children}</>
-}
-
 function App() {
 
     const client = new ApolloClient({
-        uri: "/graphql",
+        uri: "http://localhost:1234/graphql",
         cache: new InMemoryCache(),
     });
 
     const [appLanguage, setAppLanguage] = useState("en");
     const [appLanguageResources, setAppLanguageResources] = useState({});
-    const [uiConfig, setUIConfig] = useState(null);
-    
-    useEffect(() => {
-        const getFlexibleUIConfig = async () => {
-            const getQuery = `
-            query GetFlexibleUIConfig($compId: String!) {
-                getFlexibleUIConfig(id: $compId) {
-                  id
-                  componentName
-                  flexibles
-                  contents
-                  configPath
-                  uiConfigs
-                  markdowns
-                  styles
-                }
-              }`
-            const result = await client.query({ query: gql`${getQuery}`, variables: { compId: 'root' } });
-            const config = result.data?.getFlexibleUIConfig;
-            setUIConfig(config);
-        }
-        getFlexibleUIConfig();
-    }, []);
 
     useEffect(
         () => {
@@ -154,19 +121,24 @@ function App() {
             element: <UIConfigPage setAppLanguage={setAppLanguage} />,
             errorElement: <ErrorBoundary />
         },
+        {
+            path: "/login",
+            element: <LoginPage />,
+            errorElement: <ErrorBoundary />
+        },
     ]);
     return (
         <ApolloProvider client={client}>
             <UIKitThemeProvider>
                 <UIConfigContextProvider>
-                    <AppLangResourcesProvider value={appLanguageResources}>
-                        <AppLangProvider value={appLanguage}>
-                            <CssBaseline />
-                            <PopulateUIConfig uiConfig={uiConfig}>
+                    <AppContextProvider>
+                        <AppLangResourcesProvider value={appLanguageResources}>
+                            <AppLangProvider value={appLanguage}>
+                                <CssBaseline />
                                 <RouterProvider router={router} />
-                            </PopulateUIConfig>
-                        </AppLangProvider>
-                    </AppLangResourcesProvider>
+                            </AppLangProvider>
+                        </AppLangResourcesProvider>
+                    </AppContextProvider>
                 </UIConfigContextProvider>
             </UIKitThemeProvider>
         </ApolloProvider>
