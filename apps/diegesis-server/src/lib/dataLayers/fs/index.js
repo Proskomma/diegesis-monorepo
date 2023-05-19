@@ -3,7 +3,8 @@ const {
     orgPath,
     transPath,
     transParentPath,
-    translationDir
+    translationDir,
+    uiConfigDir
 } = require("./dataPaths.js");
 const path = require("path");
 
@@ -158,6 +159,7 @@ const originalEntryResources = (config, orgName, transId, transRevision) => {
 const generatedEntryResources = (config, orgName, transId, transRevision) => {
     return _entryResources(config, orgName, transId, transRevision, "generated");
 }
+
 const entryResources = (config, orgName, transId, transRevision) => {
     return [
         ...originalEntryResources(config, orgName, transId, transRevision),
@@ -692,6 +694,18 @@ const readEntryBookResource = (config, orgName, transId, transRevision, resource
     }
 }
 
+const readFlexibleUIConfig = (config, id) => {
+    try {
+        if (typeof config.name !== "string") {
+            throw new Error('orgName should be string');
+        }
+        const compUIConfigPath = path.join(uiConfigDir(config.dataPath, translationDir(config.name)), `${id}.json`);
+        return fse.readJsonSync(compUIConfigPath);
+    } catch (err) {
+        return null;
+    }
+}
+
 // Write
 
 const writeEntryBookResource = (config, orgName, transId, transRevision, resourceCategory, resourceName, rawContent) => {
@@ -763,6 +777,22 @@ const writeEntryResource = (config, orgName, transId, transRevision, resourceOri
     }
 }
 
+const writeFlexibleUIConfig = (config, objData, transId, transRevision) => {
+    try {
+        if (typeof config.name !== "string") {
+            throw new Error('orgName should be string in writeFlexibleUIConfig');
+        }
+        const originPath = uiConfigDir(config.dataPath, translationDir(config.name), transId, transRevision);
+        if (!fse.pathExistsSync(originPath)) {
+            fse.mkdirsSync(originPath);
+        }
+        const dataPath = path.join(originPath, `${objData.id}.json`);
+        fse.writeFileSync(dataPath, JSON.stringify(objData));
+    } catch (err) {
+        throw new Error(`Error from writeFlexibleUIConfig: ${err.message}`);
+    }
+}
+
 module.exports = {
     initializeOrg,
     orgExists,
@@ -808,4 +838,6 @@ module.exports = {
     originalEntryBookResourceCategories,
     generatedEntryBookResourceCategories,
     entryBookResourceCategories,
+    writeFlexibleUIConfig,
+    readFlexibleUIConfig
 }

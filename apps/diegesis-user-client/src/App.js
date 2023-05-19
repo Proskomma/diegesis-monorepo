@@ -16,30 +16,63 @@ import EntryDetailsPage from "./pages/EntryDetailsPage";
 import EntryBrowsePage from "./pages/EntryBrowsePage";
 import EntrySearchPage from "./pages/EntrySearchPage";
 import EntryDownloadPage from "./pages/EntryDownloadPage";
+import UIConfigPage from "./pages/UIConfigPage";
 import { AppLangProvider } from "./contexts/AppLangContext";
 import { AppLangResourcesProvider } from "./contexts/AppLangResourcesContext";
-const { UIConfigContextProvider } = DiegesisUI.FlexibleDesign;
+const { UIConfigContextProvider, useUIConfigContext } = DiegesisUI.FlexibleDesign;
 
+function ErrorBoundary() {
+    let error = useRouteError();
+    console.error(error);
+    return (
+        <div>
+            An unexpected error has occurred: <i>{error.message}</i>
+        </div>
+    );
+}
+
+function PopulateUIConfig({ uiConfig, children }) {
+    const { setRootUIConfig } = useUIConfigContext();
+    useEffect(() => {
+        if (uiConfig) {
+            setRootUIConfig(JSON.parse(JSON.stringify(uiConfig)));
+        }
+    }, [uiConfig, setRootUIConfig]);
+    return <>{children}</>
+}
 
 function App() {
 
     const client = new ApolloClient({
-        uri: "graphql",
+        uri: "/graphql",
         cache: new InMemoryCache(),
     });
 
-    function ErrorBoundary() {
-        let error = useRouteError();
-        console.error(error);
-        return (
-            <div>
-                An unexpected error has occurred: <i>{error.message}</i>
-            </div>
-        );
-    }
-
     const [appLanguage, setAppLanguage] = useState("en");
     const [appLanguageResources, setAppLanguageResources] = useState({});
+    const [uiConfig, setUIConfig] = useState(null);
+    
+    useEffect(() => {
+        const getFlexibleUIConfig = async () => {
+            const getQuery = `
+            query GetFlexibleUIConfig($compId: String!) {
+                getFlexibleUIConfig(id: $compId) {
+                  id
+                  componentName
+                  flexibles
+                  contents
+                  configPath
+                  uiConfigs
+                  markdowns
+                  styles
+                }
+              }`
+            const result = await client.query({ query: gql`${getQuery}`, variables: { compId: 'root' } });
+            const config = result.data?.getFlexibleUIConfig;
+            setUIConfig(config);
+        }
+        getFlexibleUIConfig();
+    }, []);
 
     useEffect(
         () => {
@@ -115,7 +148,12 @@ function App() {
             path: "/entry/download/:source/:entryId/:revision",
             element: <EntryDownloadPage setAppLanguage={setAppLanguage} />,
             errorElement: <ErrorBoundary />
-        }
+        },
+        {
+            path: "/ui-config",
+            element: <UIConfigPage setAppLanguage={setAppLanguage} />,
+            errorElement: <ErrorBoundary />
+        },
     ]);
     return (
         <ApolloProvider client={client}>
@@ -124,7 +162,9 @@ function App() {
                     <AppLangResourcesProvider value={appLanguageResources}>
                         <AppLangProvider value={appLanguage}>
                             <CssBaseline />
-                            <RouterProvider router={router} />
+                            <PopulateUIConfig uiConfig={uiConfig}>
+                                <RouterProvider router={router} />
+                            </PopulateUIConfig>
                         </AppLangProvider>
                     </AppLangResourcesProvider>
                 </UIConfigContextProvider>

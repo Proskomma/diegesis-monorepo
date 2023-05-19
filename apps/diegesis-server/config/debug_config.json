@@ -37,9 +37,15 @@
       "redirects": [
         "/who",
         "/how",
-        "/list",
         "/blend",
-        "/entry/*"
+        "/home",
+        "/list",
+        "/about",
+        "/view",
+        "/entry/*",
+        "/v1/*",
+        "/ui-config",
+        "/"
       ]
     }
   ],

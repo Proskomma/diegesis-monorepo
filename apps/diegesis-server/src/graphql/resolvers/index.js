@@ -1,4 +1,4 @@
-const {GraphQLScalarType, Kind} = require("graphql");
+const { GraphQLScalarType, Kind } = require("graphql");
 const {
     entryExists,
     entryRevisionExists,
@@ -21,6 +21,8 @@ const {
     initializeEntryBookResourceCategory,
     writeEntryBookResource,
     writeEntryResource,
+    writeFlexibleUIConfig,
+    readFlexibleUIConfig,
 } = require("../../lib/dataLayers/fs");
 
 const UUID = require("pure-uuid");
@@ -140,6 +142,20 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
             }
             return ast.value;
         },
+    });
+
+    const jsonScaler = new GraphQLScalarType({
+        name: 'JSON',
+        description: 'Parse json',
+        serialize(value) {
+            return value;
+        },
+        parseValue(value) {
+            return value;
+        },
+        parseLiteral(ast) {
+            return ast.value;
+        }
     });
 
     const entryInColorList = (colorList, entry) => {
@@ -354,6 +370,7 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
         EntryId: entryIdScalar,
         BookCode: bookCodeScalar,
         ContentType: ContentTypeScalar,
+        JSON: jsonScaler,
     };
 
     const lowerCaseArray = (arr) => arr.map((e) => e.trim().toLocaleLowerCase());
@@ -374,9 +391,9 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
             entryEnums: root => {
                 const enums = {
                     languages: new Set([]),
-                    types:  new Set([]),
-                    sources:  new Set([]),
-                    owners:  new Set([])
+                    types: new Set([]),
+                    sources: new Set([]),
+                    owners: new Set([])
                 };
                 for (const orgSource of Object.keys(orgsData)) {
                     for (const entryRecord of orgEntries(config, orgSource)) {
@@ -468,6 +485,9 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
             localEntry: (root, args) => {
                 return localEntry(orgsData[args.source].name, args.id, args.revision);
             },
+            getFlexibleUIConfig: (root, args) => {
+                return readFlexibleUIConfig(config, args.id);
+            },
         },
         LocalEntry: {
             transId: (root) => root.id,
@@ -487,7 +507,7 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                         if (field === "documents") {
                             continue;
                         }
-                        ret.push({field, stat});
+                        ret.push({ field, stat });
                     }
                 }
                 return ret;
@@ -529,7 +549,7 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                 ) {
                     const bookCodeStats = root.stats.documents[args.bookCode];
                     for (const [field, stat] of Object.entries(bookCodeStats)) {
-                        ret.push({bookCode: args.bookCode, field, stat});
+                        ret.push({ bookCode: args.bookCode, field, stat });
                     }
                 }
                 return ret;
@@ -915,13 +935,17 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                 }
                 return true;
             },
+            saveFlexibleUIConfig: async (root, args) => {
+                writeFlexibleUIConfig(config, args);
+                return true;
+            },
         },
     };
 
     if (config.includeMutations) {
-        return {...scalarResolvers, ...queryResolver, ...mutationResolver};
+        return { ...scalarResolvers, ...queryResolver, ...mutationResolver };
     } else {
-        return {...scalarResolvers, ...queryResolver};
+        return { ...scalarResolvers, ...queryResolver };
     }
 };
 
