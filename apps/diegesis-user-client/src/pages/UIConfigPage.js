@@ -22,37 +22,37 @@ export default function UIConfigPage({ setAppLanguage }) {
     };
 
     const onConfigSave = async () => {
-        try {
-            const rootConfig = getRootUIConfig()
-            const query = `
-            mutation SaveFlexibleUIConfig(
-                $id: String!
-                $className: String
-                $componentName: String!
-                $configPath: String!
-                $contents: JSON
-                $flexibles: JSON
-                $markdowns: JSON
-                $styles: JSON
-                $uiConfigs: JSON
-              ) {
-                saveFlexibleUIConfig(
-                  id: $id
-                  className: $className
-                  componentName: $componentName
-                  configPath: $configPath
-                  contents: $contents
-                  flexibles: $flexibles
-                  markdowns: $markdowns
-                  styles: $styles
-                  uiConfigs: $uiConfigs
-                )
-              }`;
-            await gqlClient.mutate({ mutation: gql`${query}`, variables: { ...rootConfig } });
-        } catch (err) {
-            console.error('failed to save flexible ui config', err);
-            return;
-        }
+        const rootConfig = getRootUIConfig()
+        const query = `
+        mutation SaveFlexibleUIConfig(
+            $id: String!
+            $className: String
+            $componentName: String!
+            $configPath: String!
+            $contents: JSON
+            $flexibles: JSON
+            $markdowns: JSON
+            $styles: JSON
+            $uiConfigs: JSON
+          ) {
+            saveFlexibleUIConfig(
+              id: $id
+              className: $className
+              componentName: $componentName
+              configPath: $configPath
+              contents: $contents
+              flexibles: $flexibles
+              markdowns: $markdowns
+              styles: $styles
+              uiConfigs: $uiConfigs
+            )
+          }`;
+        await gqlClient.mutate({ mutation: gql`${query}`, variables: { ...rootConfig } });
+        // try {
+        // } catch (err) {
+        //     console.error('failed to save flexible ui config', err);
+        //     return;
+        // }
     }
 
     return (

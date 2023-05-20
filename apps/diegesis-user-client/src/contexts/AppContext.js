@@ -29,7 +29,6 @@ const AppContextProvider = ({ children }) => {
         if (!sessionCode) {
             mutateState({ authLoaded: true });
         } else {
-
             const getFlexibleUIConfig = async () => {
                 const getQuery = `
                 query GetFlexibleUIConfig($compId: String!) {
@@ -48,7 +47,6 @@ const AppContextProvider = ({ children }) => {
                 const config = result.data?.getFlexibleUIConfig;
                 setRootUIConfig(JSON.parse(JSON.stringify(config)));
             };
-
             fetch('http://localhost:1234/session-auth', {
                 method: 'POST',
                 headers: {
@@ -63,6 +61,8 @@ const AppContextProvider = ({ children }) => {
                     if (data.authenticated) {
                         mutateState({ authed: true, authLoaded: true, user: { roles: data.roles } });
                         getFlexibleUIConfig();
+                    } else {
+                        mutateState({ authLoaded: true });
                     }
                 })
                 .catch((err) => {

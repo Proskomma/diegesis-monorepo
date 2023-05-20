@@ -25,7 +25,7 @@ const { UIConfigContextProvider } = DiegesisUI.FlexibleDesign;
 
 function ErrorBoundary() {
     let error = useRouteError();
-    console.error(error);
+    console.error('useRouteError', error);
     return (
         <div>
             An unexpected error has occurred: <i>{error.message}</i>
