@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { DiegesisUI, MuiMaterial } from '@eten-lab/ui-kit';
 import { gql, useApolloClient } from '@apollo/client';
+import { useNavigate } from 'react-router-dom';
 const { Button, Drawer } = MuiMaterial;
 const { UIConfigControlPanel, FlexibleHome, FlexibleEntryDetailUI, FlexibleEntriesListUI, useUIConfigContext } = DiegesisUI.FlexibleDesign;
 const { FlexibleEntriesListPage } = FlexibleEntriesListUI;
@@ -10,6 +11,7 @@ export default function UIConfigPage({ setAppLanguage }) {
     const [open, setOpen] = useState(false);
     const gqlClient = useApolloClient();
     const { getRootUIConfig } = useUIConfigContext();
+    const navigate = useNavigate();
 
     const toggleDrawer = (event) => {
         if (
@@ -22,37 +24,38 @@ export default function UIConfigPage({ setAppLanguage }) {
     };
 
     const onConfigSave = async () => {
-        const rootConfig = getRootUIConfig()
-        const query = `
-        mutation SaveFlexibleUIConfig(
-            $id: String!
-            $className: String
-            $componentName: String!
-            $configPath: String!
-            $contents: JSON
-            $flexibles: JSON
-            $markdowns: JSON
-            $styles: JSON
-            $uiConfigs: JSON
-          ) {
-            saveFlexibleUIConfig(
-              id: $id
-              className: $className
-              componentName: $componentName
-              configPath: $configPath
-              contents: $contents
-              flexibles: $flexibles
-              markdowns: $markdowns
-              styles: $styles
-              uiConfigs: $uiConfigs
-            )
-          }`;
-        await gqlClient.mutate({ mutation: gql`${query}`, variables: { ...rootConfig } });
-        // try {
-        // } catch (err) {
-        //     console.error('failed to save flexible ui config', err);
-        //     return;
-        // }
+        try {
+            const rootConfig = getRootUIConfig()
+            const query = `
+            mutation SaveFlexibleUIConfig(
+                $id: String!
+                $className: String
+                $componentName: String!
+                $configPath: String!
+                $contents: JSON
+                $flexibles: JSON
+                $markdowns: JSON
+                $styles: JSON
+                $uiConfigs: JSON
+              ) {
+                saveFlexibleUIConfig(
+                  id: $id
+                  className: $className
+                  componentName: $componentName
+                  configPath: $configPath
+                  contents: $contents
+                  flexibles: $flexibles
+                  markdowns: $markdowns
+                  styles: $styles
+                  uiConfigs: $uiConfigs
+                )
+              }`;
+            await gqlClient.mutate({ mutation: gql`${query}`, variables: { ...rootConfig } });
+        } catch (err) {
+            console.error('onConfigSave error::', err);
+            navigate(`/login?redirect=/ui-config`);
+            return;
+        }
     }
 
     return (
