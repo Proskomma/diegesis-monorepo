@@ -2,10 +2,12 @@ import React, { useState, useEffect } from "react";
 import {
     createBrowserRouter,
     RouterProvider,
+    useLocation,
+    useNavigate,
     useRouteError,
 } from "react-router-dom";
 import { ApolloProvider, ApolloClient, InMemoryCache, gql } from "@apollo/client";
-import { CssBaseline } from "@mui/material";
+import { CssBaseline, Typography } from "@mui/material";
 import { ThemeProvider as UIKitThemeProvider, DiegesisUI } from '@eten-lab/ui-kit';
 import "./App.css";
 import MarkdownPage from "./pages/MarkdownPage";
@@ -18,7 +20,7 @@ import UIConfigPage from "./pages/UIConfigPage";
 import { AppLangProvider } from "./contexts/AppLangContext";
 import { AppLangResourcesProvider } from "./contexts/AppLangResourcesContext";
 import LoginPage from "./pages/LoginPage";
-import AppContextProvider from "./contexts/AppContext";
+import AppContextProvider, { useAppContext } from "./contexts/AppContext";
 const { UIConfigContextProvider } = DiegesisUI.FlexibleDesign;
 
 function ErrorBoundary() {
@@ -29,6 +31,29 @@ function ErrorBoundary() {
             An unexpected error has occurred: <i>{error.message}</i>
         </div>
     );
+}
+
+const ProtectedRoute = ({ children, roles = [] }) => {
+    const { authLoaded, authed, user } = useAppContext();
+    const navigate = useNavigate();
+    const location = useLocation();
+    if (authLoaded) {
+        const loginUrl = `/login?redirect=${location.pathname}`;
+        if (authed) {
+            if (roles.length) {
+                const roleAllowed = !!user.roles.find(ur => roles.includes(ur));
+                if (roleAllowed) return children;
+                else {
+                    navigate(loginUrl);
+                }
+            } else {
+                return children;
+            }
+        } else {
+            navigate(loginUrl);
+        }
+    }
+    return <Typography variant={'h1'} textAlign={'center'}>Loading...</Typography>
 }
 
 function App() {
@@ -118,7 +143,9 @@ function App() {
         },
         {
             path: "/ui-config",
-            element: <UIConfigPage setAppLanguage={setAppLanguage} />,
+            element: <ProtectedRoute roles={['admin']}>
+                <UIConfigPage setAppLanguage={setAppLanguage} />
+            </ProtectedRoute>,
             errorElement: <ErrorBoundary />
         },
         {
@@ -127,6 +154,7 @@ function App() {
             errorElement: <ErrorBoundary />
         },
     ]);
+
     return (
         <ApolloProvider client={client}>
             <UIKitThemeProvider>
