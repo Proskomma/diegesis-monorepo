@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { DiegesisUI, MuiMaterial } from '@eten-lab/ui-kit';
 import { gql, useApolloClient } from '@apollo/client';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 const { Button, Drawer } = MuiMaterial;
 const { UIConfigControlPanel, FlexibleHome, FlexibleEntryDetailUI, FlexibleEntriesListUI, useUIConfigContext } = DiegesisUI.FlexibleDesign;
 const { FlexibleEntriesListPage } = FlexibleEntriesListUI;
@@ -12,6 +12,7 @@ export default function UIConfigPage({ setAppLanguage }) {
     const gqlClient = useApolloClient();
     const { getRootUIConfig } = useUIConfigContext();
     const navigate = useNavigate();
+    const location = useLocation();
 
     const toggleDrawer = (event) => {
         if (
@@ -50,10 +51,12 @@ export default function UIConfigPage({ setAppLanguage }) {
                   uiConfigs: $uiConfigs
                 )
               }`;
-            await gqlClient.mutate({ mutation: gql`${query}`, variables: { ...rootConfig } });
+            const { errors } = await gqlClient.mutate({ mutation: gql`${query}`, variables: { ...rootConfig }, errorPolicy: "all" });
+            if (errors?.[0] && [403, 401].includes(errors[0]?.extensions?.code)) {
+                navigate(`/login?redirect=${location.pathname}`);
+            }
         } catch (err) {
             console.error('onConfigSave error::', err);
-            navigate(`/login?redirect=/ui-config`);
             return;
         }
     }
