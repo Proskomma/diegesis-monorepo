@@ -939,7 +939,7 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                 if (!context.auth || !context.auth.authenticated) {
                     throw new GraphQLError(`No auth found for saveFlexibleUIConfig mutation`, { extensions: { code: 401 } });
                 }
-                if (!context.auth.roles || context.auth.roles.includes("admin")) {
+                if (!context.auth.roles || !context.auth.roles.includes("admin")) {
                     throw new GraphQLError(`Required auth role 'admin' not found for saveFlexibleUIConfig`, { extensions: { code: 403 } });
                 }
                 writeFlexibleUIConfig(config, args);

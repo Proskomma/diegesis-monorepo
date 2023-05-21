@@ -4,10 +4,12 @@ import { DiegesisUI } from '@eten-lab/ui-kit';
 import { gql, useApolloClient } from '@apollo/client';
 const { useUIConfigContext } = DiegesisUI.FlexibleDesign;
 
+const AUTH_STORAGE_KEY = 'diegesis-auth'
 const initialState = {
     authed: false,
     authLoaded: false,
-    user: {}
+    user: {},
+    doLogout: () => { }
 }
 const AppContext = React.createContext(initialState);
 
@@ -19,13 +21,20 @@ export function useAppContext() {
     return context;
 }
 
+const doLogout = () => {
+    Cookies.remove(AUTH_STORAGE_KEY);
+    window.location.href = '/';
+}
+
 const AppContextProvider = ({ children }) => {
-    const [appState, setAppState] = useState(initialState);
+
+
+    const [appState, setAppState] = useState({ ...initialState, doLogout });
     const { setRootUIConfig } = useUIConfigContext();
     const gqlClient = useApolloClient();
 
     useEffect(() => {
-        const sessionCode = Cookies.get('diegesis-auth');
+        const sessionCode = Cookies.get(AUTH_STORAGE_KEY);
         if (!sessionCode) {
             mutateState({ authLoaded: true });
         } else {
@@ -70,7 +79,7 @@ const AppContextProvider = ({ children }) => {
                     console.error(err.message);
                 });
         };
-    }, []);
+    }, [gqlClient, setRootUIConfig]);
 
     const mutateState = (newState) => {
         setAppState((prevState) => {
