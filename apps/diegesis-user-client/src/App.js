@@ -17,6 +17,7 @@ import EntryBrowsePage from "./pages/EntryBrowsePage";
 import EntrySearchPage from "./pages/EntrySearchPage";
 import EntryDownloadPage from "./pages/EntryDownloadPage";
 import UIConfigPage from "./pages/UIConfigPage";
+import AppContextProvider from "./contexts/AppContext";
 import { AppLangProvider } from "./contexts/AppLangContext";
 import { AppLangResourcesProvider } from "./contexts/AppLangResourcesContext";
 const { UIConfigContextProvider, useUIConfigContext } = DiegesisUI.FlexibleDesign;
@@ -44,14 +45,14 @@ function PopulateUIConfig({ uiConfig, children }) {
 function App() {
 
     const client = new ApolloClient({
-        uri: "/graphql",
+        uri: "http://localhost:1234/graphql",
         cache: new InMemoryCache(),
     });
 
     const [appLanguage, setAppLanguage] = useState("en");
     const [appLanguageResources, setAppLanguageResources] = useState({});
     const [uiConfig, setUIConfig] = useState(null);
-    
+
     useEffect(() => {
         const getFlexibleUIConfig = async () => {
             const getQuery = `
@@ -155,18 +156,21 @@ function App() {
             errorElement: <ErrorBoundary />
         },
     ]);
+
     return (
         <ApolloProvider client={client}>
             <UIKitThemeProvider>
                 <UIConfigContextProvider>
-                    <AppLangResourcesProvider value={appLanguageResources}>
-                        <AppLangProvider value={appLanguage}>
-                            <CssBaseline />
-                            <PopulateUIConfig uiConfig={uiConfig}>
-                                <RouterProvider router={router} />
-                            </PopulateUIConfig>
-                        </AppLangProvider>
-                    </AppLangResourcesProvider>
+                    <AppContextProvider>
+                        <AppLangResourcesProvider value={appLanguageResources}>
+                            <AppLangProvider value={appLanguage}>
+                                <CssBaseline />
+                                <PopulateUIConfig uiConfig={uiConfig}>
+                                    <RouterProvider router={router} />
+                                </PopulateUIConfig>
+                            </AppLangProvider>
+                        </AppLangResourcesProvider>
+                    </AppContextProvider>
                 </UIConfigContextProvider>
             </UIKitThemeProvider>
         </ApolloProvider>
