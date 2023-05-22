@@ -30,7 +30,7 @@ const generateId = () => btoa(new UUID(4)).substring(0, 12);
 
 const makeResolvers = async (orgsData, orgHandlers, config) => {
     const scalarRegexes = {
-        OrgName: new RegExp(/^[A-Za-z0-9]{2,64}$/),
+        OrgName: new RegExp(/^[A-Za-z0-9][A-Za-z0-9_]{0,62}[A-Za-z0-9]$/),
         EntryId: new RegExp(/^[A-Za-z0-9_-]{1,64}$/),
         BookCode: new RegExp(/^[A-Z0-9]{3}$|^tyndaleStudyNotes$/),
         ContentType: new RegExp(/^(USFM|USX|succinct|tyndaleStudyNotes)$/),
@@ -360,13 +360,43 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
 
     const queryResolver = {
         Query: {
-            name: root => config.name,
+            name: () => config.name,
             orgs: () => {
                 return Object.values(orgsData);
             },
             org: (root, args, context) => {
                 context.incidentLogger = config.incidentLogger;
                 return orgsData[args.name];
+            },
+            clientStructure: (root, args, context) => {
+                return context.clientStructure;
+            },
+            entryEnums: root => {
+                const enums = {
+                    languages: new Set([]),
+                    types:  new Set([]),
+                    sources:  new Set([]),
+                    owners:  new Set([])
+                };
+                for (const orgSource of Object.keys(orgsData)) {
+                    for (const entryRecord of orgEntries(config, orgSource)) {
+                        for (const revision of entryRecord.revisions) {
+                            const revisionRecord = readEntryMetadata(config, orgSource, entryRecord.id, revision);
+                            enums.languages.add(revisionRecord.languageCode);
+                            enums.sources.add(revisionRecord.source);
+                            enums.owners.add(revisionRecord.owner);
+                            for (const resourceType of revisionRecord.resourceTypes) {
+                                enums.types.add(resourceType);
+                            }
+                        }
+                    }
+                }
+                return {
+                    languages: Array.from(enums.languages),
+                    types: Array.from(enums.types),
+                    sources: Array.from(enums.sources),
+                    owners: Array.from(enums.owners)
+                };
             },
             localEntries: (root, args) => {
                 let ret = [];
@@ -646,6 +676,23 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                 }
             },
         },
+        ClientStructure: {
+            languages: root => Object.keys(root.languages),
+            urls: root => ["home", ...root.urls, "list"],
+            urlData: (root, args) => ["home", ...root.urls, "list"].map(
+                url => {
+                    return {
+                        url,
+                        menuText: root.languages[args.language].pages[url].menuText.trim()
+                    }
+                }),
+            metadata: (root, args) => root.languages[args.language],
+            footer: (root, args) => root.languages[args.language].footer,
+            page: (root, args) => root.languages[args.language].pages[args.url],
+        },
+        StructureResource: {
+            menuText: root => root.menuText.trim(),
+        }
     };
     const mutationResolver = {
         Mutation: {
@@ -809,7 +856,7 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                 if (!resourceTypes[args.contentType]) {
                     throw new Error(`Content type '${args.contentType}' not supported`);
                 }
-               const fieldError = checkCreateLocalEntryFields(args.metadata, args.resources);
+                const fieldError = checkCreateLocalEntryFields(args.metadata, args.resources);
                 if (fieldError.length > 0) {
                     throw new Error(fieldError);
                 }

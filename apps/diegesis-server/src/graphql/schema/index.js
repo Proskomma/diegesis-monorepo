@@ -21,7 +21,13 @@ const querySchema = gql`
             """The name of the organization"""
             name: OrgName!
         ): Org
-
+        
+        """Existing values for local entry fields"""
+        entryEnums : EntryEnums
+        
+        """The client structure"""
+        clientStructure: ClientStructure!
+        
         """Entries available across all sources on this server"""
         localEntries(
             """Only entries from these sources"""
@@ -54,7 +60,80 @@ const querySchema = gql`
             revision: String!
         ): LocalEntry
     }
+    
+    """Entry Enums"""
+    type EntryEnums {
+        types: [String!]!
+        languages: [String!]!
+        owners: [String!]!
+        sources: [String!]!
+    }
+    
+    """Client Structure"""
+    type ClientStructure {
+    
+        """The i18n languages in order of priority"""
+        languages: [String!]!
         
+        """The urls in display order"""
+        urls: [String!]!
+        
+        """Data for each url"""
+        urlData(
+            """The language code"""
+            language: String!
+        ) : [UrlData!]!
+        
+        """The structure metadata"""
+        metadata(
+            """The language code"""
+            language: String!
+        ): StructureMetadata!
+        
+        """The Footer"""
+        footer(
+            """The language code"""
+            language: String!
+        ): StructureResource!
+
+        """A page"""
+        page(
+            """The language code"""
+            language: String!
+            
+            """The page url"""
+            url: String!
+        ): StructureResource!
+    }
+    
+    """Site-wide metadata for a language"""
+    type StructureMetadata {
+        """The title of the site"""
+        title: String!
+    }
+    
+    """A structure resource for a page or footer"""
+    type StructureResource {
+        """The body (main content) as markdown"""
+        body: String!
+        
+        """The actual language returned"""
+        language: String!
+        
+        """The menu text"""
+        menuText: String!
+    
+    }
+    
+    """Url data"""
+    type UrlData {
+        """The url"""
+        url: String!
+        
+        """The localized menu slug"""
+        menuText: String!
+    }
+    
     """An organization from which this server can serve data"""
     type Org {
 
@@ -307,6 +386,7 @@ const querySchema = gql`
         """The Metadata Value"""
         value : String!
     }
+    
     `;
 
 const mutationSchema = gql`
