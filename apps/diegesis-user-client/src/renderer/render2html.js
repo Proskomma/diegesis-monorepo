@@ -1,26 +1,26 @@
-import {renderStyles as styles} from './renderStyles';
+import { renderStyles as styles } from "./renderStyles";
 
 const camelToKebabCase = (str) =>
-    str.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`);
+  str.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`);
 
 const getStyles = (type, subType) => {
-    if (!styles[type]) {
-        throw new Error(`Unknown style type '${type}'`);
-    }
-    if (!styles[type][subType]) {
-        console.log(`No styles for ${type}/${subType}`)
-        return styles[type].default;
-    }
-    const retObj = {...styles[type].default, ...styles[type][subType]};
-    let retArr = []
-    Object.entries(retObj).forEach( ([key,value]) => {
-        retArr.push(`${camelToKebabCase(key)}: ${value}`)
-    })
-    return retArr.join("; ");
-}
+  if (!styles[type]) {
+    throw new Error(`Unknown style type '${type}'`);
+  }
+  if (!styles[type][subType]) {
+    console.log(`No styles for ${type}/${subType}`);
+    return styles[type].default;
+  }
+  const retObj = { ...styles[type].default, ...styles[type][subType] };
+  let retArr = [];
+  Object.entries(retObj).forEach(([key, value]) => {
+    retArr.push(`${camelToKebabCase(key)}: ${value}`);
+  });
+  return retArr.join("; ");
+};
 
 function InlineElement(props) {
-        return `<span
+  return `<span
             style={{
                 ...props.style,
                 paddingLeft: "0.5em",
@@ -32,8 +32,8 @@ function InlineElement(props) {
             onClick={toggleDisplay}
         >
             ${props.children}
-        </span>`
-/* if not display
+        </span>`;
+  /* if not display
     } else {
         return `<span
             style={{
@@ -53,21 +53,25 @@ function InlineElement(props) {
 }
 
 const renderers = {
-    text: text => text,
-    chapter_label: number => `<span style="${getStyles('marks', "chapter_label")}">${number}</span>`,
-    verses_label: number => `<span style="${getStyles('marks', "verses_label")}">${number}</span>`,
-    paragraph: (subType, content, footnoteNo) =>
-        ["usfm:f", "usfm:x"].includes(subType) ?
-            InlineElement({
-                style: getStyles('paras', subType),
-                linkText: (subType === "usfm:f") ? footnoteNo : "*",
-                children: content.join("")
-            })
-            : `<p style="${getStyles('paras', subType)}">${content.join("")}</p>`,
-    wrapper: (subType, content) => `<span style="${getStyles('wrappers', subType)}">${content}</span>`,
-    wWrapper: (atts, content) => Object.keys(atts).length === 0 ?
-        content :
-        `<span
+  text: (text) => text,
+  chapter_label: (number) =>
+    `<span style="${getStyles("marks", "chapter_label")}">${number}</span>`,
+  verses_label: (number) =>
+    `<span style="${getStyles("marks", "verses_label")}">${number}</span>`,
+  paragraph: (subType, content, footnoteNo) =>
+    ["usfm:f", "usfm:x"].includes(subType)
+      ? InlineElement({
+          style: getStyles("paras", subType),
+          linkText: subType === "usfm:f" ? footnoteNo : "*",
+          children: content.join(""),
+        })
+      : `<p style="${getStyles("paras", subType)}">${content.join("")}</p>`,
+  wrapper: (subType, content) =>
+    `<span style="${getStyles("wrappers", subType)}">${content}</span>`,
+  wWrapper: (atts, content) =>
+    Object.keys(atts).length === 0
+      ? content
+      : `<span
             style={{
                 display: "inline-block",
                 verticalAlign: "top",
@@ -75,10 +79,9 @@ const renderers = {
             }}
         >
         <div>${content}</div>
-            ${
-                Object.entries(atts).map(
-                    a =>
-                        `<div
+            ${Object.entries(atts).map(
+              (a) =>
+                `<div
                             style={{
                                 fontSize: "xx-small",
                                 fontWeight: "bold"
@@ -86,10 +89,9 @@ const renderers = {
                         >
                         {${a[0]} = ${a[1]}} 
                         </div>`
-                )
-            }
+            )}
         </span>`,
-    mergeParas: paras => paras.join('\n'),
-}
+  mergeParas: (paras) => paras.join("\n"),
+};
 
-export {renderers};
+export { renderers };

@@ -241,6 +241,8 @@ export default function BrowseScripture({
           label: docName(d),
         }))
       : [];
+
+  console.log(scriptureData.rendered);
   return (
     <Grid
       container
