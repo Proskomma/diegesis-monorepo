@@ -251,20 +251,23 @@ const renderStyles = {
 
 const StyleAsCSS = (options) => {
   for (const option in options) {
-    let cssResult = `${option} CSS format : \n`;
+    let cssResult = `/* ${option} CSS format : */\n`;
     for (const op in options[option]) {
-      while (op.includes(":")) {
+      if (op.includes(":")) {
         const newOp = op.replace(":", "_");
-        cssResult += `  .${option}_${newOp} {\n`;
-      }
-      if (!op.includes(":")) {
-        cssResult += `  .${option}_${op} {\n`;
+        cssResult += `  .${option}_${newOp
+          .replace(/([A-Z])/g, "_$1")
+          .toLowerCase()} {\n`;
+      } else {
+        cssResult += `  .${option}_${op
+          .replace(/([A-Z])/g, "_$1")
+          .toLowerCase()} {\n`;
       }
       const styles = options[option][op];
       for (const prop in styles) {
         for (p in prop) {
           if (prop[p] === prop[p].toUpperCase()) {
-            const newProp = prop.replace(prop[p], `-${prop[p].toLowerCase()}`);
+            const newProp = prop.replace(/([A-Z])/g, "-$1").toLowerCase();
             cssResult += `      ${newProp}: ${styles[prop]};\n`;
           }
         }
@@ -275,12 +278,4 @@ const StyleAsCSS = (options) => {
   }
 };
 
-const res = StyleAsCSS(renderStyles);
-
-// export { renderStyles };
-
-//   for (p in op) {
-//     if (op[p] === op[p].toUpperCase() && !Number.isInteger(op[p])) {
-//       const updatedProp = op.replace(op[p], `_${op[p].toLowerCase()}`);
-//     }
-//   }
+export { renderStyles, StyleAsCSS };
