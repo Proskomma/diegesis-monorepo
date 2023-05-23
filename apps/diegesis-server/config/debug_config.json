@@ -12,6 +12,7 @@
   "verbose": true,
   "includeMutations": true,
   "sessionTimeoutInMins": 10,
+  "uiConfigPath": "/app/config",
   "staticPaths": [
     {
       "path": "./src/static",
@@ -50,5 +51,4 @@
     }
   ],
   "deleteGenerated": false
-
 }

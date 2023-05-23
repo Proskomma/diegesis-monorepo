@@ -694,12 +694,9 @@ const readEntryBookResource = (config, orgName, transId, transRevision, resource
     }
 }
 
-const readFlexibleUIConfig = (config, id) => {
+const readFlexibleUIConfig = (config, id, langCode) => {
     try {
-        if (typeof config.name !== "string") {
-            throw new Error('orgName should be string');
-        }
-        const compUIConfigPath = path.join(uiConfigDir(config.dataPath, translationDir(config.name)), `${id}.json`);
+        const compUIConfigPath = path.join(uiConfigDir(config.uiConfigPath, translationDir(langCode)), `${id}.json`);
         return fse.readJsonSync(compUIConfigPath);
     } catch (err) {
         return null;
@@ -777,12 +774,9 @@ const writeEntryResource = (config, orgName, transId, transRevision, resourceOri
     }
 }
 
-const writeFlexibleUIConfig = (config, objData, transId, transRevision) => {
+const writeFlexibleUIConfig = (config, objData) => {
     try {
-        if (typeof config.name !== "string") {
-            throw new Error('orgName should be string in writeFlexibleUIConfig');
-        }
-        const originPath = uiConfigDir(config.dataPath, translationDir(config.name), transId, transRevision);
+        const originPath = uiConfigDir(config.uiConfigPath, objData.langCode);
         if (!fse.pathExistsSync(originPath)) {
             fse.mkdirsSync(originPath);
         }

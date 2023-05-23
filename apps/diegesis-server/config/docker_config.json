@@ -14,6 +14,7 @@
     "sessionTimeoutInMins": 30,
     "localContent": true,
     "dataPath": "/app/data",
+    "uiConfigPath": "/app/config",
     "orgsConfig": [
       {
         "name": "eBible",

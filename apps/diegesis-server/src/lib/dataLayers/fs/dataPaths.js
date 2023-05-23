@@ -175,12 +175,10 @@ const generatedResourcePath =
         );
     }
 
-const uiConfigDir = (dataPath, translationDir, translationId, translationRevision) => {
+const uiConfigDir = (dataPath, langCode) => {
     const pathParts = [dataPath];
-    // if (translationDir) pathParts.push(translationDir);
-    // if (translationId) pathParts.push(translationId);
-    // if (translationRevision) pathParts.push(translationRevision);
     pathParts.push('uiConfigs');
+    pathParts.push(langCode);
     return path.join(...pathParts);
 }
 

@@ -375,6 +375,8 @@ const querySchema = gql`
 
     """Flexible ui config"""
     type FlexibleUIConfig {
+        """Language Code"""
+        langCode: String!
         """Element Id"""
         id: String!
         """Element Class Name"""
@@ -468,6 +470,8 @@ const mutationSchema = gql`
         ) : Boolean!
 
         saveFlexibleUIConfig (
+            """Language Code"""
+            langCode: String!
             """Element Id"""
             id: String!
             """Element Class Name"""

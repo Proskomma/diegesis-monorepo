@@ -31,6 +31,7 @@ export default function UIConfigPage({ setAppLanguage }) {
             const rootConfig = getRootUIConfig()
             const query = `
             mutation SaveFlexibleUIConfig(
+                $langCode: String!
                 $id: String!
                 $className: String
                 $componentName: String!
@@ -51,9 +52,10 @@ export default function UIConfigPage({ setAppLanguage }) {
                   markdowns: $markdowns
                   styles: $styles
                   uiConfigs: $uiConfigs
+                  langCode: $langCode
                 )
               }`;
-            await gqlClient.mutate({ mutation: gql`${query}`, variables: { ...rootConfig } });
+            await gqlClient.mutate({ mutation: gql`${query}`, variables: { ...rootConfig, langCode: appLang } });
         } catch (err) {
             console.error('failed to save flexible ui config', err);
             return;
