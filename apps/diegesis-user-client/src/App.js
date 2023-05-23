@@ -56,8 +56,8 @@ function App() {
     useEffect(() => {
         const getFlexibleUIConfig = async () => {
             const getQuery = `
-            query GetFlexibleUIConfig($compId: String!) {
-                getFlexibleUIConfig(id: $compId) {
+            query GetFlexibleUIConfig($compId: String!, $langCode: String!) {
+                getFlexibleUIConfig(id: $compId, langCode: $langCode) {
                   id
                   componentName
                   flexibles
@@ -68,7 +68,7 @@ function App() {
                   styles
                 }
               }`
-            const result = await client.query({ query: gql`${getQuery}`, variables: { compId: 'root' } });
+            const result = await client.query({ query: gql`${getQuery}`, variables: { compId: 'root', langCode: appLanguage } });
             const config = result.data?.getFlexibleUIConfig;
             setUIConfig(config);
         }

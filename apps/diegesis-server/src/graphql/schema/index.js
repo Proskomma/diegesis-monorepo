@@ -64,6 +64,7 @@ const querySchema = gql`
         """An flexible ui config for all pages, if it exists"""
         getFlexibleUIConfig(
             id: String!
+            langCode: String!
         ): FlexibleUIConfig
     }
     

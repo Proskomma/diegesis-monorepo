@@ -42,8 +42,8 @@ const AppContextProvider = ({ children }) => {
         } else {
             const getFlexibleUIConfig = async () => {
                 const getQuery = `
-                query GetFlexibleUIConfig($compId: String!) {
-                    getFlexibleUIConfig(id: $compId) {
+                query GetFlexibleUIConfig($compId: String!, $langCode: String!) {
+                    getFlexibleUIConfig(id: $compId, langCode: $langCode) {
                       id
                       componentName
                       flexibles
@@ -54,7 +54,7 @@ const AppContextProvider = ({ children }) => {
                       styles
                     }
                   }`
-                const result = await gqlClient.query({ query: gql`${getQuery}`, variables: { compId: 'root' } });
+                const result = await gqlClient.query({ query: gql`${getQuery}`, variables: { compId: 'root', langCode: appState.appLang } });
                 const config = result.data?.getFlexibleUIConfig;
                 setRootUIConfig(JSON.parse(JSON.stringify(config)));
             };
