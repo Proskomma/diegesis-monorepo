@@ -75,10 +75,6 @@ export default function PageLayout(props) {
     });
 
     if (Array.isArray(navOptions)) {
-        navOptions.push({
-            variant: 'custom',
-            element: <LangSelector />
-        });
         if (authLoaded) {
             if (authed) {
                 navOptions.push({
@@ -90,6 +86,10 @@ export default function PageLayout(props) {
                 navOptions.push({ title: 'Login', variant: 'small', href: '/login', activated: location.pathname === '/login' });
             }
         }
+        navOptions.push({
+            variant: 'custom',
+            element: <LangSelector />
+        });
     }
 
     const pageProps = {
