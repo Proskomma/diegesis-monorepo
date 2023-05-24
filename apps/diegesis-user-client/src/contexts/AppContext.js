@@ -1,17 +1,23 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 import Cookies from 'js-cookie';
 import { DiegesisUI } from '@eten-lab/ui-kit';
 import { gql, useApolloClient } from '@apollo/client';
 const { useUIConfigContext } = DiegesisUI.FlexibleDesign;
 
-const AUTH_STORAGE_KEY = 'diegesis-auth'
+const StorageKeys = Object.freeze({
+    AUTH: 'diegesis-auth',
+    CONFIG: 'app-config',
+});
+
 const initialState = {
     appLang: 'en',
     authed: false,
     authLoaded: false,
     user: {},
     doLogout: () => { },
-    mutateState: (newState) => { }
+    mutateState: (newState) => { },
+    setStoreConfig: (config) => { },
+    getStoredConfig: () => { }
 }
 const AppContext = React.createContext(initialState);
 
@@ -24,8 +30,20 @@ export function useAppContext() {
 }
 
 const doLogout = () => {
-    Cookies.remove(AUTH_STORAGE_KEY);
+    Cookies.remove(StorageKeys.AUTH);
     window.location.href = '/';
+}
+
+const getStoredConfig = () => {
+    const storedJsonString = localStorage.getItem(StorageKeys.CONFIG)
+    let appConfig;
+    if (storedJsonString) appConfig = JSON.parse(storedJsonString);
+    return appConfig;
+}
+const setStoreConfig = (config) => {
+    const newConfig = getStoredConfig() || {};
+    Object.assign(newConfig, config);
+    localStorage.setItem(StorageKeys.CONFIG, JSON.stringify(newConfig));
 }
 
 const AppContextProvider = ({ children }) => {
@@ -36,7 +54,13 @@ const AppContextProvider = ({ children }) => {
     const gqlClient = useApolloClient();
 
     useEffect(() => {
-        const sessionCode = Cookies.get(AUTH_STORAGE_KEY);
+        let config = getStoredConfig();
+        if (!config) {
+            setStoreConfig({ langCode: 'en' })
+            config = getStoredConfig();
+        };
+        mutateState({ appLang: config.langCode });
+        const sessionCode = Cookies.get(StorageKeys.AUTH);
         if (!sessionCode) {
             mutateState({ authLoaded: true });
         } else {
@@ -54,9 +78,9 @@ const AppContextProvider = ({ children }) => {
                       styles
                     }
                   }`
-                const result = await gqlClient.query({ query: gql`${getQuery}`, variables: { compId: 'root', langCode: appState.appLang } });
-                const config = result.data?.getFlexibleUIConfig;
-                setRootUIConfig(JSON.parse(JSON.stringify(config)));
+                const result = await gqlClient.query({ query: gql`${getQuery}`, variables: { compId: 'root', langCode: config.langCode } });
+                const uiConfig = result.data?.getFlexibleUIConfig;
+                setRootUIConfig(JSON.parse(JSON.stringify(uiConfig)));
             };
             fetch('http://localhost:1234/session-auth', {
                 method: 'POST',
@@ -81,7 +105,8 @@ const AppContextProvider = ({ children }) => {
                     console.error(err.message);
                 });
         };
-    }, [gqlClient, setRootUIConfig]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const mutateState = (newState) => {
         setAppState((prevState) => {
@@ -89,11 +114,15 @@ const AppContextProvider = ({ children }) => {
         })
     }
 
-    const providerState = {
-        ...appState,
-        doLogout,
-        mutateState
-    }
+    const providerState = useMemo(() => {
+        return {
+            ...appState,
+            doLogout,
+            mutateState,
+            setStoreConfig,
+            getStoredConfig
+        }
+    }, [appState])
 
     return (
         <AppContext.Provider value={providerState}>

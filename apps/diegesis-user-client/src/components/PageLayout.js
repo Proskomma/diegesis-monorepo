@@ -9,7 +9,7 @@ const { MOCK_SIDE_NAV_PROPS, FlexibleDesign } = DiegesisUI;
 const { FlexiblePageLayout } = FlexibleDesign;
 
 const LangSelector = () => {
-    const { appLang, mutateState } = useAppContext();
+    const { appLang, mutateState, setStoreConfig } = useAppContext();
     const appLangResources = useContext(AppLangResourcesContext);
     return (
         <>
@@ -34,7 +34,7 @@ const LangSelector = () => {
             <FormGroup>
                 {
                     Object.entries(langTable)
-                        .filter(kv => (appLangResources.languages && appLangResources.languages.includes(kv[0])) || kv[0] === "en")
+                        .filter(kv => (appLangResources?.languages?.includes(kv[0])) || kv[0] === "en")
                         .map((kv, n) =>
                             <FormControlLabel
                                 key={n}
@@ -46,8 +46,10 @@ const LangSelector = () => {
                                         name='lang'
                                         checked={appLang === kv[0]}
                                         onChange={() => {
-                                            if (mutateState)
+                                            if (mutateState) {
                                                 mutateState({ appLang: kv[0] });
+                                                setStoreConfig({ langCode: kv[0] });
+                                            }
                                         }}
                                     />
                                 }
@@ -64,7 +66,7 @@ export default function PageLayout(props) {
     const appLangResources = useContext(AppLangResourcesContext);
     const { authLoaded, authed, doLogout } = useAppContext();
     const location = useLocation();
-    const navOptions = appLangResources.urlData && appLangResources.urlData.map(item => {
+    const navOptions = appLangResources?.urlData?.map(item => {
         const href = `/${item.url === 'home' ? "" : item.url}`;
         return ({
             title: item.menuText,
