@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import Cookies from 'js-cookie';
 import { DiegesisUI } from '@eten-lab/ui-kit';
 import { gql, useApolloClient } from '@apollo/client';
@@ -48,7 +48,6 @@ const setStoreConfig = (config) => {
 
 const AppContextProvider = ({ children }) => {
 
-
     const [appState, setAppState] = useState(initialState);
     const { setRootUIConfig } = useUIConfigContext();
     const gqlClient = useApolloClient();
@@ -64,24 +63,6 @@ const AppContextProvider = ({ children }) => {
         if (!sessionCode) {
             mutateState({ authLoaded: true });
         } else {
-            const getFlexibleUIConfig = async () => {
-                const getQuery = `
-                query GetFlexibleUIConfig($compId: String!, $langCode: String!) {
-                    getFlexibleUIConfig(id: $compId, langCode: $langCode) {
-                      id
-                      componentName
-                      flexibles
-                      contents
-                      configPath
-                      uiConfigs
-                      markdowns
-                      styles
-                    }
-                  }`
-                const result = await gqlClient.query({ query: gql`${getQuery}`, variables: { compId: 'root', langCode: config.langCode } });
-                const uiConfig = result.data?.getFlexibleUIConfig;
-                setRootUIConfig(JSON.parse(JSON.stringify(uiConfig)));
-            };
             fetch('http://localhost:1234/session-auth', {
                 method: 'POST',
                 headers: {
@@ -95,7 +76,6 @@ const AppContextProvider = ({ children }) => {
                 .then((data) => {
                     if (data.authenticated) {
                         mutateState({ authed: true, authLoaded: true, user: { roles: data.roles } });
-                        getFlexibleUIConfig();
                     } else {
                         mutateState({ authLoaded: true });
                     }
@@ -107,6 +87,32 @@ const AppContextProvider = ({ children }) => {
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+    useEffect(() => {
+        getFlexibleUIConfig();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [appState.appLang])
+
+    const getFlexibleUIConfig = useCallback(async () => {
+        const getQuery = `
+        query GetFlexibleUIConfig($compId: String!, $langCode: String!) {
+            getFlexibleUIConfig(id: $compId, langCode: $langCode) {
+              id
+              componentName
+              flexibles
+              contents
+              configPath
+              uiConfigs
+              markdowns
+              styles
+            }
+          }`
+        const result = await gqlClient.query({ query: gql`${getQuery}`, variables: { compId: 'root', langCode: appState.appLang } });
+        const uiConfig = result.data?.getFlexibleUIConfig;
+        if (uiConfig)
+            setRootUIConfig(JSON.parse(JSON.stringify(uiConfig)));
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [appState.appLang]);
 
     const mutateState = (newState) => {
         setAppState((prevState) => {
