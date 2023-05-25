@@ -1,16 +1,14 @@
-import { useContext } from 'react';
 import { useAppContext } from "../contexts/AppContext";
-import AppLangResourcesContext from '../contexts/AppLangResourcesContext';
 import { DiegesisUI, MuiMaterial, Checkbox } from '@eten-lab/ui-kit';
 import { useLocation } from 'react-router-dom';
+import i18n from '../i18n';
 import langTable from "../i18n/languages.json";
 const { Button, FormGroup, FormControlLabel } = MuiMaterial;
 const { MOCK_SIDE_NAV_PROPS, FlexibleDesign } = DiegesisUI;
 const { FlexiblePageLayout } = FlexibleDesign;
 
 const LangSelector = () => {
-    const { appLang, mutateState, setStoreConfig } = useAppContext();
-    const appLangResources = useContext(AppLangResourcesContext);
+    const { appLang, mutateState, setStoreConfig, clientStructure } = useAppContext();
     return (
         <>
             <Button
@@ -29,12 +27,12 @@ const LangSelector = () => {
                     size: 'medium',
                 }}
             >
-                Languages
+                {i18n(appLang, 'LANGUAGES')}
             </Button>
             <FormGroup>
                 {
                     Object.entries(langTable)
-                        .filter(kv => (appLangResources?.languages?.includes(kv[0])) || kv[0] === "en")
+                        .filter(kv => (clientStructure?.languages?.includes(kv[0])) || kv[0] === "en")
                         .map((kv, n) =>
                             <FormControlLabel
                                 key={n}
@@ -63,10 +61,9 @@ const LangSelector = () => {
 }
 
 export default function PageLayout(props) {
-    const appLangResources = useContext(AppLangResourcesContext);
-    const { authLoaded, authed, doLogout } = useAppContext();
+    const { authLoaded, authed, doLogout, clientStructure } = useAppContext();
     const location = useLocation();
-    const navOptions = appLangResources?.urlData?.map(item => {
+    const navOptions = clientStructure?.urlData?.map(item => {
         const href = `/${item.url === 'home' ? "" : item.url}`;
         return ({
             title: item.menuText,

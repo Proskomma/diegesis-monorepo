@@ -111,5 +111,6 @@
     "TEXT":"Texte",
     "NO_VALID_TERMS":"Aucun terme valide à rechercher pour le moment",
     "CONTROLS_ORGANIZATION":"Organisation",
-    "BIBLE_IN_BASIC_ENGLISH": "Bible en anglais de base"
+    "BIBLE_IN_BASIC_ENGLISH": "Bible en anglais de base",
+    "LANGUAGES": "Langages"
 }

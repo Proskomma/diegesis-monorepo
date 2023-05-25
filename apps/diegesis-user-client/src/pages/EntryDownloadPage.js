@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useState } from "react";
 import { Container, Typography, Grid, Button } from "@mui/material";
 import { useParams, Link as RouterLink } from "react-router-dom";
 import { ArrowBack, ArrowForward, Download } from '@mui/icons-material';
@@ -8,12 +8,12 @@ import GqlError from "../components/GqlError";
 import Spinner from "../components/Spinner";
 import BookSelector from "../components/BookSelector";
 import i18n from "../i18n";
-import AppLangContext from "../contexts/AppLangContext";
 import { directionText, fontFamily } from "../i18n/languageDirection";
 import PageLayout from "../components/PageLayout";
+import { useAppContext } from "../contexts/AppContext";
 
-export default function EntryDownloadPage({ setAppLanguage }) {
-    const appLang = useContext(AppLangContext);
+export default function EntryDownloadPage({ }) {
+    const { appLang } = useAppContext();
     const { source, entryId, revision } = useParams();
     const [selectedBook, setSelectedBook] = useState("");
 

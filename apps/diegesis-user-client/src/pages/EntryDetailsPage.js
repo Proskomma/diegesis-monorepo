@@ -1,8 +1,7 @@
-import { useParams, useNavigate } from "react-router-dom";
-import { useContext, useState } from "react";
+import { useParams } from "react-router-dom";
+import { useState } from "react";
 import { DiegesisUI, MuiMaterial } from '@eten-lab/ui-kit';
 import { gql, useQuery } from "@apollo/client";
-import AppLangContext from "../contexts/AppLangContext";
 import Spinner from "../components/Spinner";
 import GqlError from "../components/GqlError";
 import {
@@ -10,6 +9,7 @@ import {
 } from "../i18n/languageDirection";
 import i18n from "../i18n";
 import PageLayout from "../components/PageLayout";
+import { useAppContext } from "../contexts/AppContext";
 const { EntryDetailUI, FlexibleDesign } = DiegesisUI;
 const { BottomBackBtn, InfoGrid } = EntryDetailUI;
 const { FlexibleTopControls, FlexibleSectionDivider, FlexibleBookResourceBox, FlexibleBottomActionButtons } = FlexibleDesign.FlexibleEntryDetailUI;
@@ -21,9 +21,8 @@ const cellsConfig = [
     { id: 'emptyColumn1', disablePadding: false, label: '', numeric: false },
 ]
 
-export default function EntryDetailPage({ setAppLanguage }) {
-    const appLang = useContext(AppLangContext);
-    const navigate = useNavigate();
+export default function EntryDetailPage({ }) {
+    const { appLang } = useAppContext();
     const { source, entryId, revision } = useParams();
     const [selectedBook, setSelectedBook] = useState('');
     const queryString = `query {

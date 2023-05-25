@@ -111,5 +111,6 @@
     "TEXT":"نصوص",
     "NO_VALID_TERMS":"لا توجد مصطلحات صالحة للبحث حتى الآن",
     "CONTROLS_ORGANIZATION":"منظمة",
-    "BIBLE_IN_BASIC_ENGLISH": "الكتاب المقدس باللغة الإنجليزية الأساسية"
+    "BIBLE_IN_BASIC_ENGLISH": "الكتاب المقدس باللغة الإنجليزية الأساسية",
+    "LANGUAGES": "اللغات"
 }
