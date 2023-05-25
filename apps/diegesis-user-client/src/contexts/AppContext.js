@@ -54,9 +54,10 @@ const AppContextProvider = ({ children }) => {
                   }`
                 const result = await gqlClient.query({ query: gql`${getQuery}`, variables: { compId: 'root' } });
                 const config = result.data?.getFlexibleUIConfig;
-                setRootUIConfig(JSON.parse(JSON.stringify(config)));
+                if (config)
+                    setRootUIConfig(JSON.parse(JSON.stringify(config)));
             };
-            fetch('http://localhost:1234/session-auth', {
+            fetch('/session-auth', {
                 method: 'POST',
                 headers: {
                     'Content-type': 'application/json; charset=UTF-8',

@@ -16,6 +16,7 @@ const defaultConfig = {
     hostName: 'localhost',
     port: 2468,
     dataPath: path.resolve(appRoot, 'data'),
+    uiConfigPath: path.resolve(appRoot, 'config'),
     structurePath: path.resolve(appRoot, 'default_structure'),
     logAccess: false,
     logFormat: "combined",

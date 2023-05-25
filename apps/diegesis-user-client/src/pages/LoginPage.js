@@ -8,7 +8,7 @@ export default function LoginPage() {
     const redirectUrl = searchParams.get('redirect') || '/';
     return (
         <Container>
-            <form action="http://localhost:1234/new-login-auth" method="post">
+            <form action="/new-login-auth" method="post">
                 <input type="hidden" name="redirect" value={redirectUrl} />
                 <Box display={'flex'} alignItems={'center'} marginTop={'20vh'} sx={{ marginY: '50px' }} flexDirection={'column'}>
                     <Typography variant={'h2'} sx={{ marginY: '10px' }}>Login</Typography>

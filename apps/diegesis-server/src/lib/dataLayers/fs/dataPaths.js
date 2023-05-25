@@ -175,11 +175,8 @@ const generatedResourcePath =
         );
     }
 
-const uiConfigDir = (dataPath, translationDir, translationId, translationRevision) => {
+const uiConfigDir = (dataPath) => {
     const pathParts = [dataPath];
-    // if (translationDir) pathParts.push(translationDir);
-    // if (translationId) pathParts.push(translationId);
-    // if (translationRevision) pathParts.push(translationRevision);
     pathParts.push('uiConfigs');
     return path.join(...pathParts);
 }

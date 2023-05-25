@@ -203,5 +203,6 @@
     "deleteGenerated": false,
     "superusers": {
 
-    }
+    },
+    "uiConfigPath": "/app/config"
   }

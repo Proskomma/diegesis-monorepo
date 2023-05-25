@@ -50,6 +50,6 @@
       ]
     }
   ],
-  "deleteGenerated": false
-
+  "deleteGenerated": false,
+  "uiConfigPath": "/app/config"
 }
