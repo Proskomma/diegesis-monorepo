@@ -14,6 +14,7 @@ const initialState = {
     authed: false,
     authLoaded: false,
     user: {},
+    clientStructure: {},
     doLogout: () => { },
     mutateState: (newState) => { },
     setStoreConfig: (config) => { },
@@ -48,7 +49,7 @@ const setStoreConfig = (config) => {
 
 const AppContextProvider = ({ children }) => {
 
-    const [appState, setAppState] = useState(initialState);
+    const [appState, setAppState] = useState({ ...initialState, appLang: getStoredConfig()?.langCode });
     const { setRootUIConfig } = useUIConfigContext();
     const gqlClient = useApolloClient();
 
@@ -89,28 +90,53 @@ const AppContextProvider = ({ children }) => {
     }, []);
 
     useEffect(() => {
-        getFlexibleUIConfig();
+        console.log('app context', appState.appLang)
+        getLangDependedData();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [appState.appLang])
 
-    const getFlexibleUIConfig = useCallback(async () => {
-        const getQuery = `
-        query GetFlexibleUIConfig($compId: String!, $langCode: String!) {
-            getFlexibleUIConfig(id: $compId, langCode: $langCode) {
-              id
-              componentName
-              flexibles
-              contents
-              configPath
-              uiConfigs
-              markdowns
-              styles
-            }
-          }`
-        const result = await gqlClient.query({ query: gql`${getQuery}`, variables: { compId: 'root', langCode: appState.appLang } });
-        const uiConfig = result.data?.getFlexibleUIConfig;
-        if (uiConfig)
-            setRootUIConfig(JSON.parse(JSON.stringify(uiConfig)));
+    const getLangDependedData = useCallback(() => {
+        const getClientStructure = async () => {
+            const csQueryStr = `{
+                clientStructure {
+                  languages
+                  urls
+                  urlData(language:"%lang%") {
+                     url
+                     menuText
+                  }
+                  footer(language:"%lang%") {
+                    body
+                  }
+                }
+                }`.replace(/%lang%/g, appState.appLang);
+            const result = await gqlClient.query({ query: gql`${csQueryStr}` });
+            const clientStructure = result.data.clientStructure;
+            if (clientStructure) mutateState({ clientStructure })
+        }
+
+        const getFlexibleUIConfig = async () => {
+            const flexibleUIQuery = `
+            query GetFlexibleUIConfig($compId: String!, $langCode: String!) {
+                getFlexibleUIConfig(id: $compId, langCode: $langCode) {
+                  id
+                  componentName
+                  flexibles
+                  contents
+                  configPath
+                  uiConfigs
+                  markdowns
+                  styles
+                }
+              }`
+            const result = await gqlClient.query({ query: gql`${flexibleUIQuery}`, variables: { compId: 'root', langCode: appState.appLang } });
+            const uiConfig = result.data?.getFlexibleUIConfig;
+            if (uiConfig)
+                setRootUIConfig(JSON.parse(JSON.stringify(uiConfig)));
+        }
+
+        getClientStructure()
+        getFlexibleUIConfig()
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [appState.appLang]);
 
