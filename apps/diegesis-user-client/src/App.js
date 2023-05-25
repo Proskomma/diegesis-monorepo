@@ -122,12 +122,12 @@ function App() {
     const router = createBrowserRouter([
         {
             path: '/',
-            element: <MarkdownPage setAppLanguage={setAppLanguage} url={'home'} />,
+            element: <MarkdownPage url={'home'} />,
         }, // added default route because GraphQL response can be delay.
         ...markdownPageRoutes(appLanguageResources),
         {
             path: "/list",
-            element: <ListPage setAppLanguage={setAppLanguage} />,
+            element: <ListPage />,
             errorElement: <ErrorBoundary />
         },
         {
