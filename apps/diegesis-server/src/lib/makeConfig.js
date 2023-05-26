@@ -16,7 +16,8 @@ const defaultConfig = {
     hostName: 'localhost',
     port: 2468,
     dataPath: path.resolve(appRoot, 'data'),
-    uiConfigPath: path.resolve(appRoot, 'config'),
+    uiConfigPath: path.resolve(appRoot, 'uiConfig'),
+    initializeUIConfig: false,
     structurePath: path.resolve(appRoot, 'default_structure'),
     logAccess: false,
     logFormat: "combined",
@@ -141,6 +142,21 @@ function makeConfig(providedConfig) {
         }
         config.dataPath = fqPath;
     }
+    if (typeof providedConfig.initializeUIConfig !== 'boolean') {
+        croak(`CONFIG ERROR: initializeUIConfig should be true/false, not '${providedConfig.uiConfigPath}'`);
+    }
+    config.initializeUIConfig = providedConfig.initializeUIConfig;
+    if (
+        typeof providedConfig.uiConfigPath !== 'string') {
+        croak(`CONFIG ERROR: uiConfigPath should be a string, not '${providedConfig.uiConfigPath}'`);
+    }
+    const configPath = path.resolve(providedConfig.uiConfigPath);
+    if (!config.initializeUIConfig) {
+        if (!fse.existsSync(configPath) || !fse.lstatSync(configPath).isDirectory()) {
+            croak(`CONFIG ERROR: uiConfigPath '${configPath}' does not exist or is not a directory`);
+        }
+    }
+    config.uiConfigPath = configPath;
     const structurePath = providedConfig.structurePath || config.structurePath; // Always check structurePath
     if (
         typeof structurePath !== 'string') {
@@ -595,6 +611,8 @@ const configSummary = config => `  Server ${config.name} is listening on ${confi
     Local content ${config.localContent ? "en" : "dis"}abled
     Data directory is ${config.dataPath}
     Structure directory is ${config.structurePath}
+    UIConfig directory is ${config.uiConfigPath}
+    Initialize UIConfig is ${config.initializeUIConfig ? "en" : "dis"}abled
     ${config.staticPaths ? `${staticDescription(config.staticPaths)}` : "No static paths"}
     Process new data ${config.processFrequency === 'never' ? "disabled" : `every ${config.processFrequency}
     ${config.nWorkers} worker thread${config.nWorkers === 1 ? "" : "s"}
@@ -603,4 +621,4 @@ const configSummary = config => `  Server ${config.name} is listening on ${confi
     ${config.deleteGenerated ? "Delete all generated content" : "Delete lock files only"} on startup
 `}`
 
-module.exports = {makeConfig, cronOptions, configSummary};
+module.exports = { makeConfig, cronOptions, configSummary };

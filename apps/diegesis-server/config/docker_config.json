@@ -204,5 +204,6 @@
     "superusers": {
 
     },
-    "uiConfigPath": "/app/config"
+    "uiConfigPath": "uiConfig",
+    "initializeUIConfig": true
   }

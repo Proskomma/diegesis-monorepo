@@ -177,7 +177,6 @@ const generatedResourcePath =
 
 const uiConfigDir = (dataPath) => {
     const pathParts = [dataPath];
-    pathParts.push('uiConfigs');
     return path.join(...pathParts);
 }
 

@@ -51,5 +51,6 @@
     }
   ],
   "deleteGenerated": false,
-  "uiConfigPath": "/app/config"
+  "uiConfigPath": "uiConfig",
+  "initializeUIConfig": true
 }
