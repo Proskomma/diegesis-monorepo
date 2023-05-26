@@ -38,10 +38,10 @@ const AppContextProvider = ({ children }) => {
         if (!sessionCode) {
             mutateState({ authLoaded: true });
         } else {
-            const getFlexibleUIConfig = async () => {
+            const flexibleUIConfig = async () => {
                 const getQuery = `
                 query GetFlexibleUIConfig($compId: String!) {
-                    getFlexibleUIConfig(id: $compId) {
+                    flexibleUIConfig(id: $compId) {
                       id
                       componentName
                       flexibles
@@ -53,7 +53,7 @@ const AppContextProvider = ({ children }) => {
                     }
                   }`
                 const result = await gqlClient.query({ query: gql`${getQuery}`, variables: { compId: 'root' } });
-                const config = result.data?.getFlexibleUIConfig;
+                const config = result.data?.flexibleUIConfig;
                 if (config)
                     setRootUIConfig(JSON.parse(JSON.stringify(config)));
             };
@@ -70,7 +70,7 @@ const AppContextProvider = ({ children }) => {
                 .then((data) => {
                     if (data.authenticated) {
                         mutateState({ authed: true, authLoaded: true, user: { roles: data.roles } });
-                        getFlexibleUIConfig();
+                        flexibleUIConfig();
                     } else {
                         mutateState({ authLoaded: true });
                     }
