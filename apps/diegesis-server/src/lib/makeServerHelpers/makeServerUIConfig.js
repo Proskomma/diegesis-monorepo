@@ -3,12 +3,20 @@ const path = require("path");
 
 function makeServerUIConfig(config) {
     if (!config.initializeUIConfig) return
-    const dirPath = path.resolve(config.uiConfigPath)
-    if (fse.existsSync(dirPath)) {
-        fse.removeSync(dirPath)
+    //remove if directory all ready exist
+    if (fse.existsSync(config.uiConfigPath)) {
+        fse.removeSync(config.uiConfigPath)
     }
-    fse.mkdirSync(dirPath, { recursive: true });
-    //@todo:: copy default ui config value and past it in user defined ui config.
+    //create new dir
+    fse.mkdirSync(config.uiConfigPath, { recursive: true })
+
+    const defaultUIConfigPath = path.resolve(config.resourcesPath, 'ui-config.json')
+    //check default ui config exist or not
+    if (!fse.existsSync(defaultUIConfigPath)) {
+        throw Error(`default ui config file doesn\'t exist at ${defaultUIConfigPath}`)
+    }
+    //initialize default ui config
+    fse.copyFileSync(defaultUIConfigPath, path.resolve(config.uiConfigPath, 'ui-config.json'))
 }
 
 module.exports = makeServerUIConfig;

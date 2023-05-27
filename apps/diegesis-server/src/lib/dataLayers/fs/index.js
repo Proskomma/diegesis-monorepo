@@ -694,10 +694,9 @@ const readEntryBookResource = (config, orgName, transId, transRevision, resource
     }
 }
 
-const readFlexibleUIConfig = (config, id) => {
+const readFlexibleUIConfig = (config) => {
     try {
-        const compUIConfigPath = path.join(uiConfigDir(config.uiConfigPath), `${id}.json`);
-        return fse.readJsonSync(compUIConfigPath);
+        return fse.readJsonSync(uiConfigDir(config.uiConfigPath));
     } catch (err) {
         return null;
     }
@@ -776,12 +775,7 @@ const writeEntryResource = (config, orgName, transId, transRevision, resourceOri
 
 const writeFlexibleUIConfig = (config, objData) => {
     try {
-        const originPath = uiConfigDir(config.uiConfigPath);
-        if (!fse.pathExistsSync(originPath)) {
-            fse.mkdirsSync(originPath);
-        }
-        const dataPath = path.join(originPath, `${objData.id}.json`);
-        fse.writeFileSync(dataPath, JSON.stringify(objData));
+        fse.writeFileSync(uiConfigDir(config.uiConfigPath), JSON.stringify(objData));
     } catch (err) {
         throw new Error(`Error from writeFlexibleUIConfig: ${err.message}`);
     }

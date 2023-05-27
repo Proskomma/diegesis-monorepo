@@ -19,6 +19,7 @@ const defaultConfig = {
     uiConfigPath: path.resolve(appRoot, 'uiConfig'),
     initializeUIConfig: false,
     structurePath: path.resolve(appRoot, 'default_structure'),
+    resourcesPath: path.resolve(appRoot, 'resources'),
     logAccess: false,
     logFormat: "combined",
     useCors: false,
@@ -142,21 +143,32 @@ function makeConfig(providedConfig) {
         }
         config.dataPath = fqPath;
     }
-    if (typeof providedConfig.initializeUIConfig !== 'boolean') {
-        croak(`CONFIG ERROR: initializeUIConfig should be true/false, not '${providedConfig.uiConfigPath}'`);
+    {
+        if (typeof providedConfig.initializeUIConfig !== 'boolean') {
+            croak(`CONFIG ERROR: initializeUIConfig should be true/false, not '${providedConfig.initializeUIConfig}'`);
+        }
+        config.initializeUIConfig = providedConfig.initializeUIConfig;
     }
-    config.initializeUIConfig = providedConfig.initializeUIConfig;
     if (
         typeof providedConfig.uiConfigPath !== 'string') {
         croak(`CONFIG ERROR: uiConfigPath should be a string, not '${providedConfig.uiConfigPath}'`);
     }
-    const configPath = path.resolve(providedConfig.uiConfigPath);
-    if (!config.initializeUIConfig) {
-        if (!fse.existsSync(configPath) || !fse.lstatSync(configPath).isDirectory()) {
-            croak(`CONFIG ERROR: uiConfigPath '${configPath}' does not exist or is not a directory`);
+    {
+        const configPath = path.resolve(providedConfig.uiConfigPath);
+        if (!config.initializeUIConfig) {
+            if (!fse.existsSync(configPath) || !fse.lstatSync(configPath).isDirectory()) {
+                croak(`CONFIG ERROR: uiConfigPath '${configPath}' does not exist or is not a directory`);
+            }
         }
+        config.uiConfigPath = configPath;
     }
-    config.uiConfigPath = configPath;
+    {
+        const resourcesPath = path.resolve(providedConfig.resourcesPath);
+        if (!fse.existsSync(resourcesPath) || !fse.lstatSync(resourcesPath).isDirectory()) {
+            croak(`CONFIG ERROR: resourcesPath '${resourcesPath}' does not exist or is not a directory`);
+        }
+        config.resourcesPath = resourcesPath;
+    }
     const structurePath = providedConfig.structurePath || config.structurePath; // Always check structurePath
     if (
         typeof structurePath !== 'string') {

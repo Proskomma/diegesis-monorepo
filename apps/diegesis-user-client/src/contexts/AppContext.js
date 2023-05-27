@@ -28,7 +28,6 @@ const doLogout = () => {
 
 const AppContextProvider = ({ children }) => {
 
-
     const [appState, setAppState] = useState({ ...initialState, doLogout });
     const { setRootUIConfig } = useUIConfigContext();
     const gqlClient = useApolloClient();
@@ -40,7 +39,7 @@ const AppContextProvider = ({ children }) => {
         } else {
             const flexibleUIConfig = async () => {
                 const getQuery = `
-                query GetFlexibleUIConfig($compId: String!) {
+                query FlexibleUIConfig($compId: String!) {
                     flexibleUIConfig(id: $compId) {
                       id
                       componentName

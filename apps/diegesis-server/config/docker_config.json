@@ -204,6 +204,7 @@
     "superusers": {
 
     },
-    "uiConfigPath": "uiConfig",
-    "initializeUIConfig": true
+    "uiConfigPath": "ui_config",
+    "initializeUIConfig": true,
+    "resourcesPath": "resources"
   }
