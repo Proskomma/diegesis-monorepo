@@ -13,7 +13,7 @@ function makeServerUIConfig(config) {
     const defaultUIConfigPath = path.resolve(config.resourcesPath, 'ui-config.json')
     //check default ui config exist or not
     if (!fse.existsSync(defaultUIConfigPath)) {
-        throw Error(`default ui config file doesn\'t exist at ${defaultUIConfigPath}`)
+        throw Error(`default ui config file doesn't exist at ${defaultUIConfigPath}`)
     }
     //initialize default ui config
     fse.copyFileSync(defaultUIConfigPath, path.resolve(config.uiConfigPath, 'ui-config.json'))
