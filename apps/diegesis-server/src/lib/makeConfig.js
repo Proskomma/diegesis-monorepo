@@ -143,31 +143,31 @@ function makeConfig(providedConfig) {
         }
         config.dataPath = fqPath;
     }
-    {
-        if (typeof providedConfig.initializeUIConfig !== 'boolean') {
+    if (typeof providedConfig.initializeUIConfig !== 'undefined') {
+        if (typeof providedConfig.initializeUIConfig === 'boolean')
+            config.initializeUIConfig = providedConfig.initializeUIConfig;
+        else
             croak(`CONFIG ERROR: initializeUIConfig should be true/false, not '${providedConfig.initializeUIConfig}'`);
-        }
-        config.initializeUIConfig = providedConfig.initializeUIConfig;
     }
-    if (
-        typeof providedConfig.uiConfigPath !== 'string') {
-        croak(`CONFIG ERROR: uiConfigPath should be a string, not '${providedConfig.uiConfigPath}'`);
+    if (typeof providedConfig.uiConfigPath !== 'undefined') {
+        if (typeof providedConfig.uiConfigPath === 'string')
+            config.uiConfigPath = path.resolve(providedConfig.uiConfigPath);
+        else
+            croak(`CONFIG ERROR: uiConfigPath should be a string, not '${providedConfig.uiConfigPath}'`);
     }
-    {
-        const configPath = path.resolve(providedConfig.uiConfigPath);
-        if (!config.initializeUIConfig) {
-            if (!fse.existsSync(configPath) || !fse.lstatSync(configPath).isDirectory()) {
-                croak(`CONFIG ERROR: uiConfigPath '${configPath}' does not exist or is not a directory`);
-            }
+    if (!config.initializeUIConfig) {
+        if (!fse.existsSync(config.uiConfigPath) || !fse.lstatSync(config.uiConfigPath).isDirectory()) {
+            croak(`CONFIG ERROR: uiConfigPath '${config.uiConfigPath}' does not exist or is not a directory`);
         }
-        config.uiConfigPath = configPath;
     }
-    {
-        const resourcesPath = path.resolve(providedConfig.resourcesPath);
-        if (!fse.existsSync(resourcesPath) || !fse.lstatSync(resourcesPath).isDirectory()) {
-            croak(`CONFIG ERROR: resourcesPath '${resourcesPath}' does not exist or is not a directory`);
-        }
-        config.resourcesPath = resourcesPath;
+    if (typeof providedConfig.resourcesPath !== 'undefined') {
+        if (typeof providedConfig.resourcesPath === 'string')
+            config.resourcesPath = path.resolve(providedConfig.resourcesPath);
+        else
+            croak(`CONFIG ERROR: resourcesPath should be a string, not '${providedConfig.resourcesPath}'`);
+    }
+    if (!fse.existsSync(config.resourcesPath) || !fse.lstatSync(config.resourcesPath).isDirectory()) {
+        croak(`CONFIG ERROR: resourcesPath '${config.resourcesPath}' does not exist or is not a directory`);
     }
     const structurePath = providedConfig.structurePath || config.structurePath; // Always check structurePath
     if (
@@ -624,6 +624,7 @@ const configSummary = config => `  Server ${config.name} is listening on ${confi
     Data directory is ${config.dataPath}
     Structure directory is ${config.structurePath}
     UIConfig directory is ${config.uiConfigPath}
+    Resources directory is ${config.resourcesPath}
     Initialize UIConfig is ${config.initializeUIConfig ? "en" : "dis"}abled
     ${config.staticPaths ? `${staticDescription(config.staticPaths)}` : "No static paths"}
     Process new data ${config.processFrequency === 'never' ? "disabled" : `every ${config.processFrequency}
