@@ -1,13 +1,13 @@
-import React, { useState, useEffect, useContext, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
     gql,
     useQuery
 } from "@apollo/client";
 import { searchQuery } from '../lib/search';
-import AppLangContext from "../contexts/AppLangContext";
 import i18n from '../i18n';
 import { DiegesisUI, MuiMaterial } from '@eten-lab/ui-kit';
 import PageLayout from '../components/PageLayout';
+import { useAppContext } from '../contexts/AppContext';
 const { FlexibleDesign, MOCK_ENTRIES_TOP_CONTROLS_PROPS } = DiegesisUI;
 const { FlexibleEntriesListPage } = FlexibleDesign.FlexibleEntriesListUI;
 const { Button } = MuiMaterial;
@@ -61,9 +61,9 @@ const getGQLQuery = (searchTerms = {}) => {
 }
 //#endregion
 
-export default function ListPage({ setAppLanguage }) {
+export default function ListPage({}) {
 
-    const appLang = useContext(AppLangContext);
+    const { appLang } = useAppContext();
     const refTagKeyValue = useRef();
     const [selectControls, setSelectControls] = useState([]);
     const [tagConfig, setTagConfig] = useState({});
@@ -86,7 +86,7 @@ export default function ListPage({ setAppLanguage }) {
     useEffect(() => {
         const initialSelectControlValues = [
             {
-                label: 'Organization',
+                label: i18n(appLang, "CONTROLS_ORGANIZATION"),
                 value: 'all',
                 options: [],
                 onChange: (value) => { onSelectControlValueChange(value, 0) }
@@ -177,7 +177,7 @@ export default function ListPage({ setAppLanguage }) {
             }
         ];
         setDataTable({ entries: [], cellsConfig: cellConfig });
-       // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useEffect(() => {
@@ -197,7 +197,7 @@ export default function ListPage({ setAppLanguage }) {
             clonedControls[3].options = languages.map(l => ({ title: l, id: l }));
         }
         setSelectControls(clonedControls);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [entryEnums?.entryEnums]);
 
     useEffect(() => {

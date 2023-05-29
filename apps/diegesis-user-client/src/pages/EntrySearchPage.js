@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { Container, Typography, Button } from "@mui/material";
 import { ArrowBack, ArrowForward } from "@mui/icons-material";
 import { useParams, Link as RouterLink } from "react-router-dom";
@@ -9,12 +9,12 @@ import GqlError from "../components/GqlError";
 import Spinner from "../components/Spinner";
 import SearchScripture from "../components/SearchScripture";
 import { directionText } from "../i18n/languageDirection";
-import AppLangContext from "../contexts/AppLangContext";
 import PageLayout from '../components/PageLayout';
+import { useAppContext } from '../contexts/AppContext';
 // const ProskommaRequire = require('proskomma-core');
 
-export default function EntrySearchPage({ setAppLanguage }) {
-    const appLang = useContext(AppLangContext);
+export default function EntrySearchPage({ }) {
+    const { appLang } = useAppContext();
     const { source, entryId, revision } = useParams();
 
     const queryString =

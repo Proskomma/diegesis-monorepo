@@ -1,8 +1,9 @@
 import React, { useState } from 'react'
 import { DiegesisUI, MuiMaterial } from '@eten-lab/ui-kit';
 import { gql, useApolloClient } from '@apollo/client';
-import { useLocation, useNavigate } from 'react-router-dom';
-const { Button, Drawer } = MuiMaterial;
+import { useAppContext } from '../contexts/AppContext';
+import langTable from "../i18n/languages.json";
+const { Button, Drawer, Box, Select, MenuItem } = MuiMaterial;
 const { UIConfigControlPanel, FlexibleHome, FlexibleEntryDetailUI, FlexibleEntriesListUI, useUIConfigContext } = DiegesisUI.FlexibleDesign;
 const { FlexibleEntriesListPage } = FlexibleEntriesListUI;
 const { FlexibleEntryDetail } = FlexibleEntryDetailUI;
@@ -11,8 +12,7 @@ export default function UIConfigPage({ setAppLanguage }) {
     const [open, setOpen] = useState(false);
     const gqlClient = useApolloClient();
     const { getRootUIConfig } = useUIConfigContext();
-    const navigate = useNavigate();
-    const location = useLocation();
+    const { appLang, mutateState: mutateAppState, clientStructure } = useAppContext();
 
     const toggleDrawer = (event) => {
         if (
@@ -29,6 +29,7 @@ export default function UIConfigPage({ setAppLanguage }) {
             const rootConfig = getRootUIConfig()
             const query = `
             mutation SaveFlexibleUIConfig(
+                $langCode: String!
                 $id: String!
                 $className: String
                 $componentName: String!
@@ -49,14 +50,12 @@ export default function UIConfigPage({ setAppLanguage }) {
                   markdowns: $markdowns
                   styles: $styles
                   uiConfigs: $uiConfigs
+                  langCode: $langCode
                 )
               }`;
-            const { errors } = await gqlClient.mutate({ mutation: gql`${query}`, variables: { ...rootConfig }, errorPolicy: "all" });
-            if (errors?.[0] && [403, 401].includes(errors[0]?.extensions?.code)) {
-                navigate(`/login?redirect=${location.pathname}`);
-            }
+            await gqlClient.mutate({ mutation: gql`${query}`, variables: { ...rootConfig, langCode: appLang } });
         } catch (err) {
-            console.error('onConfigSave error::', err);
+            console.error('failed to save flexible ui config', err);
             return;
         }
     }
@@ -81,6 +80,29 @@ export default function UIConfigPage({ setAppLanguage }) {
                     },
                 }}
             >
+                <Box display={'flex'} alignItems={'center'} justifyContent={'flex-end'} padding={'0px'}>
+                    <Select
+                        id="lang_selector"
+                        value={appLang}
+                        label="Language"
+                        size="small"
+                        color="primary"
+                        sx={{ backgroundColor: "#FFF" }}
+                        onChange={(ev) => { mutateAppState({ appLang: ev.target.value }) }}
+                    >
+                        {
+                            Object.entries(langTable)
+                                .filter(kv => (clientStructure?.languages?.includes(kv[0])) || kv[0] === "en")
+                                .map((kv, n) => <MenuItem
+                                    key={n}
+                                    value={kv[0]}
+                                >
+                                    {kv[1].autonym}
+                                </MenuItem>
+                                )
+                        }
+                    </Select>
+                </Box>
                 <UIConfigControlPanel onConfigSave={onConfigSave} />
             </Drawer>
         </>
