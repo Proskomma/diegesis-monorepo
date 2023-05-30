@@ -9,6 +9,7 @@ import EntryDownloadPage from "../pages/EntryDownloadPage";
 import UIConfigPage from "../pages/UIConfigPage";
 import ProtectedRoute from "./ProtectedRoute";
 import LoginPage from "../pages/LoginPage";
+import EntriesSyncPage from "../pages/EntriesSyncPage";
 
 function ErrorBoundary() {
     let error = useRouteError();
@@ -74,6 +75,11 @@ export default function AppRoutes() {
             errorElement: <ErrorBoundary />
         },
         {
+            path: "/login",
+            element: <LoginPage />,
+            errorElement: <ErrorBoundary />
+        },
+        {
             path: "/ui-config",
             element: <ProtectedRoute roles={['admin']}>
                 <UIConfigPage />
@@ -81,8 +87,10 @@ export default function AppRoutes() {
             errorElement: <ErrorBoundary />
         },
         {
-            path: "/login",
-            element: <LoginPage />,
+            path: "/entries-sync",
+            element: <ProtectedRoute roles={['admin']}>
+                <EntriesSyncPage />
+            </ProtectedRoute>,
             errorElement: <ErrorBoundary />
         },
     ]);
