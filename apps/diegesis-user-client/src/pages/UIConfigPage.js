@@ -8,7 +8,7 @@ const { UIConfigControlPanel, FlexibleHome, FlexibleEntryDetailUI, FlexibleEntri
 const { FlexibleEntriesListPage } = FlexibleEntriesListUI;
 const { FlexibleEntryDetail } = FlexibleEntryDetailUI;
 
-export default function UIConfigPage({ }) {
+export default function UIConfigPage() {
     const [open, setOpen] = useState(false);
     const gqlClient = useApolloClient();
     const { getRootUIConfig } = useUIConfigContext();
@@ -80,7 +80,7 @@ export default function UIConfigPage({ }) {
                     },
                 }}
             >
-                <Box display={'flex'} alignItems={'center'} justifyContent={'flex-end'} padding={'0px'}>
+                <Box display={'flex'} alignItems={'center'} justifyContent={'flex-end'} padding={'0px'} gap={2}>
                     <Select
                         id="lang_selector"
                         value={appLang}
@@ -102,6 +102,9 @@ export default function UIConfigPage({ }) {
                                 )
                         }
                     </Select>
+                    <Button onClick={() => { setOpen(false); }}>
+                        Close
+                    </Button>
                 </Box>
                 <UIConfigControlPanel onConfigSave={onConfigSave} />
             </Drawer>
