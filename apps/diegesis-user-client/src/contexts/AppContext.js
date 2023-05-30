@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import Cookies from 'js-cookie';
 import { DiegesisUI } from '@eten-lab/ui-kit';
@@ -64,7 +65,7 @@ const AppContextProvider = ({ children }) => {
         if (!sessionCode) {
             mutateState({ authLoaded: true });
         } else {
-            fetch('http://localhost:1234/session-auth', {
+            fetch('/session-auth', {
                 method: 'POST',
                 headers: {
                     'Content-type': 'application/json; charset=UTF-8',
@@ -86,13 +87,10 @@ const AppContextProvider = ({ children }) => {
                     console.error(err.message);
                 });
         };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useEffect(() => {
-        console.log('app context', appState.appLang)
         getLangDependedData();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [appState.appLang])
 
     const getLangDependedData = useCallback(() => {
