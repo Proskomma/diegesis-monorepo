@@ -4,9 +4,8 @@ import {
   MenuItem,
   Select,
 } from "@mui/material";
-import { useContext} from "react";
-import AppLangContext from "../contexts/AppLangContext";
 import { directionText, fontFamily } from "../i18n/languageDirection";
+import { useAppContext } from "../contexts/AppContext";
 
 export default function PageSizeSelector({
   formLabelTitle,
@@ -14,7 +13,7 @@ export default function PageSizeSelector({
   formatData,
   setFormatData,
 }) {
-  const appLang = useContext(AppLangContext);
+  const {appLang} = useAppContext();
   const setFormatValue = (field, value) => {
     const newData = { ...formatData };
     newData[field] = value;

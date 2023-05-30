@@ -10,7 +10,6 @@ import Spinner from "../components/Spinner";
 import BrowseScripture from "../components/BrowseScripture";
 import BrowseBcvNotes from "../components/BrowseBcvNotes";
 import {directionText, fontFamily} from "../i18n/languageDirection";
-import AppLangContext from "../contexts/AppLangContext";
 import i18n from "../i18n";
 import SearchModal from "../components/SearchModal";
 import PrintModal from "../components/PrintModal";
@@ -18,7 +17,7 @@ import PrintIcon from '@mui/icons-material/Print';
 import PageLayout from "../components/PageLayout";
 import { useAppContext } from "../contexts/AppContext";
 
-export default function EntryBrowsePage({ }) {
+export default function EntryBrowsePage() {
     const { appLang } = useAppContext();
     const { source, entryId, revision } = useParams();
 

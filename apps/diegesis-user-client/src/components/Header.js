@@ -1,16 +1,14 @@
-import React, {useState, useContext} from "react";
+import React, {useState} from "react";
 import {Link as RouterLink} from "react-router-dom";
 import {AppBar, Toolbar, Box, Select, MenuItem, IconButton, Drawer, ListItemButton } from "@mui/material";
 import { Menu as MenuIcon } from "@mui/icons-material";
 import langTable from "../i18n/languages.json"
-import AppLangContext from "../contexts/AppLangContext";
 import { alignmentText } from "../i18n/languageDirection";
-import AppLangResourcesContext from "../contexts/AppLangResourcesContext";
+import { useAppContext } from "../contexts/AppContext";
 
 export default function Header({selected, children, setAppLanguage}) {
 
-    const appLang = useContext(AppLangContext);
-    const appLangResources = useContext(AppLangResourcesContext);
+    const {appLang, clientStructure} = useAppContext();
     const [hamburgerOpen, setHamburgerOpen] = useState(false);
 
     const handleLanguageChange = e => setAppLanguage(e.target.value)
@@ -46,8 +44,7 @@ export default function Header({selected, children, setAppLanguage}) {
 
                         <Box>
                             {
-                                appLangResources.urlData &&
-                                    appLangResources.urlData.map(ud => <ListItemButton>
+                                clientStructure?.urlData?.map((ud, idx) => <ListItemButton key={idx}>
                                         <RouterLink to={`/${ud.url === 'home' ? "" : ud.url}`}>
                                             {ud.menuText}
                                         </RouterLink>
@@ -74,7 +71,7 @@ export default function Header({selected, children, setAppLanguage}) {
                         </MenuItem>
                         {
                             Object.entries(langTable)
-                                .filter(kv => (appLangResources.languages && appLangResources.languages.includes(kv[0])) || kv[0] === "en")
+                                .filter(kv => (clientStructure?.languages?.includes(kv[0])) || kv[0] === "en")
                                 .map((kv, n) => <MenuItem
                                 key={n}
                                 value={kv[0]}

@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import {useQuery, gql} from "@apollo/client";
 import {Link as RouterLink} from 'react-router-dom';
 import {Typography, Grid} from "@mui/material";
@@ -6,12 +6,12 @@ import {searchQuery} from '../lib/search';
 import GqlError from "./GqlError";
 import Spinner from './Spinner';
 import i18n from '../i18n';
-import AppLangContext from '../contexts/AppLangContext';
 import { fontFamily } from '../i18n/languageDirection';
+import { useAppContext } from '../contexts/AppContext';
 
 export default function ListView({searchTerms}) {
 
-    const appLang = useContext(AppLangContext);
+    const {appLang} = useAppContext();
     const queryString = searchQuery(
         `query {
             entryEnums {

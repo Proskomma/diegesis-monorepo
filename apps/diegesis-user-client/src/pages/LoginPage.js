@@ -1,5 +1,4 @@
-import { MuiMaterial, Typography } from '@eten-lab/ui-kit';
-import { Button } from '@eten-lab/ui-kit';
+import { MuiMaterial, Typography, Button } from '@eten-lab/ui-kit';
 import { useSearchParams } from 'react-router-dom';
 const { TextField, Box, Container } = MuiMaterial;
 

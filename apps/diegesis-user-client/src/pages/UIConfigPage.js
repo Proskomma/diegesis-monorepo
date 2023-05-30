@@ -8,7 +8,7 @@ const { UIConfigControlPanel, FlexibleHome, FlexibleEntryDetailUI, FlexibleEntri
 const { FlexibleEntriesListPage } = FlexibleEntriesListUI;
 const { FlexibleEntryDetail } = FlexibleEntryDetailUI;
 
-export default function UIConfigPage({ setAppLanguage }) {
+export default function UIConfigPage({ }) {
     const [open, setOpen] = useState(false);
     const gqlClient = useApolloClient();
     const { getRootUIConfig } = useUIConfigContext();

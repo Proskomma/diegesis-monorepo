@@ -1,4 +1,4 @@
-import React, {useContext, useState, useEffect} from "react";
+import React, { useState, useEffect} from "react";
 import {
     Typography,
     Grid,
@@ -11,15 +11,15 @@ import {
 import {SofriaRenderFromProskomma} from "proskomma-json-tools";
 import sofria2WebActions from "../renderer/sofria2web";
 import DocSelector from "./DocSelector";
-import AppLangContext from "../contexts/AppLangContext";
 import { directionText, fontFamily } from "../i18n/languageDirection";
 import { renderers } from "../renderer/render2react";
 import i18n from "../i18n";
 import BlendModal from "./BlendModal";
 import BcvNotesModal from "./BcvNotesModal"
+import { useAppContext } from "../contexts/AppContext";
 
 export default function BrowseScripture({pk, docId, setDocId, blendables, usedBlendables, setUsedBlendables, openBlendModal, handleCloseBlendModal}) {
-    const appLang = useContext(AppLangContext);
+    const {appLang} = useAppContext();
 
     const [bcvNoteRef, setBcvNoteRef] = useState(null);
     const handleCloseBcvNotesModal = () => setBcvNoteRef(null);
