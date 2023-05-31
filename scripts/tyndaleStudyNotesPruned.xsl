@@ -3,7 +3,7 @@
 
     <xsl:template match="/">
         <items release="1.25">
-            <xsl:copy-of select="items/item[starts-with(@name, 'Gen') or starts-with(@name, 'Jon') or starts-with(@name, 'Tit') or starts-with(@name, 'Ruth')]"/>
+            <xsl:copy-of select="items/item[starts-with(@name, 'Phil') or starts-with(@name, 'Jon') or starts-with(@name, 'Tit') or starts-with(@name, 'Ruth')]"/>
         </items>
     </xsl:template>
 
