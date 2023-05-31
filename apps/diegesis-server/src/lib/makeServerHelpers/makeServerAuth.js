@@ -53,14 +53,6 @@ function makeServerAuth(app, config) {
 
         doSessionCron(app, `${config.sessionTimeoutInMins} min`);
 
-        app.get('/login', (req, res) => {
-            const payload = fse.readFileSync(
-                path.resolve(appRoot, 'src', 'html', 'login.html')
-            ).toString()
-                .replace('%redirect%', req.query.redirect || '/');
-            res.send(payload);
-        });
-
         app.post('/new-login-auth', function (request, response) {
                 const failMsg = "Could not authenticate (bad username/password?)";
                 let username = request.body.username;
