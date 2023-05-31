@@ -9,8 +9,8 @@ import { Button} from '@mui/material';
 import {Add, Update} from '@mui/icons-material';
 
 import EntriesTable from "./EntriesTable";
-import { searchQuery } from '../lib/remoteSearch';
-import { fetchEntry } from '../lib/tableCallbacks';
+import { searchQuery } from '../../lib/remoteSearch';
+import { fetchEntry } from '../../lib/tableCallbacks';
 import Spinner from '../Spinner';
 import GqlError from '../GqlError';
 

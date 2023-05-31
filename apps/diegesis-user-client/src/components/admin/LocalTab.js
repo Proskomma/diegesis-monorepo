@@ -1,8 +1,8 @@
 import React from 'react';
-import {searchQuery} from '../lib/localSearch';
+import {searchQuery} from '../../lib/localSearch';
 import EntriesTable from "./EntriesTable";
 import {gql, useQuery, useApolloClient} from "@apollo/client";
-import {deleteEntry} from '../lib/tableCallbacks';
+import {deleteEntry} from '../../lib/tableCallbacks';
 import {Button} from '@mui/material';
 import {Delete} from '@mui/icons-material';
 import GqlError from '../GqlError';
