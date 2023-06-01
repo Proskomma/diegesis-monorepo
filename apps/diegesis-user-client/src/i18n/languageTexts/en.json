@@ -112,5 +112,7 @@
     "NO_VALID_TERMS":"No valid terms to search yet",
     "BLEND_MODAL_TITLE": "Blend in Resources",
     "BCV_NOTES_MODAL_TITLE": "Notes",
-    "LANGUAGES": "Languages"
+    "LANGUAGES": "Languages",
+    "LIST_PAGE_SEARCH_PLACEHOLDER": "Search",
+    "LIST_PAGE_FILTER_TAB": "Advanced search with filters"
 }

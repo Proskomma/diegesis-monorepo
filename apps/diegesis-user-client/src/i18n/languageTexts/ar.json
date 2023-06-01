@@ -110,5 +110,7 @@
     "BC":"فصول الكتاب",
     "TEXT":"نصوص",
     "NO_VALID_TERMS":"لا توجد مصطلحات صالحة للبحث حتى الآن",
-    "LANGUAGES": "اللغات"
+    "LANGUAGES": "اللغات",
+    "LIST_PAGE_SEARCH_PLACEHOLDER": "يبحث",
+    "LIST_PAGE_FILTER_TAB": "بحث متقدم مع المرشحات"
 }

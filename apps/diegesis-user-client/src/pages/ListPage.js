@@ -8,7 +8,7 @@ import i18n from '../i18n';
 import { DiegesisUI, MuiMaterial } from '@eten-lab/ui-kit';
 import PageLayout from '../components/PageLayout';
 import { useAppContext } from '../contexts/AppContext';
-const { FlexibleDesign, MOCK_ENTRIES_TOP_CONTROLS_PROPS } = DiegesisUI;
+const { FlexibleDesign } = DiegesisUI;
 const { FlexibleEntriesListPage } = FlexibleDesign.FlexibleEntriesListUI;
 const { Button } = MuiMaterial;
 
@@ -61,7 +61,7 @@ const getGQLQuery = (searchTerms = {}) => {
 }
 //#endregion
 
-export default function ListPage({}) {
+export default function ListPage() {
 
     const { appLang } = useAppContext();
     const refTagKeyValue = useRef();
@@ -127,7 +127,6 @@ export default function ListPage({}) {
         ]);
 
         const initialTagConfig = {
-            ...MOCK_ENTRIES_TOP_CONTROLS_PROPS.tagConfig,
             tags: Object.keys(refTagKeyValue.current),
             selectedTags: [],
             onTagSelect: onTagSelect,
@@ -259,13 +258,13 @@ export default function ListPage({}) {
 
     const pageProps = {
         topControlProps: {
-            ...MOCK_ENTRIES_TOP_CONTROLS_PROPS,
             titleText: i18n(appLang, "LIST_PAGE_ENTRIES"),
+            filterTabText: i18n(appLang, "LIST_PAGE_FILTER_TAB"),
             selectControls: selectControls,
             tagConfig: tagConfig,
             searchBoxProps: {
                 onSearchBtnClick,
-                placeholder: 'Bible in Basic English'
+                placeholder: i18n(appLang, "LIST_PAGE_SEARCH_PLACEHOLDER")
             }
         },
         entriesDataTable: dataTable,
