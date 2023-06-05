@@ -2,6 +2,10 @@
     "id": "root",
     "componentName": "UIConfigContextProvider",
     "configPath": "/",
+    "colorPalette": {
+        "primary": "#60D0B2",
+        "secondary": "#31373A"
+    },
     "flexibles": {
         "HomePage": {
             "id": "HomePage",

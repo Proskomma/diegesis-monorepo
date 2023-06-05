@@ -1,10 +1,11 @@
 import React from "react";
 import { ApolloProvider, ApolloClient, InMemoryCache } from "@apollo/client";
 import { CssBaseline } from "@mui/material";
-import { ThemeProvider as UIKitThemeProvider, DiegesisUI } from '@eten-lab/ui-kit';
+import { DiegesisUI } from '@eten-lab/ui-kit';
 import "./App.css";
 import AppContextProvider from "./contexts/AppContext";
 import AppRoutes from "./routes/AppRoutes";
+import DiegesisThemeProvider from "./theme/ThemeProvider";
 const { UIConfigContextProvider } = DiegesisUI.FlexibleDesign;
 
 
@@ -17,14 +18,14 @@ function App() {
 
     return (
         <ApolloProvider client={client}>
-            <UIKitThemeProvider>
+            <DiegesisThemeProvider>
                 <UIConfigContextProvider>
                     <AppContextProvider>
                         <CssBaseline />
                         <AppRoutes />
                     </AppContextProvider>
                 </UIConfigContextProvider>
-            </UIKitThemeProvider>
+            </DiegesisThemeProvider>
         </ApolloProvider>
     );
 }
