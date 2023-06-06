@@ -1,12 +1,10 @@
 import React from "react";
-import { MuiMaterial } from '@eten-lab/ui-kit';
-import "./App.css";
-const { GlobalStyles, ThemeProvider, createTheme } = MuiMaterial;
+import { MuiMaterial, ThemeProvider as UIKitThemeProvider } from '@eten-lab/ui-kit';
+const { GlobalStyles } = MuiMaterial;
 
 const DiegesisThemeProvider = ({ children }) => {
-    const theme = createTheme({ palette: { primary: '' } })
     return (
-        <ThemeProvider theme={theme}>
+        <UIKitThemeProvider>
             <GlobalStyles
                 styles={() => ({
                     '*, *::before, *::after, html': {
@@ -18,7 +16,7 @@ const DiegesisThemeProvider = ({ children }) => {
                 })}
             />
             {children}
-        </ThemeProvider>
+        </UIKitThemeProvider>
     )
 }
 
