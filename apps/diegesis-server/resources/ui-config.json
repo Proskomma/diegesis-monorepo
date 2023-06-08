@@ -2,10 +2,7 @@
     "id": "root",
     "componentName": "UIConfigContextProvider",
     "configPath": "/",
-    "colorPalette": {
-        "primary": "#60D0B2",
-        "secondary": "#31373A"
-    },
+    "contents": null,
     "flexibles": {
         "HomePage": {
             "id": "HomePage",
@@ -44,7 +41,27 @@
                         "landing-section-action-button": {
                             "id": "landing-section-action-button",
                             "componentName": "SectionActionButton",
+                            "className": "   ",
                             "configPath": "{\"key\":\"HomePage\",\"type\":\"flexibles\"}/{\"key\":\"home-landing-section\",\"type\":\"flexibles\"}/{\"key\":\"landing-section-action-button\",\"type\":\"flexibles\"}",
+                            "contents": {
+                                "actionBtnText": "Browse content",
+                                "defaultActionBtnHref": "/"
+                            },
+                            "styles": {
+                                "color": "#ffffff",
+                                "minWidth": "312px",
+                                "minHeight": "70px",
+                                "paddingLeft": "30px",
+                                "paddingRight": "30px",
+                                "backgroundColor": "#000000",
+                                "fontSize": "21px",
+                                "textTransform": "none",
+                                "borderRadius": "0px",
+                                "boxShadow": "none",
+                                "hoveredBackgroundColor": "#000000",
+                                "hoveredBoxShadow": "none"
+                            },
+                            "markdowns": {},
                             "uiConfigs": {},
                             "flexibles": {}
                         }
@@ -62,6 +79,58 @@
                             "configPath": "{\"key\":\"HomePage\",\"type\":\"flexibles\"}/{\"key\":\"home-footer\",\"type\":\"flexibles\"}/{\"key\":\"footer-app-logo\",\"type\":\"flexibles\"}",
                             "uiConfigs": {},
                             "flexibles": {}
+                        }
+                    }
+                },
+                "home-page": {
+                    "id": "home-page",
+                    "componentName": "PageLayout",
+                    "configPath": "{\"key\":\"HomePage\",\"type\":\"flexibles\"}/{\"key\":\"home-page\",\"type\":\"flexibles\"}",
+                    "uiConfigs": {},
+                    "flexibles": {
+                        "page-layout-header": {
+                            "id": "page-layout-header",
+                            "componentName": "Header",
+                            "configPath": "{\"key\":\"HomePage\",\"type\":\"flexibles\"}/{\"key\":\"home-page\",\"type\":\"flexibles\"}/{\"key\":\"page-layout-header\",\"type\":\"flexibles\"}",
+                            "uiConfigs": {},
+                            "flexibles": {
+                                "header-app-logo": {
+                                    "id": "header-app-logo",
+                                    "componentName": "AppLogo",
+                                    "configPath": "{\"key\":\"HomePage\",\"type\":\"flexibles\"}/{\"key\":\"home-page\",\"type\":\"flexibles\"}/{\"key\":\"page-layout-header\",\"type\":\"flexibles\"}/{\"key\":\"header-app-logo\",\"type\":\"flexibles\"}",
+                                    "uiConfigs": {},
+                                    "flexibles": {}
+                                },
+                                "header-menu-icon": {
+                                    "id": "header-menu-icon",
+                                    "componentName": "MenuIcon",
+                                    "configPath": "{\"key\":\"HomePage\",\"type\":\"flexibles\"}/{\"key\":\"home-page\",\"type\":\"flexibles\"}/{\"key\":\"page-layout-header\",\"type\":\"flexibles\"}/{\"key\":\"header-menu-icon\",\"type\":\"flexibles\"}",
+                                    "uiConfigs": {},
+                                    "flexibles": {}
+                                }
+                            }
+                        },
+                        "page-layout-side-nav": {
+                            "id": "page-layout-side-nav",
+                            "componentName": "SideNav",
+                            "configPath": "{\"key\":\"HomePage\",\"type\":\"flexibles\"}/{\"key\":\"home-page\",\"type\":\"flexibles\"}/{\"key\":\"page-layout-side-nav\",\"type\":\"flexibles\"}",
+                            "uiConfigs": {},
+                            "flexibles": {}
+                        },
+                        "page-layout-footer": {
+                            "id": "page-layout-footer",
+                            "componentName": "Footer",
+                            "configPath": "{\"key\":\"HomePage\",\"type\":\"flexibles\"}/{\"key\":\"home-page\",\"type\":\"flexibles\"}/{\"key\":\"page-layout-footer\",\"type\":\"flexibles\"}",
+                            "uiConfigs": {},
+                            "flexibles": {
+                                "footer-app-logo": {
+                                    "id": "footer-app-logo",
+                                    "componentName": "AppLogo",
+                                    "configPath": "{\"key\":\"HomePage\",\"type\":\"flexibles\"}/{\"key\":\"home-page\",\"type\":\"flexibles\"}/{\"key\":\"page-layout-footer\",\"type\":\"flexibles\"}/{\"key\":\"footer-app-logo\",\"type\":\"flexibles\"}",
+                                    "uiConfigs": {},
+                                    "flexibles": {}
+                                }
+                            }
                         }
                     }
                 }
@@ -115,6 +184,13 @@
                                     "flexibles": {}
                                 }
                             }
+                        },
+                        "page-layout-side-nav": {
+                            "id": "page-layout-side-nav",
+                            "componentName": "SideNav",
+                            "configPath": "{\"key\":\"ListPage\",\"type\":\"flexibles\"}/{\"key\":\"entries-list-page\",\"type\":\"flexibles\"}/{\"key\":\"page-layout-side-nav\",\"type\":\"flexibles\"}",
+                            "uiConfigs": {},
+                            "flexibles": {}
                         }
                     }
                 },
@@ -122,6 +198,35 @@
                     "id": "entries-list-top-controls",
                     "componentName": "EntriesTopControls",
                     "configPath": "{\"key\":\"ListPage\",\"type\":\"flexibles\"}/{\"key\":\"entries-list-top-controls\",\"type\":\"flexibles\"}",
+                    "uiConfigs": {},
+                    "flexibles": {}
+                },
+                "top-controls": {
+                    "id": "top-controls",
+                    "componentName": "EntriesTopControls",
+                    "configPath": "{\"key\":\"ListPage\",\"type\":\"flexibles\"}/{\"key\":\"top-controls\",\"type\":\"flexibles\"}",
+                    "uiConfigs": {},
+                    "flexibles": {
+                        "search-box": {
+                            "id": "search-box",
+                            "componentName": "SearchBox",
+                            "configPath": "{\"key\":\"ListPage\",\"type\":\"flexibles\"}/{\"key\":\"top-controls\",\"type\":\"flexibles\"}/{\"key\":\"search-box\",\"type\":\"flexibles\"}",
+                            "uiConfigs": {},
+                            "flexibles": {}
+                        },
+                        "mobile-search-box": {
+                            "id": "mobile-search-box",
+                            "componentName": "SearchBox",
+                            "configPath": "{\"key\":\"ListPage\",\"type\":\"flexibles\"}/{\"key\":\"top-controls\",\"type\":\"flexibles\"}/{\"key\":\"mobile-search-box\",\"type\":\"flexibles\"}",
+                            "uiConfigs": {},
+                            "flexibles": {}
+                        }
+                    }
+                },
+                "data-table": {
+                    "id": "data-table",
+                    "componentName": "EntriesDataTable",
+                    "configPath": "{\"key\":\"ListPage\",\"type\":\"flexibles\"}/{\"key\":\"data-table\",\"type\":\"flexibles\"}",
                     "uiConfigs": {},
                     "flexibles": {}
                 }
@@ -175,6 +280,13 @@
                                     "flexibles": {}
                                 }
                             }
+                        },
+                        "page-layout-side-nav": {
+                            "id": "page-layout-side-nav",
+                            "componentName": "SideNav",
+                            "configPath": "{\"key\":\"EntryDetailPage\",\"type\":\"flexibles\"}/{\"key\":\"entry-detail-page\",\"type\":\"flexibles\"}/{\"key\":\"page-layout-side-nav\",\"type\":\"flexibles\"}",
+                            "uiConfigs": {},
+                            "flexibles": {}
                         }
                     }
                 },
@@ -195,6 +307,20 @@
                             "id": "entry-detail-top-control-action-buttons",
                             "componentName": "ActionButtons",
                             "configPath": "{\"key\":\"EntryDetailPage\",\"type\":\"flexibles\"}/{\"key\":\"top-controls\",\"type\":\"flexibles\"}/{\"key\":\"entry-detail-top-control-action-buttons\",\"type\":\"flexibles\"}",
+                            "uiConfigs": {},
+                            "flexibles": {}
+                        },
+                        "back-button": {
+                            "id": "back-button",
+                            "componentName": "BackButton",
+                            "configPath": "{\"key\":\"EntryDetailPage\",\"type\":\"flexibles\"}/{\"key\":\"top-controls\",\"type\":\"flexibles\"}/{\"key\":\"back-button\",\"type\":\"flexibles\"}",
+                            "uiConfigs": {},
+                            "flexibles": {}
+                        },
+                        "action-buttons": {
+                            "id": "action-buttons",
+                            "componentName": "ActionButtons",
+                            "configPath": "{\"key\":\"EntryDetailPage\",\"type\":\"flexibles\"}/{\"key\":\"top-controls\",\"type\":\"flexibles\"}/{\"key\":\"action-buttons\",\"type\":\"flexibles\"}",
                             "uiConfigs": {},
                             "flexibles": {}
                         }
@@ -235,10 +361,26 @@
                     "configPath": "{\"key\":\"EntryDetailPage\",\"type\":\"flexibles\"}/{\"key\":\"back-button\",\"type\":\"flexibles\"}",
                     "uiConfigs": {},
                     "flexibles": {}
+                },
+                "info-grid": {
+                    "id": "info-grid",
+                    "componentName": "InfoGrid",
+                    "configPath": "{\"key\":\"EntryDetailPage\",\"type\":\"flexibles\"}/{\"key\":\"info-grid\",\"type\":\"flexibles\"}",
+                    "uiConfigs": {},
+                    "flexibles": {}
+                },
+                "bottom-back-button": {
+                    "id": "bottom-back-button",
+                    "componentName": "BackButton",
+                    "configPath": "{\"key\":\"EntryDetailPage\",\"type\":\"flexibles\"}/{\"key\":\"bottom-back-button\",\"type\":\"flexibles\"}",
+                    "uiConfigs": {},
+                    "flexibles": {}
                 }
             }
         }
     },
+    "markdowns": null,
+    "styles": null,
     "uiConfigs": {
         "Home": {
             "componentName": "Home",
@@ -278,45 +420,92 @@
                 "fontStyle": "italic"
             },
             "uiConfigs": {},
-            "flexibles": {}
+            "flexibles": {
+                "header-app-logo": {
+                    "id": "header-app-logo",
+                    "componentName": "AppLogo",
+                    "configPath": "{\"key\":\"Header\",\"type\":\"uiConfigs\"}/{\"key\":\"header-app-logo\",\"type\":\"flexibles\"}",
+                    "uiConfigs": {},
+                    "flexibles": {}
+                }
+            }
         },
         "LandingSection": {
             "componentName": "LandingSection",
+            "className": "   ",
             "configPath": "/{\"key\":\"LandingSection\",\"type\":\"uiConfigs\"}",
             "contents": {
-                "headingText": "Diegesis is a place to find Bibles and related resources, in a variety\n    of formats, released under open licences*.",
-                "captionText": "* In other words, you can use, share, improve and translate them."
+                "headingText": "Lorem ipsum dolor sit amet consectetur adipiscing elit. Sed lectus sem, dapibus a sapien released.",
+                "captionText": "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
             },
             "styles": {
                 "headingColor": "#31373A",
                 "captionColor": "#707070",
                 "fontFamily": "Noto Serif Display"
             },
+            "markdowns": {},
             "uiConfigs": {},
-            "flexibles": {}
+            "flexibles": {
+                "landing-section-action-button": {
+                    "id": "landing-section-action-button",
+                    "componentName": "SectionActionButton",
+                    "className": " ",
+                    "configPath": "{\"key\":\"LandingSection\",\"type\":\"uiConfigs\"}/{\"key\":\"landing-section-action-button\",\"type\":\"flexibles\"}",
+                    "contents": {
+                        "actionBtnText": "Browse content",
+                        "defaultActionBtnHref": "/"
+                    },
+                    "styles": {
+                        "color": "#ffffff",
+                        "minWidth": "312px",
+                        "minHeight": "70px",
+                        "paddingLeft": "30px",
+                        "paddingRight": "30px",
+                        "backgroundColor": "#000000",
+                        "fontSize": "21px",
+                        "textTransform": "none",
+                        "borderRadius": "0px",
+                        "boxShadow": "none",
+                        "hoveredBackgroundColor": "#000000",
+                        "hoveredBoxShadow": "none"
+                    },
+                    "markdowns": {},
+                    "uiConfigs": {},
+                    "flexibles": {}
+                }
+            }
         },
         "Footer": {
             "componentName": "Footer",
+            "className": "       ",
             "configPath": "/{\"key\":\"Footer\",\"type\":\"uiConfigs\"}",
             "contents": {
-                "brandName": "MVH Solutions",
-                "year": "2023"
+                "brandName": "Footer links | Footer links",
+                "year": ""
             },
             "styles": {
-                "backgroundColor": "#31373A",
+                "backgroundColor": "#000000",
                 "containerPadding": "3rem 0px",
                 "fontFamily": "Noto Serif Display"
             },
             "markdowns": {
                 "footerDescription": {
-                    "content": "Diegesis.Bible is a project by MVH Solutions that uses the Proskomma Scripture Runtime Engine.",
+                    "content": "© Copyright information",
                     "css": "\n        p {\n          color: #fff;\n          font-family: Noto Serif Display;\n          font-size: '1.1rem';\n          line-height: '1.5rem';\n          font-weight: 400;\n          padding: 0;\n        }\n      ",
                     "className": "",
                     "id": "footerDescription"
                 }
             },
             "uiConfigs": {},
-            "flexibles": {}
+            "flexibles": {
+                "footer-app-logo": {
+                    "id": "footer-app-logo",
+                    "componentName": "AppLogo",
+                    "configPath": "{\"key\":\"Footer\",\"type\":\"uiConfigs\"}/{\"key\":\"footer-app-logo\",\"type\":\"flexibles\"}",
+                    "uiConfigs": {},
+                    "flexibles": {}
+                }
+            }
         },
         "PageLayout": {
             "componentName": "PageLayout",
@@ -324,7 +513,70 @@
             "contents": {},
             "styles": {},
             "uiConfigs": {},
-            "flexibles": {}
+            "flexibles": {
+                "page-layout-header": {
+                    "id": "page-layout-header",
+                    "componentName": "Header",
+                    "configPath": "{\"key\":\"PageLayout\",\"type\":\"uiConfigs\"}/{\"key\":\"page-layout-header\",\"type\":\"flexibles\"}",
+                    "uiConfigs": {},
+                    "flexibles": {
+                        "header-app-logo": {
+                            "id": "header-app-logo",
+                            "componentName": "AppLogo",
+                            "configPath": "{\"key\":\"PageLayout\",\"type\":\"uiConfigs\"}/{\"key\":\"page-layout-header\",\"type\":\"flexibles\"}/{\"key\":\"header-app-logo\",\"type\":\"flexibles\"}",
+                            "uiConfigs": {},
+                            "flexibles": {}
+                        },
+                        "header-menu-icon": {
+                            "id": "header-menu-icon",
+                            "componentName": "MenuIcon",
+                            "configPath": "{\"key\":\"PageLayout\",\"type\":\"uiConfigs\"}/{\"key\":\"page-layout-header\",\"type\":\"flexibles\"}/{\"key\":\"header-menu-icon\",\"type\":\"flexibles\"}",
+                            "uiConfigs": {},
+                            "flexibles": {}
+                        }
+                    }
+                },
+                "page-layout-side-nav": {
+                    "id": "page-layout-side-nav",
+                    "componentName": "SideNav",
+                    "configPath": "{\"key\":\"PageLayout\",\"type\":\"uiConfigs\"}/{\"key\":\"page-layout-side-nav\",\"type\":\"flexibles\"}",
+                    "uiConfigs": {},
+                    "flexibles": {}
+                },
+                "page-layout-footer": {
+                    "id": "page-layout-footer",
+                    "componentName": "Footer",
+                    "className": " ",
+                    "configPath": "{\"key\":\"PageLayout\",\"type\":\"uiConfigs\"}/{\"key\":\"page-layout-footer\",\"type\":\"flexibles\"}",
+                    "contents": {
+                        "brandName": "MVH Solutions",
+                        "year": "2023"
+                    },
+                    "styles": {
+                        "backgroundColor": "#000000",
+                        "containerPadding": "3rem 0px",
+                        "fontFamily": "Noto Serif Display"
+                    },
+                    "markdowns": {
+                        "footerDescription": {
+                            "content": "Diegesis.Bible is a project by MVH Solutions that uses the Proskomma Scripture Runtime Engine.",
+                            "css": "\n        p {\n          color: #fff;\n          font-family: Noto Serif Display;\n          font-size: '1.1rem';\n          line-height: '1.5rem';\n          font-weight: 400;\n          padding: 0;\n        }\n      ",
+                            "className": "",
+                            "id": "footerDescription"
+                        }
+                    },
+                    "uiConfigs": {},
+                    "flexibles": {
+                        "footer-app-logo": {
+                            "id": "footer-app-logo",
+                            "componentName": "AppLogo",
+                            "configPath": "{\"key\":\"PageLayout\",\"type\":\"uiConfigs\"}/{\"key\":\"page-layout-footer\",\"type\":\"flexibles\"}/{\"key\":\"footer-app-logo\",\"type\":\"flexibles\"}",
+                            "uiConfigs": {},
+                            "flexibles": {}
+                        }
+                    }
+                }
+            }
         },
         "AppLogo": {
             "componentName": "AppLogo",
@@ -341,11 +593,33 @@
                 "defaultHeight": "52.348px",
                 "fontFamily": "Helvetica-Bold, Helvetica"
             },
-            "uiConfigs": {},
+            "uiConfigs": {
+                "AppLogo": {
+                    "componentName": "AppLogo",
+                    "className": " ",
+                    "configPath": "{\"key\":\"AppLogo\",\"type\":\"uiConfigs\"}/{\"key\":\"AppLogo\",\"type\":\"uiConfigs\"}",
+                    "contents": {
+                        "iconType": "tree",
+                        "title": "Diegesis"
+                    },
+                    "styles": {
+                        "iconColor": "#60D0B2",
+                        "titleColor": "#31373A",
+                        "lightModeColor": "#ffffff",
+                        "defaultWidth": "240px",
+                        "defaultHeight": "52.348px",
+                        "fontFamily": "Helvetica-Bold, Helvetica"
+                    },
+                    "markdowns": {},
+                    "uiConfigs": {},
+                    "flexibles": {}
+                }
+            },
             "flexibles": {}
         },
         "MenuIcon": {
             "componentName": "MenuIcon",
+            "className": " ",
             "configPath": "/{\"key\":\"MenuIcon\",\"type\":\"uiConfigs\"}",
             "contents": {
                 "title": "Open source Bibles resources"
@@ -353,8 +627,9 @@
             "styles": {
                 "defaultWidth": "49px",
                 "defaultHeight": "40px",
-                "iconColor": "#60D0B2"
+                "iconColor": "#000000"
             },
+            "markdowns": {},
             "uiConfigs": {},
             "flexibles": {}
         },
@@ -462,6 +737,59 @@
                 "width": "47%",
                 "color": "#1B1B1B",
                 "bgColor": "#60D0B2"
+            },
+            "uiConfigs": {},
+            "flexibles": {}
+        },
+        "SideNav": {
+            "componentName": "SideNav",
+            "configPath": "/{\"key\":\"SideNav\",\"type\":\"uiConfigs\"}",
+            "contents": {
+                "closeBtnText": "Close"
+            },
+            "styles": {
+                "background": "#e3e3d9",
+                "closeBtnTextColor": "#31373A",
+                "navItemColor": "#1B1B1B",
+                "activeNavItemColor": "#60D0B2"
+            },
+            "uiConfigs": {},
+            "flexibles": {}
+        },
+        "EntriesDataTable": {
+            "componentName": "EntriesDataTable",
+            "configPath": "/{\"key\":\"EntriesDataTable\",\"type\":\"uiConfigs\"}",
+            "contents": {},
+            "styles": {
+                "primaryColor": "#60D0B2"
+            },
+            "uiConfigs": {},
+            "flexibles": {}
+        },
+        "InfoGrid": {
+            "componentName": "InfoGrid",
+            "configPath": "/{\"key\":\"InfoGrid\",\"type\":\"uiConfigs\"}",
+            "contents": {},
+            "styles": {
+                "primaryColor": "#60D0B2",
+                "textColor": "#31373A",
+                "fontWeight": "700",
+                "fontFamily": "Helvetica",
+                "fontSize": "1.1rem"
+            },
+            "uiConfigs": {},
+            "flexibles": {}
+        },
+        "SearchBox": {
+            "componentName": "SearchBox",
+            "configPath": "/{\"key\":\"SearchBox\",\"type\":\"uiConfigs\"}",
+            "contents": {},
+            "styles": {
+                "borderColor": "#60D0B2",
+                "searchIconColor": "#5C6673",
+                "searchButtonColor": "#FFFFFF",
+                "searchButtonBackground": "#60D0B2",
+                "searchButtonActiveBackground": "#4EAA91"
             },
             "uiConfigs": {},
             "flexibles": {}
