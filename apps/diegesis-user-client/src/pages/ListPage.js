@@ -157,7 +157,7 @@ export default function ListPage() {
                 numeric: false,
                 disablePadding: true,
                 label: i18n(appLang, "CONTROLS_TITLE"),
-                render(value) {
+                render(value, styles = {}) {
                     return (
                         <Button
                             className="no-padding"
@@ -166,7 +166,7 @@ export default function ListPage() {
                                 textTransform: 'none',
                                 fontWeight: 700,
                                 fontSize: '0.9rem',
-                                color: 'text.turquoise-light',
+                                color: styles.primaryColor ?? 'text.turquoise-light',
                             }}
                         >
                             {value.title}
