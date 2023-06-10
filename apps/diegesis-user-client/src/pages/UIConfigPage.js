@@ -5,7 +5,7 @@ import { useAppContext } from '../contexts/AppContext';
 import langTable from "../i18n/languages.json";
 const { Button, Drawer, Box, Select, MenuItem } = MuiMaterial;
 const { UIConfigControlPanel, FlexibleHome, FlexibleEntryDetailUI, FlexibleEntriesListUI, useUIConfigContext } = DiegesisUI.FlexibleDesign;
-const { FlexibleEntriesListPage } = FlexibleEntriesListUI;
+const { FlexibleEntriesListPage, MOCK_ENTRIES_TOP_CONTROLS_PROPS } = FlexibleEntriesListUI;
 const { FlexibleEntryDetail } = FlexibleEntryDetailUI;
 
 export default function UIConfigPage() {
@@ -63,9 +63,16 @@ export default function UIConfigPage() {
             <Button onClick={toggleDrawer} variant="contained">
                 Open Setting Panel
             </Button>
-            <FlexibleHome id="HomePage" parentPath="/" />
-            <FlexibleEntriesListPage id="ListPage" parentPath="/list" />
-            <FlexibleEntryDetail id="EntryDetailPage" parentPath="/entry-detail" />
+            <FlexibleHome
+                id="home-page"
+                parentPath="/"
+            />
+            <FlexibleEntriesListPage
+                id="list-page"
+                parentPath="/list"
+                topControlProps={MOCK_ENTRIES_TOP_CONTROLS_PROPS}
+            />
+            <FlexibleEntryDetail id="entry-detail-page" parentPath="/entry-detail" />
             <Drawer
                 anchor="left"
                 open={open}
