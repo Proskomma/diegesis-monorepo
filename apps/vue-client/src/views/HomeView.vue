@@ -1,9 +1,56 @@
-<script setup>
-</script>
-
 <template>
   <main>
     <h1>Demo page</h1>
-    <p>Demo content</p>
+    <p>{{ bibleText }}</p>
   </main>
 </template>
+
+<script setup>
+import { inject, onMounted, ref } from 'vue'
+import { Proskomma } from 'proskomma-core'
+import gql from 'graphql-tag'
+
+let bibleText = ref('Loading text…')
+
+const pk = new Proskomma([
+  {
+    name: "source",
+    type: "string",
+    regex: "^[^\\s]+$",
+  },
+  {
+    name: "project",
+    type: "string",
+    regex: "^[^\\s]+$",
+  },
+  {
+    name: "revision",
+    type: "string",
+    regex: "^[^\\s]+$",
+  },
+]);
+
+let apolloClient = inject('DefaultApolloClient')
+
+onMounted(async () => {
+  try {
+    const apolloResult = await apolloClient.query({
+      query: gql`{
+        localEntry(source: "eBible", id:"fra_fob", revision: "2023-04-22")  {
+          canonResource(type: "succinct") {
+            content
+          }
+        }
+      }`
+    })
+
+    pk.loadSuccinctDocSet(JSON.parse(apolloResult.data.localEntry.canonResource.content));
+    let pkResult = pk.gqlQuerySync(`{ docSet (id:"eBible_fra_fob_2023-04-22") {id document(bookCode:"PHM"){mainSequence {blocksText}}}}`);
+    bibleText.value = pkResult.data.docSet.document.mainSequence.blocksText.join("\n")
+
+  } catch (error) {
+    console.error(error)
+  }
+})
+
+</script>
