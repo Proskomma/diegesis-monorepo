@@ -7,29 +7,11 @@
 
 <script setup>
 import { inject, onMounted, ref } from 'vue'
-import { Proskomma } from 'proskomma-core'
 import gql from 'graphql-tag'
 
 let bibleText = ref('Loading text…')
 
-const pk = new Proskomma([
-  {
-    name: "source",
-    type: "string",
-    regex: "^[^\\s]+$",
-  },
-  {
-    name: "project",
-    type: "string",
-    regex: "^[^\\s]+$",
-  },
-  {
-    name: "revision",
-    type: "string",
-    regex: "^[^\\s]+$",
-  },
-]);
-
+let pk = inject('ProskommaCore')
 let apolloClient = inject('DefaultApolloClient')
 
 onMounted(async () => {
