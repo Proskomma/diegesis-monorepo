@@ -41,6 +41,10 @@
         "/blend",
         "/entry/*"
       ]
+    },
+    {
+      "path": "../vue-client/dist",
+      "url": "/vue"
     }
   ],
   "deleteGenerated": false
