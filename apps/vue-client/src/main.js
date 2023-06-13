@@ -9,7 +9,7 @@ import { Proskomma } from 'proskomma-core'
 // HTTP connection to the API
 const httpLink = createHttpLink({
   // You should use an absolute URL here
-  uri: 'https://diegesis.bible/graphql',
+  uri: 'http://localhost:1234/graphql',
 })
 
 // Cache implementation
@@ -43,23 +43,23 @@ let pkResult = undefined
 
 const apolloResult = apolloClient.query({
   query: gql`{
-      localEntry(source: "eBible", id:"engBBE", revision: "2020-04-17")  {
+      localEntry(source: "eBible", id:"fra_fob", revision: "2023-04-22")  {
           canonResource(type: "succinct") {
               content
           }
       }
-  }`,
-  result ({data, loading}) {
-    if (!loading) {
-      pk.loadSuccinctDocSet(JSON.parse(data.localEntry.canonResource.content));
-      pkResult = pk.gqlQuerySync(`{ docSet (id:"eBible_engBBE_2020-04-17") {id document(bookCode:"TIT"){mainSequence {blocksText}}}}`);
-      console.log(pkResult)
-    }
-  },
-  error (error) {
-    console.error(error)
-  },
+  }`
 })
+
+apolloResult
+  .then(({data}) => {
+    pk.loadSuccinctDocSet(JSON.parse(data.localEntry.canonResource.content));
+    pkResult = pk.gqlQuerySync(`{ docSet (id:"eBible_fra_fob_2023-04-22") {id document(bookCode:"TIT"){mainSequence {blocksText}}}}`);
+    console.log(pkResult)
+  })
+  .catch(error => {
+    console.error(error)
+  })
 
 const apolloProvider = createApolloProvider({
   defaultClient: apolloClient,
