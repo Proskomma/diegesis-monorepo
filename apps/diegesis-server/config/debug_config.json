@@ -45,10 +45,13 @@
         "/entry/*",
         "/v1/*",
         "/ui-config",
+        "/login",
         "/"
       ]
     }
   ],
-  "deleteGenerated": false
-
+  "deleteGenerated": false,
+  "uiConfigPath": "ui_config",
+  "initializeUIConfig": true,
+  "resourcesPath": "resources"
 }

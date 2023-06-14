@@ -6,15 +6,14 @@ import {
   FormControlLabel,
   Button,
 } from "@mui/material";
-import { useContext } from "react";
 import i18n from "../i18n";
 import OrgSelector from "./OrgSelector";
 import SortSelector from "./SortSelector";
-import AppLangContext from "../contexts/AppLangContext";
 import { directionText } from "../i18n/languageDirection";
+import { useAppContext } from "../contexts/AppContext";
 
 export default function ListViewController({ searchTerms }) {
-  const appLang = useContext(AppLangContext);
+  const {appLang} = useAppContext();
   const title = i18n(appLang, "CONTROLS_TITLE");
   const owner = i18n(appLang, "CONTROLS_OWNER");
   const type = i18n(appLang, "CONTROLS_TYPE");
@@ -112,8 +111,8 @@ export default function ListViewController({ searchTerms }) {
         [i18n(appLang, "CONTROLS_GLOSS"), "gloss"],
         [i18n(appLang, "STATS_nContent"), "content"],
         [i18n(appLang, "STATS_nOccurrences"), "occurrences"],
-      ].map((i) => (
-        <Grid item xs={6} sm={4} md={2}>
+      ].map((i, idx) => (
+        <Grid item xs={6} sm={4} md={2} key={idx}>
           <FormGroup>
             <FormControlLabel
               labelPlacement="bottom"

@@ -18,6 +18,7 @@ const makeServerStatic = require("./makeServerHelpers/makeServerStatic");
 const makeServerLogging = require("./makeServerHelpers/makeServerLogging");
 const makeServerDelete = require("./makeServerHelpers/makeServerDelete");
 const serverClientStructure = require("./makeServerHelpers/serverClientStructure");
+const makeServerUIConfig = require('./makeServerHelpers/makeServerUIConfig');
 
 async function makeServer(config) {
     config.verbose && console.log("Diegesis Server");
@@ -43,6 +44,9 @@ async function makeServer(config) {
     // Delete lock files and maybe generated files and directories
     makeServerDelete(config);
 
+    // Setup default ui config
+    makeServerUIConfig(config);
+
     // Maybe start processing cron
     if (config.processFrequency !== "never") {
         doRenderCron(config);
@@ -58,7 +62,7 @@ async function makeServer(config) {
         ),
         resolvers,
         includeStacktraceInErrorResponses: config.debug,
-        context: ({req}) => {
+        context: ({ req }) => {
             return {
                 auth:
                     !req.cookies || !req.cookies["diegesis-auth"]

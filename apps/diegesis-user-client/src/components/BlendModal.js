@@ -7,9 +7,8 @@ import {
     Typography,
     Checkbox
 } from "@mui/material";
+import { useAppContext } from '../contexts/AppContext';
 import Backdrop from "@mui/material/Backdrop";
-import {useContext} from "react";
-import AppLangContext from "../contexts/AppLangContext";
 import i18n from "../i18n";
 
 const blendModalStyle = {
@@ -33,7 +32,7 @@ export default function BlendModal({
                                        usedBlendables,
                                        setUsedBlendables
                                    }) {
-    const appLang = useContext(AppLangContext);
+    const { appLang } = useAppContext();
 
     return (
         <Modal

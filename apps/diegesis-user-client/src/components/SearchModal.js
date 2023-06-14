@@ -13,12 +13,12 @@ import {
   Typography,
 } from "@mui/material";
 import Backdrop from "@mui/material/Backdrop";
-import { useContext, useEffect, useState } from "react";
-import AppLangContext from "../contexts/AppLangContext";
+import { useEffect, useState } from "react";
 import i18n from "../i18n";
 import { directionText, fontFamily } from "../i18n/languageDirection";
 import DocSelector from "./DocSelector";
 import xre from "xregexp";
+import { useAppContext } from "../contexts/AppContext";
 
 const style = {
   position: "absolute",
@@ -44,7 +44,7 @@ export default function SearchModal({
   handleCloseSearchModal,
   pk,
 }) {
-  const appLang = useContext(AppLangContext);
+  const {appLang} = useAppContext()
 
   const searchQueryTitle = i18n(appLang, "CONTROLS_SEARCHQUERY");
   const runSearchTitle = i18n(appLang, "CONTROLS_RUNSEARCH");
@@ -402,9 +402,9 @@ export default function SearchModal({
                       {matches.length}{" "}
                     </Typography>
                     <List>
-                      {matches.map((match) => {
+                      {matches.map((match, idx) => {
                         return (
-                          <ListItem>
+                          <ListItem key={idx}>
                             <Box
                               sx={{ display: "flex", flexDirection: "column" }}
                               dir={directionText(appLang)}

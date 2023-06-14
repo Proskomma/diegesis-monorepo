@@ -1,19 +1,17 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { gql, useQuery } from "@apollo/client";
 import ReactMarkdown from 'react-markdown';
 import { MuiMaterial } from '@eten-lab/ui-kit';
 
-import AppLangContext from "../contexts/AppLangContext";
 import { directionText } from "../i18n/languageDirection";
 import Spinner from "../components/Spinner";
 import GqlError from "../components/GqlError";
 import PageLayout from '../components/PageLayout';
+import { useAppContext } from '../contexts/AppContext';
 const { Container } = MuiMaterial;
 
-export default function MarkdownPage({ setAppLanguage, url }) {
-
-    const appLang = useContext(AppLangContext);
-
+export default function MarkdownPage({ url }) {
+    const { appLang } = useAppContext();
     const queryString = `{
                   clientStructure {
                     page(language:"%lang%" url: "%url%") {
@@ -41,7 +39,7 @@ export default function MarkdownPage({ setAppLanguage, url }) {
     return (
         <PageLayout>
             <Container dir={directionText(appLang)} style={{ marginTop: "50px", marginBottom: "50px" }}>
-                <ReactMarkdown>{(data && data.clientStructure.page.body) || "???"}</ReactMarkdown>
+                <ReactMarkdown>{(data?.clientStructure?.page?.body) || "???"}</ReactMarkdown>
             </Container>
         </PageLayout>
     );

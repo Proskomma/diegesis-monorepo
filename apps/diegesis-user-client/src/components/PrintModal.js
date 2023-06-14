@@ -13,8 +13,7 @@ import {
 } from "@mui/material";
 import Backdrop from "@mui/material/Backdrop";
 import PrintIcon from "@mui/icons-material/Print";
-import { useContext, useState } from "react";
-import AppLangContext from "../contexts/AppLangContext";
+import { useState } from "react";
 import {
   alignmentText,
   directionText,
@@ -24,6 +23,7 @@ import printModalResources from "../lib/printModalResources";
 import ColumnsSelector from "./ColumnsSelector";
 import PageSizeSelector from "./PageSizeSelector";
 import i18n from "../i18n";
+import { useAppContext } from "../contexts/AppContext";
 
 const printModalStyle = {
   position: "absolute",
@@ -45,7 +45,7 @@ export default function PrintModal({
   pk,
   docId,
 }) {
-  const appLang = useContext(AppLangContext);
+  const {appLang} = useAppContext()
 
   const allNames = [
     "wordAtts",

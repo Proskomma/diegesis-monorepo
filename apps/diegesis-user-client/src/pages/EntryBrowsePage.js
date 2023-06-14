@@ -1,25 +1,25 @@
-import React, {useContext, useState} from "react";
-import {Container, Typography, Box, Button} from "@mui/material";
-import {ArrowBack, ArrowForward, Blender} from "@mui/icons-material";
-import {useParams, Link as RouterLink} from "react-router-dom";
-import {gql, useQuery} from "@apollo/client";
-import {Proskomma} from "proskomma-core";
+import React, { useState } from "react";
+import { Container, Typography, Box, Button } from "@mui/material";
+import { ArrowBack, ArrowForward, Blender } from "@mui/icons-material";
+import { useParams, Link as RouterLink } from "react-router-dom";
+import { gql, useQuery } from "@apollo/client";
+import { Proskomma } from "proskomma-core";
 import GqlError from "../components/GqlError";
 import SearchIcon from "@mui/icons-material/Search";
 import Spinner from "../components/Spinner";
 import BrowseScripture from "../components/BrowseScripture";
 import BrowseBcvNotes from "../components/BrowseBcvNotes";
 import {directionText, fontFamily} from "../i18n/languageDirection";
-import AppLangContext from "../contexts/AppLangContext";
 import i18n from "../i18n";
 import SearchModal from "../components/SearchModal";
 import PrintModal from "../components/PrintModal";
 import PrintIcon from '@mui/icons-material/Print';
 import PageLayout from "../components/PageLayout";
+import { useAppContext } from "../contexts/AppContext";
 
-export default function EntryBrowsePage({setAppLanguage}) {
-    const appLang = useContext(AppLangContext);
-    const {source, entryId, revision} = useParams();
+export default function EntryBrowsePage() {
+    const { appLang } = useAppContext();
+    const { source, entryId, revision } = useParams();
 
     const [openSearchModal, setOpenSearchModal] = useState(false);
     const handleOpenSearchModal = () => setOpenSearchModal(true);

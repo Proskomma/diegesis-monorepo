@@ -1,11 +1,10 @@
 import {Select, MenuItem} from "@mui/material";
-import { useContext } from "react";
-import AppLangContext from "../contexts/AppLangContext";
 import i18n from "../i18n";
 import { directionText, fontFamily } from "../i18n/languageDirection";
+import { useAppContext } from "../contexts/AppContext";
 
 export default function SortSelector({sortField, setSortField}) {
-    const appLang = useContext(AppLangContext);
+    const {appLang} = useAppContext();
     return (
         <Select
             id="sort_selector"
