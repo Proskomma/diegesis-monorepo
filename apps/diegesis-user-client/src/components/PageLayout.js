@@ -81,6 +81,7 @@ export default function PageLayout(props) {
                         doLogout();
                     }
                 })
+                navOptions.push({ title: 'UI Config', variant: 'small', href: '/ui-config' })
             } else {
                 navOptions.push({ title: 'Login', variant: 'small', href: '/login', activated: location.pathname === '/login' });
             }
