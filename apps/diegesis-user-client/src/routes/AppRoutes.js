@@ -10,6 +10,7 @@ import EntryDownloadPage from "../pages/EntryDownloadPage";
 import UIConfigPage from "../pages/UIConfigPage";
 import ProtectedRoute from "./ProtectedRoute";
 import LoginPage from "../pages/LoginPage";
+import StaticUIConfigPage from '../pages/StaticUIConfigPage';
 
 
 
@@ -88,9 +89,7 @@ export default function AppRoutes() {
             },
             {
                 path: "/static-ui-config",
-                element: <ProtectedRoute roles={['admin']}>
-                    <UIConfigPage />
-                </ProtectedRoute>,
+                element: <StaticUIConfigPage />,
                 errorElement: <ErrorBoundary />
             },
             {
