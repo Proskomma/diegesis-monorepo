@@ -16,7 +16,10 @@ const defaultConfig = {
     hostName: 'localhost',
     port: 2468,
     dataPath: path.resolve(appRoot, 'data'),
+    uiConfigPath: path.resolve(appRoot, 'ui_config'),
+    initializeUIConfig: false,
     structurePath: path.resolve(appRoot, 'default_structure'),
+    resourcesPath: path.resolve(appRoot, 'resources'),
     logAccess: false,
     logFormat: "combined",
     useCors: false,
@@ -139,6 +142,32 @@ function makeConfig(providedConfig) {
             croak(`CONFIG ERROR: dataPath '${fqPath}' does not exist or is not a directory`);
         }
         config.dataPath = fqPath;
+    }
+    if (typeof providedConfig.initializeUIConfig !== 'undefined') {
+        if (typeof providedConfig.initializeUIConfig === 'boolean')
+            config.initializeUIConfig = providedConfig.initializeUIConfig;
+        else
+            croak(`CONFIG ERROR: initializeUIConfig should be true/false, not '${providedConfig.initializeUIConfig}'`);
+    }
+    if (typeof providedConfig.uiConfigPath !== 'undefined') {
+        if (typeof providedConfig.uiConfigPath === 'string')
+            config.uiConfigPath = path.resolve(providedConfig.uiConfigPath);
+        else
+            croak(`CONFIG ERROR: uiConfigPath should be a string, not '${providedConfig.uiConfigPath}'`);
+    }
+    if (!config.initializeUIConfig) {
+        if (!fse.existsSync(config.uiConfigPath) || !fse.lstatSync(config.uiConfigPath).isDirectory()) {
+            croak(`CONFIG ERROR: uiConfigPath '${config.uiConfigPath}' does not exist or is not a directory`);
+        }
+    }
+    if (typeof providedConfig.resourcesPath !== 'undefined') {
+        if (typeof providedConfig.resourcesPath === 'string')
+            config.resourcesPath = path.resolve(providedConfig.resourcesPath);
+        else
+            croak(`CONFIG ERROR: resourcesPath should be a string, not '${providedConfig.resourcesPath}'`);
+    }
+    if (!fse.existsSync(config.resourcesPath) || !fse.lstatSync(config.resourcesPath).isDirectory()) {
+        croak(`CONFIG ERROR: resourcesPath '${config.resourcesPath}' does not exist or is not a directory`);
     }
     const structurePath = providedConfig.structurePath || config.structurePath; // Always check structurePath
     if (
@@ -594,6 +623,9 @@ const configSummary = config => `  Server ${config.name} is listening on ${confi
     Local content ${config.localContent ? "en" : "dis"}abled
     Data directory is ${config.dataPath}
     Structure directory is ${config.structurePath}
+    UIConfig directory is ${config.uiConfigPath}
+    Resources directory is ${config.resourcesPath}
+    Initialize UIConfig is ${config.initializeUIConfig ? "en" : "dis"}abled
     ${config.staticPaths ? `${staticDescription(config.staticPaths)}` : "No static paths"}
     Process new data ${config.processFrequency === 'never' ? "disabled" : `every ${config.processFrequency}
     ${config.nWorkers} worker thread${config.nWorkers === 1 ? "" : "s"}
@@ -602,4 +634,4 @@ const configSummary = config => `  Server ${config.name} is listening on ${confi
     ${config.deleteGenerated ? "Delete all generated content" : "Delete lock files only"} on startup
 `}`
 
-module.exports = {makeConfig, cronOptions, configSummary};
+module.exports = { makeConfig, cronOptions, configSummary };

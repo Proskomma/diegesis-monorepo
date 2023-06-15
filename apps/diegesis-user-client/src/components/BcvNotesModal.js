@@ -1,4 +1,4 @@
-import {useState, useEffect, useContext} from "react";
+import {useState, useEffect} from "react";
 import {
     Box,
     Fade,
@@ -7,8 +7,8 @@ import {
 } from "@mui/material";
 import Backdrop from "@mui/material/Backdrop";
 import ReactMarkdown from 'react-markdown';
-import AppLangContext from "../contexts/AppLangContext";
 import i18n from "../i18n";
+import { useAppContext } from "../contexts/AppContext";
 
 const bcvNotesModalStyle = {
     position: "absolute",
@@ -31,7 +31,7 @@ export default function BcvNotesModal({
                                           handleCloseBcvNotesModal,
                                           usedBlendables
                                       }) {
-    const appLang = useContext(AppLangContext);
+    const {appLang} = useAppContext();
     const [notesMarkdown, setNotesMarkdown] = useState("");
 
     useEffect(

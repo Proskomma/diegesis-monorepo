@@ -176,17 +176,11 @@
         "url": "/",
         "redirectTarget": "../../static_user/index.html",
         "redirects": [
-          "/who",
-          "/how",
-          "/blend",
-          "/home",
           "/list",
-          "/about",
           "/view",
           "/entry/*",
-          "/v1/*",
           "/ui-config",
-          "/"
+          "/login"
         ]
       },
       {
@@ -202,5 +196,8 @@
     "deleteGenerated": false,
     "superusers": {
 
-    }
+    },
+    "uiConfigPath": "ui_config",
+    "initializeUIConfig": true,
+    "resourcesPath": "resources"
   }

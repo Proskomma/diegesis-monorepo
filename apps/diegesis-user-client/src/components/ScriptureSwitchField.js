@@ -1,14 +1,13 @@
-import react, {useContext} from 'react';
 import {
     FormControlLabel,
     Switch,
 } from "@mui/material";
 import i18n from "../i18n";
-import AppLangContext from "../contexts/AppLangContext";
+import { useAppContext } from '../contexts/AppContext';
 
 const ScriptureSwitchField =
     ({scriptureData, setScriptureData,fieldName, labelKey}) => {
-        const appLang = useContext(AppLangContext);
+        const {appLang} = useAppContext();
         const toggleScriptureToggle = field => {
             setScriptureData(true)
             const newData = {...scriptureData };

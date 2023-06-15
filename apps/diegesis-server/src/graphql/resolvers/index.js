@@ -1,4 +1,4 @@
-const { GraphQLScalarType, Kind } = require("graphql");
+const { GraphQLScalarType, Kind, GraphQLError } = require("graphql");
 const {
     entryExists,
     entryRevisionExists,
@@ -485,7 +485,7 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
             localEntry: (root, args) => {
                 return localEntry(orgsData[args.source].name, args.id, args.revision);
             },
-            getFlexibleUIConfig: (root, args) => {
+            flexibleUIConfig: (root, args) => {
                 return readFlexibleUIConfig(config, args.id);
             },
         },
@@ -935,7 +935,13 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                 }
                 return true;
             },
-            saveFlexibleUIConfig: async (root, args) => {
+            saveFlexibleUIConfig: async (root, args, context) => {
+                if (!context.auth || !context.auth.authenticated) {
+                    throw new GraphQLError(`No auth found for saveFlexibleUIConfig mutation`, { extensions: { code: 401 } });
+                }
+                if (!context.auth.roles || !context.auth.roles.includes("admin")) {
+                    throw new GraphQLError(`Required auth role 'admin' not found for saveFlexibleUIConfig`, { extensions: { code: 403 } });
+                }
                 writeFlexibleUIConfig(config, args);
                 return true;
             },

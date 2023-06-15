@@ -62,7 +62,7 @@ const querySchema = gql`
         ): LocalEntry
 
         """An flexible ui config for all pages, if it exists"""
-        getFlexibleUIConfig(
+        flexibleUIConfig(
             id: String!
         ): FlexibleUIConfig
     }
