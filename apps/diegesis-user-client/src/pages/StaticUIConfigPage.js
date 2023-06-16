@@ -1,24 +1,10 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useApolloClient } from '@apollo/client';
 import { useAppContext } from '../contexts/AppContext';
-import { Container, Tabs, Tab } from '@mui/material';
+import { Container, Tabs, Tab, IconButton } from '@mui/material';
 import { Close } from '@mui/icons-material';
 
 //#region 
-const CustomTab = ({ title, onClose }) => (
-    <Tab
-        label={title}
-        iconPosition={'end'}
-        {...(onClose && {
-            icon: (
-                <span onClick={onClose}>
-                    <Close color={'disabled'} />
-                </span>
-            ),
-        })}
-    />
-);
-
 const CustomTabs = ({ tabs }) => {
     const [activeTab, setActiveTab] = useState(0);
 
@@ -34,7 +20,18 @@ const CustomTabs = ({ tabs }) => {
     return (
         <Tabs value={activeTab} onChange={handleChangeTab} variant="scrollable" scrollButtons="auto">
             {tabs.map((tab, index) => (
-                <CustomTab key={index} title={tab.title} onClose={(event) => handleCloseTab(event, index)} />
+                <Tab
+                    key={index}
+                    label={tab.title}
+                    {...(tab.closable && {
+                        iconPosition: 'end',
+                        icon: (
+                            <IconButton onClick={(event) => handleCloseTab(event, index)}>
+                                <Close />
+                            </IconButton>
+                        ),
+                    })}
+                />
             ))}
         </Tabs>
     );
@@ -42,10 +39,18 @@ const CustomTabs = ({ tabs }) => {
 //#endregion
 
 export default function StaticUIConfigPage() {
-    const [tabOptions, setTabOptions] = useState([{ title: 'Home' }, { title: 'List' }]);
+
+    const [tabOptions, setTabOptions] = useState([]);
+    const { appLang, mutateState: mutateAppState, clientStructure } = useAppContext();
 
     const gqlClient = useApolloClient();
-    const { appLang, mutateState: mutateAppState, clientStructure } = useAppContext();
+
+    useEffect(() => {
+        if (Array.isArray(clientStructure.urlData)) {
+            const options = clientStructure.urlData.map(to => ({ title: to.menuText, closable: true }));
+            setTabOptions(options)
+        }
+    }, [clientStructure]);
 
     return (
         <Container>
