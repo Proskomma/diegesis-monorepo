@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react'
-import { useApolloClient } from '@apollo/client';
+import { gql, useApolloClient } from '@apollo/client';
 import { useAppContext } from '../contexts/AppContext';
-import { Container, Tabs, Tab, IconButton, Box, TextField, Grid, Typography, Divider, Paper } from '@mui/material';
+import { Container, Tabs, Tab, IconButton, Box, TextField, Grid, Typography, Paper } from '@mui/material';
 import { Close, AddCardTwoTone } from '@mui/icons-material';
 import { DiegesisUI } from '@eten-lab/ui-kit';
+import langTable from "../i18n/languages.json";
 const { MarkdownEditor } = DiegesisUI.FlexibleDesign;
 
-//#region 
+//#region functional components
 const TabTitle = ({ title, deletable, handleCloseTab, index }) => {
-
     return (
         <Box display={'flex'} alignItems={'center'} justifyContent={'space-between'}>
             {title}
@@ -22,23 +22,9 @@ const TabTitle = ({ title, deletable, handleCloseTab, index }) => {
     )
 }
 
-const CustomTabs = ({ tabs, addTab, deleteTab }) => {
-    const [activeTab, setActiveTab] = useState(0);
-
-    const handleChangeTab = (_, index) => {
-        setActiveTab(index);
-    };
-
-    const handleCloseTab = (event, index) => {
-        event.stopPropagation()
-        deleteTab(index)
-        setActiveTab((prev) => {
-            return (prev === index ? prev - 1 : prev)
-        });
-    };
-
+const CustomTabs = ({ tabs, activeTab, deleteTab, changeTab }) => {
     return (
-        <Tabs value={activeTab} onChange={handleChangeTab} variant="scrollable" scrollButtons="auto" sx={{
+        <Tabs value={activeTab} onChange={changeTab} variant="scrollable" scrollButtons="auto" sx={{
             '.Mui-selected': {
                 backgroundColor: 'aliceblue'
             }
@@ -49,7 +35,7 @@ const CustomTabs = ({ tabs, addTab, deleteTab }) => {
                     sx={{ cursor: 'pointer' }}
                     label={
                         typeof tab.title === 'string'
-                            ? <TabTitle {...tab} index={index} handleCloseTab={handleCloseTab} />
+                            ? <TabTitle {...tab} index={index} handleCloseTab={deleteTab} />
                             : tab.title
                     }
                 />
@@ -63,7 +49,8 @@ export default function StaticUIConfigPage() {
 
     const [pages, setPages] = useState([]); //[{title: 'Page 1', deletable: false}]
     const [languages, setLanguages] = useState([]);
-    const { appLang, mutateState: mutateAppState, clientStructure } = useAppContext();
+    const [activeTabIdx, setActiveTabIdx] = useState({ page: 0, lang: 0 });
+    const { mutateState: mutateAppState, clientStructure } = useAppContext();
 
     const gqlClient = useApolloClient();
 
@@ -85,14 +72,45 @@ export default function StaticUIConfigPage() {
             setPages(options)
         }
         if (Array.isArray(clientStructure.languages)) {
-            setLanguages(clientStructure.languages.map(l => ({ title: l })))
+            setLanguages(clientStructure.languages.map(lang => ({ title: langTable[lang]?.autonym ?? '' })))
         }
     }, [clientStructure]);
 
-    const deletePage = (idx) => {
+    useEffect(() => {
+        const language = (clientStructure.languages ?? [])[activeTabIdx.lang]
+        const url = (clientStructure.urlData ?? [])[activeTabIdx.page]
+        if(!language || !url) return
+        const gqlQuery = gql`
+            query ClientStructure($language: String!, $url: String!) {
+              clientStructure {
+                page(language: $language, url: $url) {
+                  body
+                  menuText
+                }
+              }
+            }
+        `
+        gqlClient.query({
+            query: gqlQuery, variables: {
+                language,
+                url
+            }
+        }).then(res => {
+            console.log('response', res)
+        }).catch(err => {
+            console.error('err response', err)
+        })
+    }, [activeTabIdx, gqlClient])
+
+    const deletePage = (e, idx) => {
+        e.stopPropagation()
         const clonedPages = [...pages]
         clonedPages.splice(idx, 1)
         setPages(clonedPages)
+        setActiveTabIdx(prev => {
+            const prevPageIdx = prev.page
+            return { ...prev, page: (prevPageIdx === idx ? prevPageIdx - 1 : prevPageIdx) }
+        })
     }
 
     const addPage = (e) => {
@@ -107,16 +125,28 @@ export default function StaticUIConfigPage() {
 
     return (
         <Container>
+            {/* pages */}
             <Paper elevation={1}>
-                {/* pages */}
-                <CustomTabs tabs={pages} addTab={addPage} deleteTab={deletePage} />
-                <Divider></Divider>
+                <CustomTabs
+                    tabs={pages}
+                    activeTab={activeTabIdx.page}
+                    addTab={addPage}
+                    deleteTab={deletePage}
+                    changeTab={(_, idx) => {
+                        setActiveTabIdx({ ...activeTabIdx, page: idx })
+                    }}
+                />
             </Paper>
             <br />
+            {/* languages */}
             <Paper elevation={1}>
-                {/* languages */}
-                <CustomTabs tabs={languages} deleteTab={deletePage} />
-                <Divider></Divider>
+                <CustomTabs
+                    tabs={languages}
+                    activeTab={activeTabIdx.lang}
+                    changeTab={(_, idx) => {
+                        setActiveTabIdx({ ...activeTabIdx, lang: idx })
+                    }}
+                />
             </Paper>
 
             <Grid sx={{ marginTop: '2rem' }} container spacing={2}>
@@ -159,6 +189,7 @@ export default function StaticUIConfigPage() {
                     <MarkdownEditor key={'body-markdown'} onChange={(value) => { }} />
                     {/* <CssEditor onChange={(value) => { }} /> */}
                 </Grid>
+
             </Grid>
         </Container>
     )
