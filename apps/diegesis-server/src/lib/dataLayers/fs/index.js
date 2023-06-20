@@ -781,6 +781,14 @@ const writeFlexibleUIConfig = (config, objData) => {
     }
 }
 
+const writeStaticPageConfig = (config, objData) => {
+    try {
+        //@todo:: write functionality to save config.
+    } catch (err) {
+        throw new Error(`Error from writeStaticPageConfig: ${err.message}`);
+    }
+}
+
 module.exports = {
     initializeOrg,
     orgExists,
@@ -827,5 +835,6 @@ module.exports = {
     generatedEntryBookResourceCategories,
     entryBookResourceCategories,
     writeFlexibleUIConfig,
-    readFlexibleUIConfig
+    readFlexibleUIConfig,
+    writeStaticPageConfig
 }

@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { gql, useApolloClient } from '@apollo/client';
 import { useAppContext } from '../contexts/AppContext';
-import { Container, Tabs, Tab, IconButton, Box, TextField, Grid, Typography, Paper } from '@mui/material';
-import { Close, AddCardTwoTone } from '@mui/icons-material';
+import { Container, Tabs, Tab, IconButton, Box, TextField, Grid, Typography, Paper, Button } from '@mui/material';
+import { Close, AddCardTwoTone, Save } from '@mui/icons-material';
 import { DiegesisUI } from '@eten-lab/ui-kit';
 import langTable from "../i18n/languages.json";
 const { MarkdownEditor } = DiegesisUI.FlexibleDesign;
@@ -80,7 +80,7 @@ export default function StaticUIConfigPage() {
     useEffect(() => {
         const language = (clientStructure.languages ?? [])[activeTabIdx.lang]
         const url = (clientStructure.urlData ?? [])[activeTabIdx.page]?.url
-        if(!language || !url) return
+        if (!language || !url) return
         const gqlQuery = gql`
             query ClientStructure($language: String!, $url: String!) {
               clientStructure {
@@ -127,6 +127,10 @@ export default function StaticUIConfigPage() {
             clonedPages.splice(newPageIdx < 0 ? 0 : newPageIdx, 0, { title: 'UN-TITLED', deletable: true })
             return clonedPages
         })
+    }
+
+    const savePage = (e) => {
+        //@todo:: save page info on server side.
     }
 
     return (
@@ -192,9 +196,14 @@ export default function StaticUIConfigPage() {
                     </Typography>
                 </Grid>
                 <Grid item xs={10}>
-                    <MarkdownEditor key={'body-markdown'} value={curPageInfo.body} onChange={(value) => { }} />
+                    <MarkdownEditor key={'body-markdown'} value={curPageInfo.body} onChange={(value) => {
+                        setCurPageInfo({ ...curPageInfo, body: value })
+                    }} />
                 </Grid>
             </Grid>
+            <Box sx={{ paddingTop: '3rem', paddingBottom: '2rem', textAlign: 'right' }}>
+                <Button variant={'contained'} color={'primary'} size={'large'} endIcon={<Save />} onClick={savePage}>Save</Button>
+            </Box>
         </Container>
     )
 }
