@@ -50,6 +50,7 @@ export default function StaticUIConfigPage() {
     const [pages, setPages] = useState([]); //[{title: 'Page 1', deletable: false}]
     const [languages, setLanguages] = useState([]);
     const [activeTabIdx, setActiveTabIdx] = useState({ page: 0, lang: 0 });
+    const [curPageInfo, setCurPageInfo] = useState({});
     const { mutateState: mutateAppState, clientStructure } = useAppContext();
 
     const gqlClient = useApolloClient();
@@ -78,7 +79,7 @@ export default function StaticUIConfigPage() {
 
     useEffect(() => {
         const language = (clientStructure.languages ?? [])[activeTabIdx.lang]
-        const url = (clientStructure.urlData ?? [])[activeTabIdx.page]
+        const url = (clientStructure.urlData ?? [])[activeTabIdx.page]?.url
         if(!language || !url) return
         const gqlQuery = gql`
             query ClientStructure($language: String!, $url: String!) {
@@ -96,11 +97,16 @@ export default function StaticUIConfigPage() {
                 url
             }
         }).then(res => {
-            console.log('response', res)
+            const { clientStructure } = res.data ?? {};
+            if (clientStructure?.page) {
+                setCurPageInfo({
+                    ...clientStructure.page, url
+                })
+            }
         }).catch(err => {
-            console.error('err response', err)
+            console.error('unable to fetch page detail::', err)
         })
-    }, [activeTabIdx, gqlClient])
+    }, [activeTabIdx, clientStructure, gqlClient])
 
     const deletePage = (e, idx) => {
         e.stopPropagation()
@@ -161,7 +167,7 @@ export default function StaticUIConfigPage() {
                     <TextField
                         required
                         fullWidth
-                        defaultValue="/home"
+                        value={curPageInfo.url}
                     />
                 </Grid>
 
@@ -175,7 +181,7 @@ export default function StaticUIConfigPage() {
                     <TextField
                         required
                         fullWidth
-                        defaultValue="Home"
+                        value={curPageInfo.menuText}
                     />
                 </Grid>
 
@@ -186,10 +192,8 @@ export default function StaticUIConfigPage() {
                     </Typography>
                 </Grid>
                 <Grid item xs={10}>
-                    <MarkdownEditor key={'body-markdown'} onChange={(value) => { }} />
-                    {/* <CssEditor onChange={(value) => { }} /> */}
+                    <MarkdownEditor key={'body-markdown'} value={curPageInfo.body} onChange={(value) => { }} />
                 </Grid>
-
             </Grid>
         </Container>
     )
