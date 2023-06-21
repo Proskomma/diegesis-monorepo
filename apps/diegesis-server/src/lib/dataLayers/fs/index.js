@@ -781,9 +781,34 @@ const writeFlexibleUIConfig = (config, objData) => {
     }
 }
 
+
+const _createDirIfNotExist = (strDirPath) => {
+    if (!fse.existsSync(strDirPath)) {
+        fse.mkdirSync(strDirPath)
+    }
+}
 const writeStaticPageConfig = (config, objData) => {
     try {
-        //@todo:: write functionality to save config.
+        const { lang, body, menuText, url } = objData;
+
+        const pageDirPath = path.join(config.structurePath, 'pages', url);
+        const langDirPath = path.join(config.structurePath, 'pages', url, lang);
+        const structureJsonPath = path.join(config.structurePath, 'structure.json');
+
+        _createDirIfNotExist(pageDirPath);
+        _createDirIfNotExist(langDirPath);
+
+        fse.writeFileSync(`${langDirPath}/body.md`, body);
+        fse.writeFileSync(`${langDirPath}/menu.txt`, menuText);
+        const jsonStructure = JSON.parse(fse.readFileSync(structureJsonPath, 'utf8') ?? '');
+        if (jsonStructure?.url && Array.isArray(jsonStructure.url)) {
+            if (!jsonStructure.url.find(u => u === url)) {
+                jsonStructure.url.push(url)
+                fse.writeFileSync(structureJsonPath, JSON.stringify(jsonStructure))
+            }
+        }
+
+        return true
     } catch (err) {
         throw new Error(`Error from writeStaticPageConfig: ${err.message}`);
     }
