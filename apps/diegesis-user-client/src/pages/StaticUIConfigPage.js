@@ -100,7 +100,7 @@ export default function StaticUIConfigPage() {
             const { clientStructure } = res.data ?? {};
             if (clientStructure?.page) {
                 setCurPageInfo({
-                    ...clientStructure.page, url
+                    ...clientStructure.page, url, lang: language
                 })
             }
         }).catch(err => {
@@ -130,7 +130,25 @@ export default function StaticUIConfigPage() {
     }
 
     const savePage = (e) => {
-        //@todo:: save page info on server side.
+        const query = `
+        mutation SaveStaticPage($config: StaticUIConfig) {
+            saveStaticPage(config: $config)
+          }`;
+
+        gqlClient.mutate({
+            mutation: gql`${query}`, variables: {
+                config: {
+                    url: curPageInfo.url ?? '',
+                    menuText: curPageInfo.menuText ?? '',
+                    body: curPageInfo.body ?? '',
+                    lang: curPageInfo.lang ?? ''
+                }
+            }
+        }).then((res) => {
+            console.log('successfully saved static config', res)
+        }).catch((e) => {
+            console.error('failed to save static config::', e)
+        });
     }
 
     return (
