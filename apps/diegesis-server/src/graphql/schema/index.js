@@ -393,6 +393,21 @@ const querySchema = gql`
         styles: JSON
         """Flexible Component UI Config"""
         uiConfigs: JSON
+    }
+
+    """Static UI Config"""
+    input StaticUIConfig {
+        """Static Page Language"""
+        lang: String!
+
+        """Static Page URL"""
+        url: String!
+        
+        """Static Page Menu Text"""
+        menuText: String!
+        
+        """Static Page Body"""
+        body: String!
     }    
     
     """Resource Element"""
@@ -486,6 +501,11 @@ const mutationSchema = gql`
             styles: JSON
             """Flexible Component UI Config"""
             uiConfigs: JSON
+        ) : Boolean
+
+        saveStaticPage (
+            """Static page config"""
+            config: StaticUIConfig
         ) : Boolean
     }
 `;

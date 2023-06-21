@@ -23,6 +23,7 @@ const {
     writeEntryResource,
     writeFlexibleUIConfig,
     readFlexibleUIConfig,
+    writeStaticPageConfig
 } = require("../../lib/dataLayers/fs");
 
 const UUID = require("pure-uuid");
@@ -936,21 +937,21 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                 return true;
             },
             saveFlexibleUIConfig: async (root, args, context) => {
-                if (!context.auth || !context.auth.authenticated) {
+                if (!context?.auth?.authenticated) {
                     throw new GraphQLError(`No auth found for saveFlexibleUIConfig mutation`, { extensions: { code: 401 } });
                 }
-                if (!context.auth.roles || !context.auth.roles.includes("admin")) {
+                if (!context?.auth?.roles?.includes("admin")) {
                     throw new GraphQLError(`Required auth role 'admin' not found for saveFlexibleUIConfig`, { extensions: { code: 403 } });
                 }
                 writeFlexibleUIConfig(config, args);
                 return true;
             },
-            saveStaticPage: () => {
-                if (!context.auth || !context.auth.authenticated) {
-                    throw new GraphQLError(`No auth found for saveFlexibleUIConfig mutation`, { extensions: { code: 401 } });
+            saveStaticPage: async (root, args, context) => {
+                if (!context?.auth?.authenticated) {
+                    throw new GraphQLError(`No auth found for saveStaticPage mutation`, { extensions: { code: 401 } });
                 }
-                if (!context.auth.roles || !context.auth.roles.includes("admin")) {
-                    throw new GraphQLError(`Required auth role 'admin' not found for saveFlexibleUIConfig`, { extensions: { code: 403 } });
+                if (!context?.auth?.roles?.includes("admin")) {
+                    throw new GraphQLError(`Required auth role 'admin' not found for saveStaticPage`, { extensions: { code: 403 } });
                 }
                 writeStaticPageConfig(config, args)
                 return true
