@@ -47,7 +47,7 @@ const CustomTabs = ({ tabs, activeTab, deleteTab, changeTab }) => {
 
 export default function StaticUIConfigPage() {
 
-    const [pages, setPages] = useState([]); //[{title: 'Page 1', deletable: false}]
+    const [pages, setPages] = useState([]); //[{title: 'Page 1', deletable: false, url}]
     const [languages, setLanguages] = useState([]);
     const [activeTabIdx, setActiveTabIdx] = useState({ page: 0, lang: 0 });
     const [curPageInfo, setCurPageInfo] = useState({});
@@ -58,9 +58,9 @@ export default function StaticUIConfigPage() {
     useEffect(() => {
         if (Array.isArray(clientStructure.urlData)) {
             const lastItemIdx = clientStructure.urlData.length - 1
-            const options = clientStructure.urlData.map(to => ({ title: to.menuText, deletable: true }));
-            if (options[0]) options[0].deletable = false;
-            if (options[lastItemIdx]) options[lastItemIdx].deletable = false;
+            const options = clientStructure.urlData.map(to => ({ title: to.menuText, deletable: true, url: to.url }));
+            if (options[0]) options[0].deletable = false; // home page 
+            if (options[lastItemIdx]) options[lastItemIdx].deletable = false; // list page
             if (lastItemIdx > -1) {
                 options.splice(lastItemIdx, 0, {
                     title: (
@@ -79,8 +79,11 @@ export default function StaticUIConfigPage() {
 
     useEffect(() => {
         const language = (clientStructure.languages ?? [])[activeTabIdx.lang]
-        const url = (clientStructure.urlData ?? [])[activeTabIdx.page]?.url
-        if (!language || !url) return
+        const url = pages[activeTabIdx.page]?.url
+        if (!language || !url) {
+            setCurPageInfo({ url: '', menuText: '', body: '', lang: language })
+            return
+        }
         const gqlQuery = gql`
             query ClientStructure($language: String!, $url: String!) {
               clientStructure {
@@ -106,7 +109,8 @@ export default function StaticUIConfigPage() {
         }).catch(err => {
             console.error('unable to fetch page detail::', err)
         })
-    }, [activeTabIdx, clientStructure, gqlClient])
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [activeTabIdx, clientStructure, pages])
 
     const deletePage = (e, idx) => {
         e.stopPropagation()
@@ -134,7 +138,6 @@ export default function StaticUIConfigPage() {
         mutation SaveStaticPage($config: StaticUIConfig) {
             saveStaticPage(config: $config)
           }`;
-
         gqlClient.mutate({
             mutation: gql`${query}`, variables: {
                 config: {
@@ -190,6 +193,9 @@ export default function StaticUIConfigPage() {
                         required
                         fullWidth
                         value={curPageInfo.url}
+                        onChange={(e) => {
+                            setCurPageInfo({ ...curPageInfo, url: e.target.value?.trim()?.toLowerCase() })
+                        }}
                     />
                 </Grid>
 
@@ -204,6 +210,9 @@ export default function StaticUIConfigPage() {
                         required
                         fullWidth
                         value={curPageInfo.menuText}
+                        onChange={(e) => {
+                            setCurPageInfo({ ...curPageInfo, menuText: e.target.value?.trim() })
+                        }}
                     />
                 </Grid>
 

@@ -790,7 +790,7 @@ const _createDirIfNotExist = (strDirPath) => {
 const writeStaticPageConfig = (config, objData) => {
     try {
         const { lang, body, menuText, url } = objData;
-
+        if (!lang || !url) throw new Error('`lang` and `url` field should not be empty!');
         const pageDirPath = path.join(config.structurePath, 'pages', url);
         const langDirPath = path.join(config.structurePath, 'pages', url, lang);
         const structureJsonPath = path.join(config.structurePath, 'structure.json');
