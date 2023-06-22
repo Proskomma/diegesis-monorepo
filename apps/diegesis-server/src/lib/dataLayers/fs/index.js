@@ -801,14 +801,14 @@ const writeStaticPageConfig = (config, objData) => {
         fse.writeFileSync(`${langDirPath}/body.md`, body);
         fse.writeFileSync(`${langDirPath}/menu.txt`, menuText);
         const jsonStructure = JSON.parse(fse.readFileSync(structureJsonPath, 'utf8') ?? '');
-        if (jsonStructure?.url && Array.isArray(jsonStructure.url)) {
-            if (!jsonStructure.url.find(u => u === url)) {
-                jsonStructure.url.push(url)
-                fse.writeFileSync(structureJsonPath, JSON.stringify(jsonStructure))
+        if (jsonStructure?.urls && Array.isArray(jsonStructure.urls)) {
+            if (!jsonStructure.urls.find(u => u === url)) {
+                jsonStructure.urls.push(url)
+                fse.writeFileSync(structureJsonPath, JSON.stringify(jsonStructure, null, 2))
             }
         }
 
-        return true
+        return { structure: jsonStructure, lang, body, menuText, url }
     } catch (err) {
         throw new Error(`Error from writeStaticPageConfig: ${err.message}`);
     }
