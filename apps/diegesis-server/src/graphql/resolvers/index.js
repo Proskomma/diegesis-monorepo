@@ -23,7 +23,8 @@ const {
     writeEntryResource,
     writeFlexibleUIConfig,
     readFlexibleUIConfig,
-    writeStaticPageConfig
+    writeStaticPageConfig,
+    removeStaticPage
 } = require("../../lib/dataLayers/fs");
 
 const UUID = require("pure-uuid");
@@ -961,6 +962,15 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                 } else {
                     return false
                 }
+            },
+            removeStaticPage: async (root, args, context) => {
+                // if (!context?.auth?.authenticated) {
+                //     throw new GraphQLError(`No auth found for removeStaticPage mutation`, { extensions: { code: 401 } });
+                // }
+                // if (!context?.auth?.roles?.includes("admin")) {
+                //     throw new GraphQLError(`Required auth role 'admin' not found for removeStaticPage`, { extensions: { code: 403 } });
+                // }
+                return removeStaticPage(config, args)
             }
         },
     };

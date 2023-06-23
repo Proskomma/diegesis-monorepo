@@ -507,6 +507,10 @@ const mutationSchema = gql`
             """Static page config"""
             config: StaticUIConfig
         ) : Boolean
+
+        removeStaticPage (
+            url: String
+        ): Boolean
     }
 `;
 

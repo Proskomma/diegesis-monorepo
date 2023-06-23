@@ -787,30 +787,64 @@ const _createDirIfNotExist = (strDirPath) => {
         fse.mkdirSync(strDirPath)
     }
 }
-const writeStaticPageConfig = (config, objData) => {
+const _removeDirIfExist = (strDirPath) => {
+    return fse.rm(strDirPath, { maxRetries: 5, recursive: true, force: true })
+}
+const _updateStaticStructureJson = (structurePath, manipulatorFun) => {
+    const structureJsonPath = path.join(structurePath, 'structure.json');
+    const jsonStructure = JSON.parse(fse.readFileSync(structureJsonPath, 'utf8') ?? '');
+    let result = jsonStructure;
+    if (jsonStructure?.urls && Array.isArray(jsonStructure.urls)) {
+        if (manipulatorFun) {
+            result = manipulatorFun(jsonStructure);
+            fse.writeFileSync(structureJsonPath, JSON.stringify(result, null, 2));
+        }
+    }
+    return result;
+}
+
+const writeStaticPageConfig = (config, pageInfo) => {
     try {
-        const { lang, body, menuText, url } = objData;
+        const { lang, body, menuText, url } = pageInfo;
         if (!lang || !url) throw new Error('`lang` and `url` field should not be empty!');
         const pageDirPath = path.join(config.structurePath, 'pages', url);
         const langDirPath = path.join(config.structurePath, 'pages', url, lang);
-        const structureJsonPath = path.join(config.structurePath, 'structure.json');
 
         _createDirIfNotExist(pageDirPath);
         _createDirIfNotExist(langDirPath);
 
         fse.writeFileSync(`${langDirPath}/body.md`, body);
         fse.writeFileSync(`${langDirPath}/menu.txt`, menuText);
-        const jsonStructure = JSON.parse(fse.readFileSync(structureJsonPath, 'utf8') ?? '');
-        if (jsonStructure?.urls && Array.isArray(jsonStructure.urls)) {
-            if (!jsonStructure.urls.find(u => u === url)) {
-                jsonStructure.urls.push(url)
-                fse.writeFileSync(structureJsonPath, JSON.stringify(jsonStructure, null, 2))
+
+        const jsonStructure = _updateStaticStructureJson(config.structurePath, (structure) => {
+            if (!structure.urls.find(u => u === url)) {
+                structure.urls.push(url)
             }
-        }
+            return structure
+        })
 
         return { structure: jsonStructure, lang, body, menuText, url }
     } catch (err) {
         throw new Error(`Error from writeStaticPageConfig: ${err.message}`);
+    }
+}
+
+const removeStaticPage = async (config, pageInfo) => {
+    try {
+        const { url } = pageInfo;
+        if (!url) throw new Error('url should not be empty!');
+        const pageDirPath = path.join(config.structurePath, 'pages', url);
+        await _removeDirIfExist(pageDirPath);
+        _updateStaticStructureJson(config.structurePath, (structure) => {
+            const urlIdx = structure.urls.findIndex(u => u === url);
+            if (urlIdx > -1) {
+                structure.urls.splice(urlIdx, 1);
+            }
+            return structure;
+        })
+        return true
+    } catch (err) {
+        throw new Error(`Error from removeStaticPage: ${err.message}`);
     }
 }
 
@@ -861,5 +895,6 @@ module.exports = {
     entryBookResourceCategories,
     writeFlexibleUIConfig,
     readFlexibleUIConfig,
-    writeStaticPageConfig
+    writeStaticPageConfig,
+    removeStaticPage
 }
