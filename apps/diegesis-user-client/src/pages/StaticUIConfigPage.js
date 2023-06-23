@@ -5,6 +5,7 @@ import { Container, Tabs, Tab, IconButton, Box, TextField, Grid, Typography, Pap
 import { Close, AddCardTwoTone, Save } from '@mui/icons-material';
 import { DiegesisUI } from '@eten-lab/ui-kit';
 import langTable from "../i18n/languages.json";
+import DeleteConfirmationDialog from '../components/DeleteConfirmationDialog';
 const { MarkdownEditor } = DiegesisUI.FlexibleDesign;
 
 //#region functional components
@@ -52,6 +53,7 @@ export default function StaticUIConfigPage() {
     const [activeTabIdx, setActiveTabIdx] = useState({ page: 0, lang: 0 });
     const [curPageInfo, setCurPageInfo] = useState({});
     const { mutateState: mutateAppState, clientStructure } = useAppContext();
+    const [deleteDialog, setDeleteDialog] = useState({ open: false, deletableItem: undefined });
 
     const gqlClient = useApolloClient();
 
@@ -112,15 +114,24 @@ export default function StaticUIConfigPage() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activeTabIdx, clientStructure, pages])
 
-    const deletePage = (e, idx) => {
+    const openDeleteConfirmation = (e, idx) => {
         e.stopPropagation()
-        const clonedPages = [...pages]
-        clonedPages.splice(idx, 1)
-        setPages(clonedPages)
-        setActiveTabIdx(prev => {
-            const prevPageIdx = prev.page
-            return { ...prev, page: (prevPageIdx === idx ? prevPageIdx - 1 : prevPageIdx) }
-        })
+        setDeleteDialog({ open: true, deletableItem: { index: idx } });
+    }
+
+    const onDeleteConfirmationRes = (res, deletableItem) => {
+        if (res === 'ok' && deletableItem) {
+            setPages(prevPages => {
+                const clonedPages = [...prevPages]
+                clonedPages.splice(deletableItem.index, 1)
+                return clonedPages;
+            })
+            setActiveTabIdx(prevActiveTabIdx => {
+                const prevPageIdx = prevActiveTabIdx.page
+                return { ...prevActiveTabIdx, page: (prevPageIdx === deletableItem.index ? prevPageIdx - 1 : prevPageIdx) }
+            })
+        }
+        setDeleteDialog({ open: false, deletableItem: null })
     }
 
     const addPage = (e) => {
@@ -162,7 +173,7 @@ export default function StaticUIConfigPage() {
                     tabs={pages}
                     activeTab={activeTabIdx.page}
                     addTab={addPage}
-                    deleteTab={deletePage}
+                    deleteTab={openDeleteConfirmation}
                     changeTab={(_, idx) => {
                         setActiveTabIdx({ ...activeTabIdx, page: idx })
                     }}
@@ -231,6 +242,14 @@ export default function StaticUIConfigPage() {
             <Box sx={{ paddingTop: '3rem', paddingBottom: '2rem', textAlign: 'right' }}>
                 <Button variant={'contained'} color={'primary'} size={'large'} endIcon={<Save />} onClick={savePage}>Save</Button>
             </Box>
+
+            <DeleteConfirmationDialog
+                open={deleteDialog.open}
+                handleClose={onDeleteConfirmationRes}
+                title='Delete Confirmation'
+                description={`Are you sure you want to delete this page!`}
+                deletableItem={deleteDialog.deletableItem}
+            />
         </Container>
     )
 }
