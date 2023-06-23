@@ -28,6 +28,7 @@ const {
 
 const UUID = require("pure-uuid");
 const btoa = require("btoa");
+const serverClientStructure = require("../../lib/makeServerHelpers/serverClientStructure");
 
 const generateId = () => btoa(new UUID(4)).substring(0, 12);
 
@@ -955,7 +956,7 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                 // }
                 const saveRes = writeStaticPageConfig(config, args.config)
                 if (saveRes) {
-                    Object.assign(context.clientStructure, saveRes.structure)
+                    Object.assign(context.clientStructure, serverClientStructure(config))
                     return true
                 } else {
                     return false
