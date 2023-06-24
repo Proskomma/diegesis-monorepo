@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { gql, useApolloClient } from '@apollo/client';
 import { useAppContext } from '../contexts/AppContext';
-import { Container, Tabs, Tab, IconButton, Box, TextField, Grid, Typography, Paper, Button } from '@mui/material';
+import { Container, Tabs, Tab, IconButton, Box, TextField, Grid, Typography, Paper, Button, Snackbar, Alert } from '@mui/material';
 import { Close, AddCardTwoTone, Save } from '@mui/icons-material';
 import { DiegesisUI } from '@eten-lab/ui-kit';
 import langTable from "../i18n/languages.json";
@@ -54,6 +54,7 @@ export default function StaticUIConfigPage() {
     const [curPageInfo, setCurPageInfo] = useState({});
     const { mutateState: mutateAppState, clientStructure } = useAppContext();
     const [deleteDialog, setDeleteDialog] = useState({ open: false, deletableItem: undefined });
+    const [snackbar, setSnackbar] = useState({ open: false, message: '', type: 'info' });
 
     const gqlClient = useApolloClient();
 
@@ -121,15 +122,25 @@ export default function StaticUIConfigPage() {
 
     const onDeleteConfirmationRes = (res, deletableItem) => {
         if (res === 'ok' && deletableItem) {
-            setPages(prevPages => {
-                const clonedPages = [...prevPages]
+            const curPage = pages[deletableItem.index]
+            const mutation = `
+            mutation RemoveStaticPage($url: String) {
+                removeStaticPage(url: $url)
+            }`;
+            gqlClient.mutate({
+                mutation: gql`${mutation}`, variables: {
+                    url: curPage.url ?? '',
+                }
+            }).then((res) => {
+                const clonedPages = [...pages]
                 clonedPages.splice(deletableItem.index, 1)
-                return clonedPages;
-            })
-            setActiveTabIdx(prevActiveTabIdx => {
-                const prevPageIdx = prevActiveTabIdx.page
-                return { ...prevActiveTabIdx, page: (prevPageIdx === deletableItem.index ? prevPageIdx - 1 : prevPageIdx) }
-            })
+                setPages(clonedPages)
+                const pageIdx = activeTabIdx.page
+                setActiveTabIdx({ ...activeTabIdx, page: (pageIdx === deletableItem.index ? pageIdx - 1 : pageIdx) })
+                setSnackbar({ open: true, type: 'success', message: `Successfully deleted '${curPage.menuText}' page!` })
+            }).catch((e) => {
+                setSnackbar({ open: true, type: 'error', message: `Failed to deleted '${curPage.menuText}' page!` })
+            });
         }
         setDeleteDialog({ open: false, deletableItem: null })
     }
@@ -145,24 +156,30 @@ export default function StaticUIConfigPage() {
     }
 
     const savePage = (e) => {
-        const query = `
+        const reqPayload = {
+            url: curPageInfo.url ?? '',
+            menuText: curPageInfo.menuText ?? '',
+            body: curPageInfo.body ?? '',
+            lang: curPageInfo.lang ?? ''
+        }
+        const mutation = `
         mutation SaveStaticPage($config: StaticUIConfig) {
             saveStaticPage(config: $config)
           }`;
         gqlClient.mutate({
-            mutation: gql`${query}`, variables: {
-                config: {
-                    url: curPageInfo.url ?? '',
-                    menuText: curPageInfo.menuText ?? '',
-                    body: curPageInfo.body ?? '',
-                    lang: curPageInfo.lang ?? ''
-                }
-            }
-        }).then((res) => {
-            console.log('successfully saved static config', res)
+            mutation: gql`${mutation}`, variables: { config: reqPayload }
+        }).then(() => {
+            const clonedPages = [...pages];
+            Object.assign(clonedPages[activeTabIdx.page], { ...reqPayload, title: reqPayload.menuText });
+            setSnackbar({ open: true, type: 'success', message: `Successfully saved '${reqPayload.menuText}' page!` });
+            setPages(clonedPages);
         }).catch((e) => {
-            console.error('failed to save static config::', e)
+            setSnackbar({ open: true, type: 'error', message: `Failed to save '${reqPayload.menuText}' page!` })
         });
+    }
+
+    const handleSnackbarClose = (e) => {
+        setSnackbar({ ...snackbar, open: false, message: '', type: 'info' })
     }
 
     return (
@@ -222,7 +239,7 @@ export default function StaticUIConfigPage() {
                         fullWidth
                         value={curPageInfo.menuText}
                         onChange={(e) => {
-                            setCurPageInfo({ ...curPageInfo, menuText: e.target.value?.trim() })
+                            setCurPageInfo({ ...curPageInfo, menuText: e.target.value })
                         }}
                     />
                 </Grid>
@@ -250,6 +267,12 @@ export default function StaticUIConfigPage() {
                 description={`Are you sure you want to delete this page!`}
                 deletableItem={deleteDialog.deletableItem}
             />
+
+            <Snackbar open={snackbar.open} autoHideDuration={4000} onClose={handleSnackbarClose} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
+                <Alert onClose={handleSnackbarClose} severity={snackbar.type} sx={{ width: '100%' }}>
+                    {snackbar.message}
+                </Alert>
+            </Snackbar>
         </Container>
     )
 }
