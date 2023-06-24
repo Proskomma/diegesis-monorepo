@@ -222,8 +222,10 @@ export default function StaticUIConfigPage() {
                         fullWidth
                         value={curPageInfo.url}
                         onChange={(e) => {
-                            setCurPageInfo({ ...curPageInfo, url: e.target.value?.trim()?.toLowerCase() })
+                            if (!['home', 'list'].includes(curPageInfo.url))
+                                setCurPageInfo({ ...curPageInfo, url: e.target.value?.trim()?.toLowerCase() })
                         }}
+                        disabled={['home', 'list'].includes(curPageInfo.url)}
                     />
                 </Grid>
 
@@ -250,9 +252,10 @@ export default function StaticUIConfigPage() {
                         Body
                     </Typography>
                 </Grid>
-                <Grid item xs={10}>
+                <Grid item xs={10} sx={['list'].includes(curPageInfo.url) ? { cursor: 'not-allowed', opacity: '0.8', pointerEvents: 'none' } : {}}>
                     <MarkdownEditor key={'body-markdown'} value={curPageInfo.body} onChange={(value) => {
-                        setCurPageInfo({ ...curPageInfo, body: value })
+                        if (!['list'].includes(curPageInfo.url))
+                            setCurPageInfo({ ...curPageInfo, body: value })
                     }} />
                 </Grid>
             </Grid>
