@@ -955,13 +955,9 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                 // if (!context?.auth?.roles?.includes("admin")) {
                 //     throw new GraphQLError(`Required auth role 'admin' not found for saveStaticPage`, { extensions: { code: 403 } });
                 // }
-                const saveRes = writeStaticPageConfig(config, args.config)
-                if (saveRes) {
-                    Object.assign(context.clientStructure, serverClientStructure(config))
-                    return true
-                } else {
-                    return false
-                }
+                await writeStaticPageConfig(config, args.config)
+                Object.assign(context.clientStructure, serverClientStructure(config))
+                return true;
             },
             removeStaticPage: async (root, args, context) => {
                 // if (!context?.auth?.authenticated) {

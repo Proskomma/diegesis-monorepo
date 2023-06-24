@@ -802,7 +802,6 @@ const _updateStaticStructureJson = (structurePath, manipulatorFun) => {
     }
     return result;
 }
-
 const writeStaticPageConfig = (config, pageInfo) => {
     try {
         const { lang, body, menuText, url } = pageInfo;
@@ -813,22 +812,22 @@ const writeStaticPageConfig = (config, pageInfo) => {
         _createDirIfNotExist(pageDirPath);
         _createDirIfNotExist(langDirPath);
 
-        fse.writeFileSync(`${langDirPath}/body.md`, body);
+        if (!['list'].includes(url)) fse.writeFileSync(`${langDirPath}/body.md`, body);
         fse.writeFileSync(`${langDirPath}/menu.txt`, menuText);
 
-        const jsonStructure = _updateStaticStructureJson(config.structurePath, (structure) => {
-            if (!structure.urls.find(u => u === url)) {
-                structure.urls.push(url)
-            }
-            return structure
-        })
-
-        return { structure: jsonStructure, lang, body, menuText, url }
+        if (!['home', 'list'].includes(url)) {
+            _updateStaticStructureJson(config.structurePath, (structure) => {
+                if (!structure.urls.find(u => u === url)) {
+                    structure.urls.push(url)
+                }
+                return structure
+            })
+        }
+        return
     } catch (err) {
         throw new Error(`Error from writeStaticPageConfig: ${err.message}`);
     }
 }
-
 const removeStaticPage = async (config, pageInfo) => {
     try {
         const { url } = pageInfo;
