@@ -949,23 +949,23 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                 return true;
             },
             saveStaticPage: async (root, args, context) => {
-                // if (!context?.auth?.authenticated) {
-                //     throw new GraphQLError(`No auth found for saveStaticPage mutation`, { extensions: { code: 401 } });
-                // }
-                // if (!context?.auth?.roles?.includes("admin")) {
-                //     throw new GraphQLError(`Required auth role 'admin' not found for saveStaticPage`, { extensions: { code: 403 } });
-                // }
+                if (!context?.auth?.authenticated) {
+                    throw new GraphQLError(`No auth found for saveStaticPage mutation`, { extensions: { code: 401 } });
+                }
+                if (!context?.auth?.roles?.includes("admin")) {
+                    throw new GraphQLError(`Required auth role 'admin' not found for saveStaticPage`, { extensions: { code: 403 } });
+                }
                 await writeStaticPageConfig(config, args.config)
                 Object.assign(context.clientStructure, serverClientStructure(config))
                 return true;
             },
             removeStaticPage: async (root, args, context) => {
-                // if (!context?.auth?.authenticated) {
-                //     throw new GraphQLError(`No auth found for removeStaticPage mutation`, { extensions: { code: 401 } });
-                // }
-                // if (!context?.auth?.roles?.includes("admin")) {
-                //     throw new GraphQLError(`Required auth role 'admin' not found for removeStaticPage`, { extensions: { code: 403 } });
-                // }
+                if (!context?.auth?.authenticated) {
+                    throw new GraphQLError(`No auth found for removeStaticPage mutation`, { extensions: { code: 401 } });
+                }
+                if (!context?.auth?.roles?.includes("admin")) {
+                    throw new GraphQLError(`Required auth role 'admin' not found for removeStaticPage`, { extensions: { code: 403 } });
+                }
                 await removeStaticPage(config, args);
                 Object.assign(context.clientStructure, serverClientStructure(config));
                 return true;

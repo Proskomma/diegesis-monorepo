@@ -52,7 +52,7 @@ export default function StaticUIConfigPage() {
     const [languages, setLanguages] = useState([]);
     const [activeTabIdx, setActiveTabIdx] = useState({ page: 0, lang: 0 });
     const [curPageInfo, setCurPageInfo] = useState({});
-    const { mutateState: mutateAppState, clientStructure } = useAppContext();
+    const { clientStructure } = useAppContext();
     const [deleteDialog, setDeleteDialog] = useState({ open: false, deletableItem: undefined });
     const [snackbar, setSnackbar] = useState({ open: false, message: '', type: 'info' });
 

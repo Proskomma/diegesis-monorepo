@@ -89,7 +89,9 @@ export default function AppRoutes() {
             },
             {
                 path: "/static-ui-config",
-                element: <StaticUIConfigPage />,
+                element: <ProtectedRoute roles={['admin']}>
+                    <StaticUIConfigPage />
+                </ProtectedRoute>,
                 errorElement: <ErrorBoundary />
             },
             {

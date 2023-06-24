@@ -45,8 +45,9 @@
         "/entry/*",
         "/v1/*",
         "/ui-config",
+        "/static-ui-config",
         "/login",
-        "/"
+        "/*"
       ]
     }
   ],
