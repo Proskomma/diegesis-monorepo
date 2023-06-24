@@ -833,14 +833,16 @@ const removeStaticPage = async (config, pageInfo) => {
         const { url } = pageInfo;
         if (!url) throw new Error('url should not be empty!');
         const pageDirPath = path.join(config.structurePath, 'pages', url);
-        await _removeDirIfExist(pageDirPath);
-        _updateStaticStructureJson(config.structurePath, (structure) => {
-            const urlIdx = structure.urls.findIndex(u => u === url);
-            if (urlIdx > -1) {
-                structure.urls.splice(urlIdx, 1);
-            }
-            return structure;
-        })
+        if (!['home', 'list'].includes(url)) {            
+            await _removeDirIfExist(pageDirPath);
+            _updateStaticStructureJson(config.structurePath, (structure) => {
+                const urlIdx = structure.urls.findIndex(u => u === url);
+                if (urlIdx > -1) {
+                    structure.urls.splice(urlIdx, 1);
+                }
+                return structure;
+            })
+        }
         return true
     } catch (err) {
         throw new Error(`Error from removeStaticPage: ${err.message}`);
