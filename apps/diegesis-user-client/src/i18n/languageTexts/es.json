@@ -79,6 +79,7 @@
     "RESOURCES":"Recursos",
     "BLEND_PAGE":"Mezclar sus datos",
     "LANGUAGES": "Idiomas",
+    "SITE_LANGUAGE": "Idioma del sitio",
     "LIST_PAGE_SEARCH_PLACEHOLDER": "Buscar",
     "LIST_PAGE_FILTER_TAB": "Búsqueda avanzada con filtros"
 }

@@ -27,7 +27,7 @@ const LangSelector = () => {
                     size: 'medium',
                 }}
             >
-                {i18n(appLang, 'LANGUAGES')}
+                {i18n(appLang, 'SITE_LANGUAGE')}
             </Button>
             <FormGroup>
                 {
@@ -82,7 +82,7 @@ export default function PageLayout(props) {
                     }
                 })
                 navOptions.push({ title: 'UI Config', variant: 'small', href: '/ui-config' })
-                navOptions.push({ title: 'Static Page Config', variant: 'small', href: '/static-ui-config' })
+                navOptions.push({ title: 'Static Pages', variant: 'small', href: '/static-ui-config' })
             } else {
                 navOptions.push({ title: 'Login', variant: 'small', href: '/login', activated: location.pathname === '/login' });
             }

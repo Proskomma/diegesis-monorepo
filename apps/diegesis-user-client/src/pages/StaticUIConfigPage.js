@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { gql, useApolloClient } from '@apollo/client';
 import { useAppContext } from '../contexts/AppContext';
-import { Container, Tabs, Tab, IconButton, Box, TextField, Grid, Typography, Paper, Button, Snackbar, Alert } from '@mui/material';
+import { Container, Tabs, Tab, Box, TextField, Grid, Typography, Paper, Button, Snackbar, Alert } from '@mui/material';
 import { Close, AddCardTwoTone, Save } from '@mui/icons-material';
 import { DiegesisUI } from '@eten-lab/ui-kit';
 import langTable from "../i18n/languages.json";
@@ -15,9 +15,7 @@ const TabTitle = ({ title, deletable, handleCloseTab, index }) => {
             {title}
             {
                 deletable &&
-                <IconButton sx={{ marginLeft: '0.8rem' }} color={'error'} onClick={(event) => handleCloseTab(event, index)}>
-                    <Close />
-                </IconButton>
+                <Close color='error' sx={{ marginLeft: '0.8rem' }} onClick={(event) => handleCloseTab(event, index)} />
             }
         </Box>
     )
@@ -51,7 +49,7 @@ export default function StaticUIConfigPage() {
     const [pages, setPages] = useState([]); //[{title: 'Page 1', deletable: false, url}]
     const [languages, setLanguages] = useState([]);
     const [activeTabIdx, setActiveTabIdx] = useState({ page: 0, lang: 0 });
-    const [curPageInfo, setCurPageInfo] = useState({});
+    const [curPageInfo, setCurPageInfo] = useState({ url: '', menuText: '', body: '', lang: '' });
     const { clientStructure } = useAppContext();
     const [deleteDialog, setDeleteDialog] = useState({ open: false, deletableItem: undefined });
     const [snackbar, setSnackbar] = useState({ open: false, message: '', type: 'info' });
@@ -67,9 +65,7 @@ export default function StaticUIConfigPage() {
             if (lastItemIdx > -1) {
                 options.splice(lastItemIdx, 0, {
                     title: (
-                        <IconButton onClick={addPage} size={'small'}>
-                            <AddCardTwoTone />
-                        </IconButton>
+                        <AddCardTwoTone onClick={addPage} />
                     ),
                 })
             }
@@ -101,7 +97,8 @@ export default function StaticUIConfigPage() {
             query: gqlQuery, variables: {
                 language,
                 url
-            }
+            },
+            fetchPolicy: 'no-cache'
         }).then(res => {
             const { clientStructure } = res.data ?? {};
             if (clientStructure?.page) {
@@ -155,7 +152,7 @@ export default function StaticUIConfigPage() {
         })
     }
 
-    const savePage = (e) => {
+    const savePage = () => {
         const reqPayload = {
             url: curPageInfo.url ?? '',
             menuText: curPageInfo.menuText ?? '',
@@ -173,7 +170,7 @@ export default function StaticUIConfigPage() {
             Object.assign(clonedPages[activeTabIdx.page], { ...reqPayload, title: reqPayload.menuText });
             setSnackbar({ open: true, type: 'success', message: `Successfully saved '${reqPayload.menuText}' page!` });
             setPages(clonedPages);
-        }).catch((e) => {
+        }).catch(() => {
             setSnackbar({ open: true, type: 'error', message: `Failed to save '${reqPayload.menuText}' page!` })
         });
     }
