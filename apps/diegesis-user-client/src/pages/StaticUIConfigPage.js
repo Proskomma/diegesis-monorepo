@@ -44,6 +44,8 @@ const CustomTabs = ({ tabs, activeTab, deleteTab, changeTab }) => {
 };
 //#endregion
 
+const DEFAULT_PAGE_TITLE = 'UN-TITLED';
+
 export default function StaticUIConfigPage() {
 
     const [pages, setPages] = useState([]); //[{title: 'Page 1', deletable: false, url}]
@@ -120,24 +122,31 @@ export default function StaticUIConfigPage() {
     const onDeleteConfirmationRes = (res, deletableItem) => {
         if (res === 'ok' && deletableItem) {
             const curPage = pages[deletableItem.index]
-            const mutation = `
-            mutation RemoveStaticPage($url: String) {
-                removeStaticPage(url: $url)
-            }`;
-            gqlClient.mutate({
-                mutation: gql`${mutation}`, variables: {
-                    url: curPage.url ?? '',
-                }
-            }).then((res) => {
+            const handleSuccessfulDelete = () => {
                 const clonedPages = [...pages]
                 clonedPages.splice(deletableItem.index, 1)
                 setPages(clonedPages)
                 const pageIdx = activeTabIdx.page
                 setActiveTabIdx({ ...activeTabIdx, page: (pageIdx === deletableItem.index ? pageIdx - 1 : pageIdx) })
-                setSnackbar({ open: true, type: 'success', message: `Successfully deleted '${curPage.menuText}' page!` })
-            }).catch((e) => {
-                setSnackbar({ open: true, type: 'error', message: `Failed to deleted '${curPage.menuText}' page!` })
-            });
+                setSnackbar({ open: true, type: 'success', message: `Successfully deleted '${curPage.menuText ?? DEFAULT_PAGE_TITLE}' page!` })
+            }
+            if (curPage.url) {
+                const mutation = `
+                mutation RemoveStaticPage($url: String) {
+                    removeStaticPage(url: $url)
+                }`;
+                gqlClient.mutate({
+                    mutation: gql`${mutation}`, variables: {
+                        url: curPage.url,
+                    }
+                }).then(() => {
+                    handleSuccessfulDelete()
+                }).catch(() => {
+                    setSnackbar({ open: true, type: 'error', message: `Failed to deleted '${curPage.menuText}' page!` })
+                });
+            } else {
+                handleSuccessfulDelete()
+            }
         }
         setDeleteDialog({ open: false, deletableItem: null })
     }
@@ -147,7 +156,7 @@ export default function StaticUIConfigPage() {
         setPages(prev => {
             const clonedPages = [...prev]
             const newPageIdx = clonedPages.length - 2
-            clonedPages.splice(newPageIdx < 0 ? 0 : newPageIdx, 0, { title: 'UN-TITLED', deletable: true })
+            clonedPages.splice(newPageIdx < 0 ? 0 : newPageIdx, 0, { title: DEFAULT_PAGE_TITLE, deletable: true })
             return clonedPages
         })
     }
