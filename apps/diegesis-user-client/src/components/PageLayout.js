@@ -15,6 +15,7 @@ const LangSelector = () => {
                 variant={'text'}
                 color={'dark'}
                 size={'medium'}
+                disabled
                 sx={{
                     textTransform: 'none',
                     fontSize: '1.25rem',
@@ -77,14 +78,25 @@ export default function PageLayout(props) {
         if (authLoaded) {
             if (authed) {
                 navOptions.push({
-                    title: 'Logout', variant: 'small', href: '/', onClick: () => {
-                        doLogout();
-                    }
-                })
-                navOptions.push({ title: 'UI Config', variant: 'small', href: '/ui-config' })
-                navOptions.push({ title: 'Static Pages', variant: 'small', href: '/static-ui-config' })
+                    title: 'Admin',
+                    variant: 'category',
+                    options: [
+                        { title: '- UI', href: '/ui-config', variant: 'small' },
+                        { title: '- Static Pages', href: '/static-ui-config', variant: 'small' },
+                        {
+                            title: '- Logout', href: '/', variant: 'small', onClick: () => {
+                                doLogout();
+                            }
+                        },
+                    ],
+                });
             } else {
-                navOptions.push({ title: 'Login', variant: 'small', href: '/login', activated: location.pathname === '/login' });
+                navOptions.push({
+                    title: 'Login',
+                    variant: 'bordered',
+                    href: '/login',
+                    activated: location.pathname === '/login'
+                });
             }
         }
         navOptions.push({
