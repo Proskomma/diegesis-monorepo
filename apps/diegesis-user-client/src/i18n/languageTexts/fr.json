@@ -113,5 +113,10 @@
     "LANGUAGES": "Langages",
     "SITE_LANGUAGE": "Langue du site",
     "LIST_PAGE_SEARCH_PLACEHOLDER": "Recherche",
-    "LIST_PAGE_FILTER_TAB": "Recherche avancée avec filtres"
+    "LIST_PAGE_FILTER_TAB": "Recherche avancée avec filtres",
+    "ADMIN": "administrateur",
+    "LOGOUT": "Se déconnecter",
+    "LOGIN": "connexion",
+    "UI": "interface utilisateur",
+    "STATIC_PAGES": "pages statiques"
 }

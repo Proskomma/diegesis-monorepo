@@ -62,7 +62,7 @@ const LangSelector = () => {
 }
 
 export default function PageLayout(props) {
-    const { authLoaded, authed, doLogout, clientStructure } = useAppContext();
+    const { authLoaded, authed, doLogout, clientStructure, appLang } = useAppContext();
     const location = useLocation();
     const navOptions = clientStructure?.urlData?.map(item => {
         const href = `/${item.url === 'home' ? "" : item.url}`;
@@ -81,10 +81,10 @@ export default function PageLayout(props) {
                     title: 'Admin',
                     variant: 'category',
                     options: [
-                        { title: '- UI', href: '/ui-config', variant: 'small' },
-                        { title: '- Static Pages', href: '/static-ui-config', variant: 'small' },
+                        { title: `- ${i18n(appLang, 'UI')}`, href: '/ui-config', variant: 'small' },
+                        { title: `- ${i18n(appLang, 'STATIC_PAGES')}`, href: '/static-ui-config', variant: 'small' },
                         {
-                            title: '- Logout', href: '/', variant: 'small', onClick: () => {
+                            title: `- ${i18n(appLang, 'LOGOUT')}`, href: '/', variant: 'small', onClick: () => {
                                 doLogout();
                             }
                         },
@@ -92,7 +92,7 @@ export default function PageLayout(props) {
                 });
             } else {
                 navOptions.push({
-                    title: 'Login',
+                    title: `- ${i18n(appLang, 'LOGIN')}`,
                     variant: 'bordered',
                     href: '/login',
                     activated: location.pathname === '/login'

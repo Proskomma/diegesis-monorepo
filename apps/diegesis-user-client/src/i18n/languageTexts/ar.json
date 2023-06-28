@@ -113,5 +113,10 @@
     "LANGUAGES": "اللغات",
     "SITE_LANGUAGE": "لغة الموقع",
     "LIST_PAGE_SEARCH_PLACEHOLDER": "يبحث",
-    "LIST_PAGE_FILTER_TAB": "بحث متقدم مع المرشحات"
+    "LIST_PAGE_FILTER_TAB": "بحث متقدم مع المرشحات",
+    "ADMIN": "مسؤل",
+    "LOGOUT": "تسجيل خروج",
+    "LOGIN": "تسجيل الدخول",
+    "UI": "واجهة المستخدم",
+    "STATIC_PAGES": "صفحات ثابتة"
 }

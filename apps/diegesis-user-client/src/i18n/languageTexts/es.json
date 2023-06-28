@@ -81,5 +81,10 @@
     "LANGUAGES": "Idiomas",
     "SITE_LANGUAGE": "Idioma del sitio",
     "LIST_PAGE_SEARCH_PLACEHOLDER": "Buscar",
-    "LIST_PAGE_FILTER_TAB": "Búsqueda avanzada con filtros"
+    "LIST_PAGE_FILTER_TAB": "Búsqueda avanzada con filtros",
+    "ADMIN": "administración",
+    "LOGOUT": "cerrar sesión",
+    "LOGIN": "acceso",
+    "UI": "interfaz de usuario",
+    "STATIC_PAGES": "páginas estáticas"
 }
