@@ -1,19 +1,19 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { gql, useApolloClient } from '@apollo/client';
 import { useAppContext } from '../contexts/AppContext';
-import { Container, Box, TextField, Grid, Typography, Paper, Button, Snackbar, Alert, Divider } from '@mui/material';
+import { Container, Box, TextField, Grid, Typography, Paper, Button, Snackbar, Alert } from '@mui/material';
 import { AddCardTwoTone, Save } from '@mui/icons-material';
 import { DiegesisUI } from '@eten-lab/ui-kit';
 import langTable from "../i18n/languages.json";
 import DeleteConfirmationDialog from '../components/DeleteConfirmationDialog';
-import HeaderNavPages from '../components/static-page/HeaderNavPages';
 import CustomTabs from '../components/static-page/CustomTabs';
+import PageLayout from '../components/PageLayout';
 const { MarkdownEditor } = DiegesisUI.FlexibleDesign;
 
 
 const DEFAULT_PAGE_TITLE = 'UN-TITLED';
 
-export default function StaticUIConfigPage() {
+export default function StaticUIConfigPage({ url }) {
 
     const [pages, setPages] = useState([]); //[{title: 'Page 1', deletable: false, url}]
     const [languages, setLanguages] = useState([]);
@@ -155,112 +155,105 @@ export default function StaticUIConfigPage() {
         setSnackbar({ ...snackbar, open: false, message: '', type: 'info' })
     }
 
-    const navPages = useMemo(() => {
-        return pages.filter(p => (p.url && p.menuText)).map(({ url, menuText }) => ({ url: url === 'home' ? '' : url, menuText }));
-    }, [pages])
-
     return (
-        <Container>
-            <HeaderNavPages pages={navPages} />
-            <Box>
-                <Typography variant={'h1'} padding={2} textAlign={'left'}>
-                    Static Page Configuration
-                </Typography>
-                <Divider sx={{ marginBottom: 5 }}></Divider>
-                {/* pages */}
-                <Paper elevation={1}>
-                    <CustomTabs
-                        tabs={pages}
-                        activeTab={activeTabIdx.page}
-                        addTab={addPage}
-                        deleteTab={openDeleteConfirmation}
-                        changeTab={(_, idx) => {
-                            setActiveTabIdx({ ...activeTabIdx, page: idx })
-                        }}
-                    />
-                </Paper>
-                <br />
-                {/* languages */}
-                <Paper elevation={1}>
-                    <CustomTabs
-                        tabs={languages}
-                        activeTab={activeTabIdx.lang}
-                        changeTab={(_, idx) => {
-                            setActiveTabIdx({ ...activeTabIdx, lang: idx })
-                        }}
-                    />
-                </Paper>
-
-                <Grid sx={{ marginTop: '2rem' }} container spacing={2}>
-
-                    {/* url field */}
-                    <Grid item xs={2}>
-                        <Typography>
-                            URL
-                        </Typography>
-                    </Grid>
-                    <Grid item xs={10}>
-                        <TextField
-                            required
-                            fullWidth
-                            value={curPageInfo.url}
-                            onChange={(e) => {
-                                if (!['home', 'list'].includes(curPageInfo.url))
-                                    setCurPageInfo({ ...curPageInfo, url: e.target.value?.trim()?.toLowerCase() })
-                            }}
-                            disabled={['home', 'list'].includes(curPageInfo.url)}
-                        />
-                    </Grid>
-
-                    {/* menu text */}
-                    <Grid item xs={2}>
-                        <Typography>
-                            Menu Text
-                        </Typography>
-                    </Grid>
-                    <Grid item xs={10}>
-                        <TextField
-                            required
-                            fullWidth
-                            value={curPageInfo.menuText}
-                            onChange={(e) => {
-                                setCurPageInfo({ ...curPageInfo, menuText: e.target.value })
+        <PageLayout id="static-ui-config-page" parentPath={url ?? window.location.pathname}>
+            <Container>
+                <Box>
+                    {/* pages */}
+                    <Paper elevation={1}>
+                        <CustomTabs
+                            tabs={pages}
+                            activeTab={activeTabIdx.page}
+                            addTab={addPage}
+                            deleteTab={openDeleteConfirmation}
+                            changeTab={(_, idx) => {
+                                setActiveTabIdx({ ...activeTabIdx, page: idx })
                             }}
                         />
-                    </Grid>
+                    </Paper>
+                    <br />
+                    {/* languages */}
+                    <Paper elevation={1}>
+                        <CustomTabs
+                            tabs={languages}
+                            activeTab={activeTabIdx.lang}
+                            changeTab={(_, idx) => {
+                                setActiveTabIdx({ ...activeTabIdx, lang: idx })
+                            }}
+                        />
+                    </Paper>
 
-                    {/* body */}
-                    <Grid item xs={2}>
-                        <Typography>
-                            Body
-                        </Typography>
+                    <Grid sx={{ marginTop: '2rem' }} container spacing={2}>
+
+                        {/* url field */}
+                        <Grid item xs={2}>
+                            <Typography>
+                                URL
+                            </Typography>
+                        </Grid>
+                        <Grid item xs={10}>
+                            <TextField
+                                required
+                                fullWidth
+                                value={curPageInfo.url}
+                                onChange={(e) => {
+                                    if (!['home', 'list'].includes(curPageInfo.url))
+                                        setCurPageInfo({ ...curPageInfo, url: e.target.value?.trim()?.toLowerCase() })
+                                }}
+                                disabled={['home', 'list'].includes(curPageInfo.url)}
+                            />
+                        </Grid>
+
+                        {/* menu text */}
+                        <Grid item xs={2}>
+                            <Typography>
+                                Menu Text
+                            </Typography>
+                        </Grid>
+                        <Grid item xs={10}>
+                            <TextField
+                                required
+                                fullWidth
+                                value={curPageInfo.menuText}
+                                onChange={(e) => {
+                                    setCurPageInfo({ ...curPageInfo, menuText: e.target.value })
+                                }}
+                            />
+                        </Grid>
+
+                        {/* body */}
+                        <Grid item xs={2}>
+                            <Typography>
+                                Body
+                            </Typography>
+                        </Grid>
+                        <Grid item xs={10} sx={['list'].includes(curPageInfo.url) ? { cursor: 'not-allowed', opacity: '0.8', pointerEvents: 'none' } : {}}>
+                            <MarkdownEditor key={'body-markdown'} value={curPageInfo.body} onChange={(value) => {
+                                if (!['list'].includes(curPageInfo.url))
+                                    setCurPageInfo({ ...curPageInfo, body: value })
+                            }} />
+                        </Grid>
                     </Grid>
-                    <Grid item xs={10} sx={['list'].includes(curPageInfo.url) ? { cursor: 'not-allowed', opacity: '0.8', pointerEvents: 'none' } : {}}>
-                        <MarkdownEditor key={'body-markdown'} value={curPageInfo.body} onChange={(value) => {
-                            if (!['list'].includes(curPageInfo.url))
-                                setCurPageInfo({ ...curPageInfo, body: value })
-                        }} />
-                    </Grid>
-                </Grid>
-                <Box sx={{ paddingTop: '3rem', paddingBottom: '2rem', textAlign: 'right' }}>
-                    <Button variant={'contained'} color={'primary'} size={'large'} endIcon={<Save />} onClick={savePage}>Save</Button>
+                    <Box sx={{ paddingTop: '3rem', paddingBottom: '2rem', textAlign: 'right' }}>
+                        <Button variant={'contained'} color={'primary'} size={'large'} endIcon={<Save />} onClick={savePage}>Save</Button>
+                    </Box>
+
+                    <DeleteConfirmationDialog
+                        open={deleteDialog.open}
+                        handleClose={onDeleteConfirmationRes}
+                        title='Delete Confirmation'
+                        description={`Are you sure you want to delete this page!`}
+                        deletableItem={deleteDialog.deletableItem}
+                    />
+
+                    <Snackbar open={snackbar.open} autoHideDuration={4000} onClose={handleSnackbarClose} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
+                        <Alert onClose={handleSnackbarClose} severity={snackbar.type} sx={{ width: '100%' }}>
+                            {snackbar.message}
+                        </Alert>
+                    </Snackbar>
                 </Box>
-
-                <DeleteConfirmationDialog
-                    open={deleteDialog.open}
-                    handleClose={onDeleteConfirmationRes}
-                    title='Delete Confirmation'
-                    description={`Are you sure you want to delete this page!`}
-                    deletableItem={deleteDialog.deletableItem}
-                />
-
-                <Snackbar open={snackbar.open} autoHideDuration={4000} onClose={handleSnackbarClose} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
-                    <Alert onClose={handleSnackbarClose} severity={snackbar.type} sx={{ width: '100%' }}>
-                        {snackbar.message}
-                    </Alert>
-                </Snackbar>
-            </Box>
-        </Container>
+            </Container>
+        </PageLayout>
     )
 }
 
