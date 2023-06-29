@@ -109,7 +109,7 @@ export default function PageLayout(props) {
         sideNavProps: { ...MOCK_SIDE_NAV_PROPS, options: navOptions },
     }
     return (
-        <FlexiblePageLayout sideNavProps={pageProps.sideNavProps}>
+        <FlexiblePageLayout {...props} sideNavProps={pageProps.sideNavProps}>
             {props.children}
         </FlexiblePageLayout>
     );

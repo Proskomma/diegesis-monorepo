@@ -109,7 +109,7 @@ const querySchema = gql`
             
             """The page url"""
             url: String!
-        ): StructureResource!
+        ): StructureResource
     }
     
     """Site-wide metadata for a language"""
