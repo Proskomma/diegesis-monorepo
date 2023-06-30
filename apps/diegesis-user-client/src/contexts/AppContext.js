@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 import Cookies from 'js-cookie';
 import { DiegesisUI } from '@eten-lab/ui-kit';
 import { gql, useApolloClient } from '@apollo/client';
@@ -90,31 +90,37 @@ const AppContextProvider = ({ children }) => {
     }, []);
 
     useEffect(() => {
-        getLangDependedData();
-    }, [appState.appLang])
-
-    const getLangDependedData = useCallback(() => {
         const getClientStructure = async () => {
-            const csQueryStr = `{
+            const gqlQuery = gql`
+              query ClientStructure($language: String!, $url: String!) {
                 clientStructure {
-                  languages
-                  urls
-                  urlData(language:"%lang%") {
-                     url
-                     menuText
-                  }
-                  footer(language:"%lang%") {
-                    body
-                  }
+                    languages
+                    urls
+                    urlData(language: $language) {
+                        url
+                        menuText
+                    }
+                    page(language: $language, url: $url) {
+                      body
+                      menuText
+                    }
+                    footer(language: $language) {
+                        body
+                    }
                 }
-                }`.replace(/%lang%/g, appState.appLang);
-            const result = await gqlClient.query({ query: gql`${csQueryStr}` });
+              }`
+            const result = await gqlClient.query({
+                query: gqlQuery,
+                variables: {
+                    language: appState.appLang,
+                    url: window.location.pathname.replace('/', '')
+                }
+            });
             const clientStructure = result.data.clientStructure;
             if (clientStructure) mutateState({ clientStructure })
         }
-
         const getFlexibleUIConfig = async () => {
-            const flexibleUIQuery = `
+            const flexibleUIQuery = gql`
             query FlexibleUIConfig($compId: String!) {
                 flexibleUIConfig(id: $compId) {
                   id
@@ -127,16 +133,14 @@ const AppContextProvider = ({ children }) => {
                   styles
                 }
               }`
-            const result = await gqlClient.query({ query: gql`${flexibleUIQuery}`, variables: { compId: 'root', langCode: appState.appLang } });
+            const result = await gqlClient.query({ query: flexibleUIQuery, variables: { compId: 'root', langCode: appState.appLang } });
             const uiConfig = result.data?.flexibleUIConfig;
             if (uiConfig)
                 setRootUIConfig(JSON.parse(JSON.stringify(uiConfig)));
         }
-
         getClientStructure()
         getFlexibleUIConfig()
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [appState.appLang]);
+    }, [appState.appLang])
 
     const mutateState = (newState) => {
         setAppState((prevState) => {

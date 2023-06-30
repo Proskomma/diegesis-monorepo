@@ -15,6 +15,7 @@ const LangSelector = () => {
                 variant={'text'}
                 color={'dark'}
                 size={'medium'}
+                disabled
                 sx={{
                     textTransform: 'none',
                     fontSize: '1.25rem',
@@ -27,7 +28,7 @@ const LangSelector = () => {
                     size: 'medium',
                 }}
             >
-                {i18n(appLang, 'LANGUAGES')}
+                {i18n(appLang, 'SITE_LANGUAGE')}
             </Button>
             <FormGroup>
                 {
@@ -61,7 +62,7 @@ const LangSelector = () => {
 }
 
 export default function PageLayout(props) {
-    const { authLoaded, authed, doLogout, clientStructure } = useAppContext();
+    const { authLoaded, authed, doLogout, clientStructure, appLang } = useAppContext();
     const location = useLocation();
     const navOptions = clientStructure?.urlData?.map(item => {
         const href = `/${item.url === 'home' ? "" : item.url}`;
@@ -77,12 +78,25 @@ export default function PageLayout(props) {
         if (authLoaded) {
             if (authed) {
                 navOptions.push({
-                    title: 'Logout', variant: 'small', href: '/', onClick: () => {
-                        doLogout();
-                    }
-                })
+                    title: 'Admin',
+                    variant: 'category',
+                    options: [
+                        { title: `- ${i18n(appLang, 'UI')}`, href: '/ui-config', variant: 'small' },
+                        { title: `- ${i18n(appLang, 'STATIC_PAGES')}`, href: '/static-ui-config', variant: 'small' },
+                        {
+                            title: `- ${i18n(appLang, 'LOGOUT')}`, href: '/', variant: 'small', onClick: () => {
+                                doLogout();
+                            }
+                        },
+                    ],
+                });
             } else {
-                navOptions.push({ title: 'Login', variant: 'small', href: '/login', activated: location.pathname === '/login' });
+                navOptions.push({
+                    title: `- ${i18n(appLang, 'LOGIN')}`,
+                    variant: 'bordered',
+                    href: '/login',
+                    activated: location.pathname === '/login'
+                });
             }
         }
         navOptions.push({
@@ -95,7 +109,7 @@ export default function PageLayout(props) {
         sideNavProps: { ...MOCK_SIDE_NAV_PROPS, options: navOptions },
     }
     return (
-        <FlexiblePageLayout sideNavProps={pageProps.sideNavProps}>
+        <FlexiblePageLayout {...props} sideNavProps={pageProps.sideNavProps}>
             {props.children}
         </FlexiblePageLayout>
     );

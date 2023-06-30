@@ -109,7 +109,7 @@ const querySchema = gql`
             
             """The page url"""
             url: String!
-        ): StructureResource!
+        ): StructureResource
     }
     
     """Site-wide metadata for a language"""
@@ -393,6 +393,21 @@ const querySchema = gql`
         styles: JSON
         """Flexible Component UI Config"""
         uiConfigs: JSON
+    }
+
+    """Static UI Config"""
+    input StaticUIConfig {
+        """Static Page Language"""
+        lang: String!
+
+        """Static Page URL"""
+        url: String!
+        
+        """Static Page Menu Text"""
+        menuText: String!
+        
+        """Static Page Body"""
+        body: String!
     }    
     
     """Resource Element"""
@@ -487,6 +502,15 @@ const mutationSchema = gql`
             """Flexible Component UI Config"""
             uiConfigs: JSON
         ) : Boolean
+
+        saveStaticPage (
+            """Static page config"""
+            config: StaticUIConfig
+        ) : Boolean
+
+        removeStaticPage (
+            url: String
+        ): Boolean
     }
 `;
 

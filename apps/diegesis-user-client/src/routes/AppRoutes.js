@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { BrowserRouter, Route, Routes, useRouteError } from "react-router-dom";
 import { useAppContext } from "../contexts/AppContext";
 import MarkdownPage from "../pages/MarkdownPage";
@@ -10,7 +10,7 @@ import EntryDownloadPage from "../pages/EntryDownloadPage";
 import UIConfigPage from "../pages/UIConfigPage";
 import ProtectedRoute from "./ProtectedRoute";
 import LoginPage from "../pages/LoginPage";
-import { useMemo } from "react";
+import StaticUIConfigPage from '../pages/StaticUIConfigPage';
 
 
 
@@ -84,6 +84,13 @@ export default function AppRoutes() {
                 path: "/ui-config",
                 element: <ProtectedRoute roles={['admin']}>
                     <UIConfigPage />
+                </ProtectedRoute>,
+                errorElement: <ErrorBoundary />
+            },
+            {
+                path: "/static-ui-config",
+                element: <ProtectedRoute roles={['admin']}>
+                    <StaticUIConfigPage />
                 </ProtectedRoute>,
                 errorElement: <ErrorBoundary />
             },

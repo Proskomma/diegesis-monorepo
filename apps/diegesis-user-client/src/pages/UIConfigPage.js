@@ -4,7 +4,7 @@ import { gql, useApolloClient } from '@apollo/client';
 import { useAppContext } from '../contexts/AppContext';
 import langTable from "../i18n/languages.json";
 const { Button, Drawer, Box, Select, MenuItem } = MuiMaterial;
-const { UIConfigControlPanel, FlexibleHome, FlexibleEntryDetailUI, FlexibleEntriesListUI, useUIConfigContext } = DiegesisUI.FlexibleDesign;
+const { UIConfigControlPanel, FlexibleHome, FlexibleEntryDetailUI, FlexibleEntriesListUI, useUIConfigContext, FlexiblePage } = DiegesisUI.FlexibleDesign;
 const { FlexibleEntriesListPage } = FlexibleEntriesListUI;
 const { FlexibleEntryDetail } = FlexibleEntryDetailUI;
 
@@ -29,7 +29,6 @@ export default function UIConfigPage() {
             const rootConfig = getRootUIConfig()
             const query = `
             mutation SaveFlexibleUIConfig(
-                $langCode: String!
                 $id: String!
                 $className: String
                 $componentName: String!
@@ -50,10 +49,9 @@ export default function UIConfigPage() {
                   markdowns: $markdowns
                   styles: $styles
                   uiConfigs: $uiConfigs
-                  langCode: $langCode
                 )
               }`;
-            await gqlClient.mutate({ mutation: gql`${query}`, variables: { ...rootConfig, langCode: appLang } });
+            await gqlClient.mutate({ mutation: gql`${query}`, variables: { ...rootConfig } });
         } catch (err) {
             console.error('failed to save flexible ui config', err);
             return;
@@ -65,9 +63,10 @@ export default function UIConfigPage() {
             <Button onClick={toggleDrawer} variant="contained">
                 Open Setting Panel
             </Button>
-            <FlexibleHome id="HomePage" parentPath="/" />
-            <FlexibleEntriesListPage id="ListPage" parentPath="/list" />
-            <FlexibleEntryDetail id="EntryDetailPage" parentPath="/entry-detail" />
+            <FlexibleHome id="home-page" parentPath="/" />
+            <FlexibleEntriesListPage id="list-page" parentPath="/list" />
+            <FlexibleEntryDetail id="entry-detail-page" parentPath="/entry-detail" />
+            <FlexiblePage id='static-ui-config-page' parentPath='/static-ui-config' />
             <Drawer
                 anchor="left"
                 open={open}

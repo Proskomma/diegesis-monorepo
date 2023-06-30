@@ -180,7 +180,9 @@
           "/view",
           "/entry/*",
           "/ui-config",
-          "/login"
+          "/login",
+          "/static-ui-config",
+          "/*"
         ]
       },
       {

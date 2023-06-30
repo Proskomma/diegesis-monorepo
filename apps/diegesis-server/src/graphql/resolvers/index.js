@@ -23,10 +23,13 @@ const {
     writeEntryResource,
     writeFlexibleUIConfig,
     readFlexibleUIConfig,
+    writeStaticPageConfig,
+    removeStaticPage
 } = require("../../lib/dataLayers/fs");
 
 const UUID = require("pure-uuid");
 const btoa = require("btoa");
+const serverClientStructure = require("../../lib/makeServerHelpers/serverClientStructure");
 
 const generateId = () => btoa(new UUID(4)).substring(0, 12);
 
@@ -936,15 +939,37 @@ const makeResolvers = async (orgsData, orgHandlers, config) => {
                 return true;
             },
             saveFlexibleUIConfig: async (root, args, context) => {
-                if (!context.auth || !context.auth.authenticated) {
+                if (!context?.auth?.authenticated) {
                     throw new GraphQLError(`No auth found for saveFlexibleUIConfig mutation`, { extensions: { code: 401 } });
                 }
-                if (!context.auth.roles || !context.auth.roles.includes("admin")) {
+                if (!context?.auth?.roles?.includes("admin")) {
                     throw new GraphQLError(`Required auth role 'admin' not found for saveFlexibleUIConfig`, { extensions: { code: 403 } });
                 }
                 writeFlexibleUIConfig(config, args);
                 return true;
             },
+            saveStaticPage: async (root, args, context) => {
+                if (!context?.auth?.authenticated) {
+                    throw new GraphQLError(`No auth found for saveStaticPage mutation`, { extensions: { code: 401 } });
+                }
+                if (!context?.auth?.roles?.includes("admin")) {
+                    throw new GraphQLError(`Required auth role 'admin' not found for saveStaticPage`, { extensions: { code: 403 } });
+                }
+                await writeStaticPageConfig(config, args.config)
+                Object.assign(context.clientStructure, serverClientStructure(config))
+                return true;
+            },
+            removeStaticPage: async (root, args, context) => {
+                if (!context?.auth?.authenticated) {
+                    throw new GraphQLError(`No auth found for removeStaticPage mutation`, { extensions: { code: 401 } });
+                }
+                if (!context?.auth?.roles?.includes("admin")) {
+                    throw new GraphQLError(`Required auth role 'admin' not found for removeStaticPage`, { extensions: { code: 403 } });
+                }
+                await removeStaticPage(config, args);
+                Object.assign(context.clientStructure, serverClientStructure(config));
+                return true;
+            }
         },
     };
 
