@@ -109,11 +109,13 @@ const AppContextProvider = ({ children }) => {
                     }
                 }
               }`
+            const pathname = window.location.pathname.replace('/', '');
+            const url = pathname === '' ? 'home' : pathname;
             const result = await gqlClient.query({
                 query: gqlQuery,
                 variables: {
                     language: appState.appLang,
-                    url: window.location.pathname.replace('/', '')
+                    url
                 }
             });
             const clientStructure = result.data.clientStructure;
