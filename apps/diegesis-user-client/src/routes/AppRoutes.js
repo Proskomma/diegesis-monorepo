@@ -11,6 +11,7 @@ import UIConfigPage from "../pages/UIConfigPage";
 import ProtectedRoute from "./ProtectedRoute";
 import LoginPage from "../pages/LoginPage";
 import StaticUIConfigPage from '../pages/StaticUIConfigPage';
+import AdminPage from '../pages/AdminPage';
 
 
 
@@ -97,6 +98,11 @@ export default function AppRoutes() {
             {
                 path: "/login",
                 element: <LoginPage />,
+                errorElement: <ErrorBoundary />
+            },
+            {
+                path: '/admin',
+                element: <AdminPage />,
                 errorElement: <ErrorBoundary />
             }
         ])
