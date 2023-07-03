@@ -11,7 +11,8 @@ import UIConfigPage from "../pages/UIConfigPage";
 import ProtectedRoute from "./ProtectedRoute";
 import LoginPage from "../pages/LoginPage";
 import StaticUIConfigPage from '../pages/StaticUIConfigPage';
-import AdminPage from '../pages/AdminPage';
+import LocalEntries from '../pages/LocalEntries';
+import RemoteEntries from '../pages/RemoteEntries';
 
 
 
@@ -101,8 +102,19 @@ export default function AppRoutes() {
                 errorElement: <ErrorBoundary />
             },
             {
-                path: '/admin',
-                element: <AdminPage />,
+                path: '/local-entries',
+                element: <LocalEntries />,
+                // element: <ProtectedRoute roles={['admin']}>
+                //     <LocalEntries />
+                // </ProtectedRoute>,
+                errorElement: <ErrorBoundary />
+            },
+            {
+                path: '/remote-entries',
+                element: <RemoteEntries />,
+                // element: <ProtectedRoute roles={['admin']}>
+                //     <RemoteEntries />
+                // </ProtectedRoute>,
                 errorElement: <ErrorBoundary />
             }
         ])

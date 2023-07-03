@@ -5,13 +5,16 @@ import TabbedBody from '../components/admin/TabbedBody';
 import GqlLoading from "../components/GqlLoading";
 import { useEffect, useState } from "react";
 import { gql, useApolloClient } from "@apollo/client";
+import { DiegesisUI } from '@eten-lab/ui-kit';
+const { FlexiblePage } = DiegesisUI.FlexibleDesign;
 
-export default function AdminPage(props) {
+export default function LocalEntries(props) {
     const gqlClient = useApolloClient();
     const [selectedOrgIndex, setSelectedOrgIndex] = useState(0);
     const [searchLang, setSearchLang] = useState('');
     const [searchText, setSearchText] = useState('');
     const [orgs, setOrgs] = useState([]);
+
     useEffect(
         () => {
             const doOrgs = async () => {
@@ -27,8 +30,9 @@ export default function AdminPage(props) {
                 setOrgs(result.data.orgs);
             };
             doOrgs();
-        },[]);
-    return <>
+        }, []);
+
+    return <FlexiblePage>
         <Header
             orgs={orgs.map(o => o.id)}
             selectedOrgIndex={selectedOrgIndex}
@@ -48,5 +52,5 @@ export default function AdminPage(props) {
                 <GqlLoading />
             }
         </Box>
-    </>
+    </FlexiblePage>
 }
