@@ -1,5 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { Box, Container } from "@mui/material";
+import { Box, Container, IconButton } from "@mui/material";
+import { DeleteOutlineOutlined } from '@mui/icons-material';
 import i18n from '../i18n';
 import { useEffect, useState } from "react";
 import { gql, useApolloClient } from "@apollo/client";
@@ -7,13 +8,13 @@ import PageLayout from "../components/PageLayout";
 import { DiegesisUI } from '@eten-lab/ui-kit';
 import { useAppContext } from "../contexts/AppContext";
 const { FlexibleSelectControl, FlexibleSearchBox } = DiegesisUI.FlexibleDesign;
-const { EntriesDataTable, MOCK_ENTRIES_DATA_TABLE_PROPS } = DiegesisUI.FlexibleDesign.FlexibleEntriesListUI;
+const { EntriesDataTable } = DiegesisUI.FlexibleDesign.FlexibleEntriesListUI;
 
 export default function LocalEntries({ url }) {
     const { appLang } = useAppContext();
     const gqlClient = useApolloClient();
-    const [orgs, setOrgs] = useState([]);
-    const [curOrg, setCurOrg] = useState('');
+    const [orgDropdown, setOrgDropdown] = useState({ options: [], curOrg: '' });
+    const [dataTable, setDataTable] = useState({ cellsConfig: [], entries: [] })
 
     useEffect(
         () => {
@@ -27,25 +28,74 @@ export default function LocalEntries({ url }) {
                       }
                     }`
                 });
-                setOrgs(result.data.orgs.map(o => ({ id: o.id, title: o.id })));
+                setOrgDropdown({ options: result.data.orgs.map(o => ({ id: o.id, title: o.id })) });
             };
             doOrgs();
+
+            const cellsConfig = [{
+                id: 'owner',
+                numeric: false,
+                disablePadding: true,
+                label: 'Owner',
+            },
+            {
+                id: 'id',
+                numeric: false,
+                disablePadding: false,
+                label: 'ID',
+            },
+            {
+                id: 'revision',
+                numeric: false,
+                disablePadding: false,
+                label: 'Revision',
+            },
+            {
+                id: 'language',
+                numeric: false,
+                disablePadding: false,
+                label: 'Language',
+            },
+            {
+                id: 'title',
+                numeric: false,
+                disablePadding: false,
+                label: 'Title',
+            },
+            {
+                id: 'succinct',
+                numeric: false,
+                disablePadding: false,
+                label: 'Succinct?',
+            },
+            {
+                id: 'action',
+                numeric: false,
+                disablePadding: true,
+                label: 'Actions',
+                render() {
+                    return (
+                        <IconButton>
+                            <DeleteOutlineOutlined />
+                        </IconButton>
+                    );
+                },
+                }]
+            setDataTable({ cellsConfig, entries: [] });
         }, []);
 
-    const dataTableProps = {
-        ...MOCK_ENTRIES_DATA_TABLE_PROPS
-    }
+
     const searchBoxProps = {
         placeholder: i18n(appLang, "LIST_PAGE_SEARCH_PLACEHOLDER"),
         onSearchTextChange: (value) => { },
         onSearchBtnClick: (value) => { }
     }
     const selectControlProps = {
-        label: 'ORG',
-        value: curOrg,
-        options: orgs,
+        label: 'Org',
+        value: orgDropdown.curOrg,
+        options: orgDropdown.options,
         onChange: (value) => {
-            setCurOrg(value)
+            setOrgDropdown({ ...orgDropdown, curOrg: value });
         }
     }
 
@@ -60,7 +110,7 @@ export default function LocalEntries({ url }) {
                     <FlexibleSearchBox {...searchBoxProps} id={"local-entries-select-control"} parentPath={parentPath} />
                 </Box>
             </Box>
-            <EntriesDataTable {...dataTableProps} />
+            <EntriesDataTable {...dataTable} />
         </Container>
     </PageLayout>
 }

@@ -264,7 +264,7 @@ export default function ListPage() {
             tagConfig: tagConfig,
             searchBoxProps: {
                 onSearchBtnClick,
-                placeholder: i18n(appLang, "LIST_PAGE_SEARCH_PLACEHOLDER")
+                placeholder: i18n(appLang, "SEARCH_PLACEHOLDER")
             }
         },
         entriesDataTable: dataTable,
