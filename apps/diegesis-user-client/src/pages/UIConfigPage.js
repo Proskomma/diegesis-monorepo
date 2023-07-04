@@ -67,6 +67,8 @@ export default function UIConfigPage() {
             <FlexibleEntriesListPage id="list-page" parentPath="/list" />
             <FlexibleEntryDetail id="entry-detail-page" parentPath="/entry-detail" />
             <FlexiblePage id='static-ui-config-page' parentPath='/static-ui-config' />
+            <FlexiblePage id='local-entries-page' parentPath='/local-entries' />
+            <FlexiblePage id='remote-entries-page' parentPath='/remote-entries' />
             <Drawer
                 anchor="left"
                 open={open}

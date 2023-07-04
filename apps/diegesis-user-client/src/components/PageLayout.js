@@ -83,6 +83,8 @@ export default function PageLayout(props) {
                     options: [
                         { title: `- ${i18n(appLang, 'UI')}`, href: '/ui-config', variant: 'small' },
                         { title: `- ${i18n(appLang, 'STATIC_PAGES')}`, href: '/static-ui-config', variant: 'small' },
+                        { title: `- Local Entries`, href: '/local-entries', variant: 'small' },
+                        { title: `- Remote Entries`, href: '/remote-entries', variant: 'small' },
                         {
                             title: `- ${i18n(appLang, 'LOGOUT')}`, href: '/', variant: 'small', onClick: () => {
                                 doLogout();

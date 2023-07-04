@@ -103,18 +103,16 @@ export default function AppRoutes() {
             },
             {
                 path: '/local-entries',
-                element: <LocalEntries />,
-                // element: <ProtectedRoute roles={['admin']}>
-                //     <LocalEntries />
-                // </ProtectedRoute>,
+                element: <ProtectedRoute roles={['admin']}>
+                    <LocalEntries />
+                </ProtectedRoute>,
                 errorElement: <ErrorBoundary />
             },
             {
                 path: '/remote-entries',
-                element: <RemoteEntries />,
-                // element: <ProtectedRoute roles={['admin']}>
-                //     <RemoteEntries />
-                // </ProtectedRoute>,
+                element: <ProtectedRoute roles={['admin']}>
+                    <RemoteEntries />
+                </ProtectedRoute>,
                 errorElement: <ErrorBoundary />
             }
         ])
