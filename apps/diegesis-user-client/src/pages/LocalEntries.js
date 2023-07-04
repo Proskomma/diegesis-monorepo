@@ -1,18 +1,19 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { Box, Container } from "@mui/material";
-import Header from '../components/admin/Header';
-import TabbedBody from '../components/admin/TabbedBody';
-import GqlLoading from "../components/GqlLoading";
+import i18n from '../i18n';
 import { useEffect, useState } from "react";
 import { gql, useApolloClient } from "@apollo/client";
 import PageLayout from "../components/PageLayout";
+import { DiegesisUI } from '@eten-lab/ui-kit';
+import { useAppContext } from "../contexts/AppContext";
+const { FlexibleSelectControl, FlexibleSearchBox } = DiegesisUI.FlexibleDesign;
+const { EntriesDataTable, MOCK_ENTRIES_DATA_TABLE_PROPS } = DiegesisUI.FlexibleDesign.FlexibleEntriesListUI;
 
 export default function LocalEntries({ url }) {
+    const { appLang } = useAppContext();
     const gqlClient = useApolloClient();
-    const [selectedOrgIndex, setSelectedOrgIndex] = useState(0);
-    const [searchLang, setSearchLang] = useState('');
-    const [searchText, setSearchText] = useState('');
     const [orgs, setOrgs] = useState([]);
+    const [curOrg, setCurOrg] = useState('');
 
     useEffect(
         () => {
@@ -26,32 +27,40 @@ export default function LocalEntries({ url }) {
                       }
                     }`
                 });
-                setOrgs(result.data.orgs);
+                setOrgs(result.data.orgs.map(o => ({ id: o.id, title: o.id })));
             };
             doOrgs();
         }, []);
 
-    return <PageLayout id="local-entries-page" parentPath={url ?? window.location.pathname}>
+    const dataTableProps = {
+        ...MOCK_ENTRIES_DATA_TABLE_PROPS
+    }
+    const searchBoxProps = {
+        placeholder: i18n(appLang, "LIST_PAGE_SEARCH_PLACEHOLDER"),
+        onSearchTextChange: (value) => { },
+        onSearchBtnClick: (value) => { }
+    }
+    const selectControlProps = {
+        label: 'ORG',
+        value: curOrg,
+        options: orgs,
+        onChange: (value) => {
+            setCurOrg(value)
+        }
+    }
+
+    const parentPath = url ?? window.location.pathname
+    return <PageLayout id="local-entries-page" parentPath={parentPath}>
         <Container>
-            <Header
-                orgs={orgs.map(o => o.id)}
-                selectedOrgIndex={selectedOrgIndex}
-                setSelectedOrgIndex={setSelectedOrgIndex}
-                searchLang={searchLang}
-                setSearchLang={setSearchLang}
-                searchText={searchText}
-                setSearchText={setSearchText}
-            />
-            <Box id="body">
-                {orgs.length > 0 ?
-                    <TabbedBody
-                        selectedOrgRecord={orgs[selectedOrgIndex]}
-                        searchLang={searchLang}
-                        searchText={searchText}
-                    /> :
-                    <GqlLoading />
-                }
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                <Box sx={{ minWidth: '275px' }}>
+                    <FlexibleSelectControl {...selectControlProps} id={"local-entries-select-control"} parentPath={parentPath} />
+                </Box>
+                <Box>
+                    <FlexibleSearchBox {...searchBoxProps} id={"local-entries-select-control"} parentPath={parentPath} />
+                </Box>
             </Box>
+            <EntriesDataTable {...dataTableProps} />
         </Container>
     </PageLayout>
 }

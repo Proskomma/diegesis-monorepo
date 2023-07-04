@@ -86,5 +86,7 @@
     "LOGOUT": "cerrar sesión",
     "LOGIN": "acceso",
     "UI": "interfaz de usuario",
-    "STATIC_PAGES": "páginas estáticas"
+    "STATIC_PAGES": "páginas estáticas",
+    "LOCAL_ENTRIES": "Entradas locales",
+    "REMOTE_ENTRIES": "Entradas remotas"
 }

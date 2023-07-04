@@ -118,5 +118,7 @@
     "LOGOUT": "Se déconnecter",
     "LOGIN": "connexion",
     "UI": "interface utilisateur",
-    "STATIC_PAGES": "pages statiques"
+    "STATIC_PAGES": "pages statiques",
+    "LOCAL_ENTRIES": "Entrées locales",
+    "REMOTE_ENTRIES": "Entrées à distance"
 }
