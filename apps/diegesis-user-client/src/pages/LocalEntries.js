@@ -3,18 +3,47 @@ import { Box, Container, IconButton } from "@mui/material";
 import { DeleteOutlineOutlined } from '@mui/icons-material';
 import i18n from '../i18n';
 import { useEffect, useState } from "react";
-import { gql, useApolloClient } from "@apollo/client";
+import { gql, useApolloClient, useQuery } from "@apollo/client";
 import PageLayout from "../components/PageLayout";
 import { DiegesisUI } from '@eten-lab/ui-kit';
 import { useAppContext } from "../contexts/AppContext";
+import { searchQuery } from "../lib/localSearch";
 const { FlexibleSelectControl, FlexibleSearchBox } = DiegesisUI.FlexibleDesign;
 const { EntriesDataTable } = DiegesisUI.FlexibleDesign.FlexibleEntriesListUI;
+
+//#region helper methods
+const getGQLQuery = ({ org = '', lang = '', term = '' }) => {
+    return searchQuery(
+        `query {
+            localEntries%searchClause% {
+                source
+                transId
+                revision
+                language
+                owner
+                title
+                succinctRecord: canonResource(type:"succinct") {type}
+                hasSuccinctError
+                vrsRecord: canonResource(type:"versification") {type}
+            }
+        }`,
+        org,
+        lang,
+        term
+    );
+}
+//#endregion
 
 export default function LocalEntries({ url }) {
     const { appLang } = useAppContext();
     const gqlClient = useApolloClient();
     const [orgDropdown, setOrgDropdown] = useState({ options: [], curOrg: '' });
-    const [dataTable, setDataTable] = useState({ cellsConfig: [], entries: [] })
+    const [dataTable, setDataTable] = useState({ cellsConfig: [], entries: [] });
+    const [gqlQueryParams, setGQLQueryParams] = useState({ org: '', lang: '', term: '' });
+    const { loading, error, data: orgLocalEntries } = useQuery(
+        gql`${getGQLQuery(gqlQueryParams)}`,
+        // { pollInterval: 2000 }
+    );
 
     useEffect(
         () => {
@@ -28,7 +57,8 @@ export default function LocalEntries({ url }) {
                       }
                     }`
                 });
-                setOrgDropdown({ options: result.data.orgs.map(o => ({ id: o.id, title: o.id })) });
+                const dropdownOptions = result.data.orgs.map(o => ({ id: o.id, title: o.id }));
+                setOrgDropdown({ options: dropdownOptions, curOrg: dropdownOptions[0]?.id });
             };
             doOrgs();
 
@@ -63,13 +93,13 @@ export default function LocalEntries({ url }) {
                 label: 'Title',
             },
             {
-                id: 'succinct',
+                id: 'hasSuccinct',
                 numeric: false,
                 disablePadding: false,
                 label: 'Succinct?',
             },
             {
-                id: 'action',
+                id: 'actions',
                 numeric: false,
                 disablePadding: true,
                 label: 'Actions',
@@ -80,23 +110,49 @@ export default function LocalEntries({ url }) {
                         </IconButton>
                     );
                 },
-                }]
-            setDataTable({ cellsConfig, entries: [] });
+            }]
+            setDataTable({ ...dataTable, cellsConfig });
         }, []);
 
+    useEffect(() => {
+        if (!Array.isArray(orgLocalEntries)) return;
+        const transformedEntries = orgLocalEntries.map(localEntry => {
+            let succinctState = localEntry.succinctRecord ? 'yes' : 'no';
+            if (localEntry.hasSuccinctError) {
+                succinctState = 'FAIL';
+            }
+            return {
+                id: localEntry.transId,
+                language: localEntry.language,
+                title: localEntry.title,
+                owner: localEntry.owner,
+                revision: localEntry.revision,
+                hasSuccinct: succinctState,
+                hasVrs: localEntry.vrsRecord,
+                actions: {
+                    org: orgDropdown.curOrg,
+                    id: localEntry.transId,
+                    revision: localEntry.revision,
+                }
+            };
+        })
+        console.log('prev datatable', dataTable)
+        setDataTable({ ...dataTable, entries: transformedEntries });
+    }, [orgLocalEntries])
 
-    const searchBoxProps = {
-        placeholder: i18n(appLang, "LIST_PAGE_SEARCH_PLACEHOLDER"),
-        onSearchTextChange: (value) => { },
-        onSearchBtnClick: (value) => { }
+    const onOrgChange = (value) => {
+        setOrgDropdown((prevState) => {
+            return ({ ...prevState, curOrg: value });
+        })
+        setGQLQueryParams((prevState) => {
+            return ({ ...prevState, org: value });
+        })
     }
-    const selectControlProps = {
-        label: 'Org',
-        value: orgDropdown.curOrg,
-        options: orgDropdown.options,
-        onChange: (value) => {
-            setOrgDropdown({ ...orgDropdown, curOrg: value });
-        }
+
+    const onSearchBtnClick = (value) => {
+        setGQLQueryParams((prevState) => {
+            return ({ ...prevState, term: value })
+        })
     }
 
     const parentPath = url ?? window.location.pathname
@@ -104,10 +160,22 @@ export default function LocalEntries({ url }) {
         <Container>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                 <Box sx={{ minWidth: '275px' }}>
-                    <FlexibleSelectControl {...selectControlProps} id={"local-entries-select-control"} parentPath={parentPath} />
+                    <FlexibleSelectControl
+                        id={"local-entries-select-control"}
+                        parentPath={parentPath}
+                        label={'ORG'}
+                        options={orgDropdown.options}
+                        value={orgDropdown.value}
+                        onChange={onOrgChange}
+                    />
                 </Box>
                 <Box>
-                    <FlexibleSearchBox {...searchBoxProps} id={"local-entries-select-control"} parentPath={parentPath} />
+                    <FlexibleSearchBox
+                        id={"local-entries-select-control"}
+                        parentPath={parentPath}
+                        placeholder={i18n(appLang, "SEARCH_PLACEHOLDER")}
+                        onSearchBtnClick={onSearchBtnClick}
+                    />
                 </Box>
             </Box>
             <EntriesDataTable {...dataTable} />
