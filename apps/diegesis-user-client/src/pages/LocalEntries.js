@@ -1,15 +1,14 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { Box, Container, IconButton } from "@mui/material";
+import { Container, IconButton, Paper, Typography } from "@mui/material";
 import { DeleteOutlineOutlined } from '@mui/icons-material';
-import i18n from '../i18n';
 import { useEffect, useState } from "react";
-import { gql, useApolloClient, useQuery } from "@apollo/client";
+import { gql, useQuery } from "@apollo/client";
 import { DiegesisUI } from '@eten-lab/ui-kit';
-import langTable from "../i18n/languages.json";
 import PageLayout from "../components/PageLayout";
-import { useAppContext } from "../contexts/AppContext";
 import { searchQuery } from "../lib/localSearch";
-const { FlexibleSelectControl, FlexibleSearchBox } = DiegesisUI.FlexibleDesign;
+import EntriesFilter from "../components/admin/EntriesFilter";
+import GqlLoading from "../components/GqlLoading";
+import GqlError from "../components/GqlError";
 const { EntriesDataTable } = DiegesisUI.FlexibleDesign.FlexibleEntriesListUI;
 
 //#region helper methods
@@ -36,31 +35,12 @@ const getGQLQuery = ({ org = '', lang = '', term = '' }) => {
 //#endregion
 
 export default function LocalEntries({ url }) {
-    const { appLang, clientStructure } = useAppContext();
-    const gqlClient = useApolloClient();
-    const [orgDropdown, setOrgDropdown] = useState({ options: [], value: '' });
-    const [langDropdown, setLangDropdown] = useState({ options: [], value: '' });
     const [dataTable, setDataTable] = useState({ cellsConfig: [], entries: [] });
     const [gqlQueryParams, setGQLQueryParams] = useState({ org: '', lang: '', term: '' });
     const { loading, error, data } = useQuery(gql`${getGQLQuery(gqlQueryParams)}`);
 
     useEffect(
         () => {
-            const doOrgs = async () => {
-                const result = await gqlClient.query({
-                    query: gql`{
-                      orgs {
-                        id: name
-                        canSync
-                        catalogHasRevisions
-                      }
-                    }`
-                });
-                const dropdownOptions = result.data.orgs.map(o => ({ id: o.id, title: o.id }));
-                setOrgDropdown({ options: dropdownOptions, value: dropdownOptions[0]?.id });
-            };
-            doOrgs();
-
             const cellsConfig = [{
                 id: 'owner',
                 numeric: false,
@@ -114,17 +94,6 @@ export default function LocalEntries({ url }) {
         }, []);
 
     useEffect(() => {
-        const langOptions = Object.entries(langTable)
-            .filter(kv => (clientStructure?.languages?.includes(kv[0])) || kv[0] === "en")
-            .map((kv, n) => ({ title: kv[1].autonym, id: kv[1].autonym }));
-        setLangDropdown({ ...langDropdown, options: [{ id: '', title: '' }, ...langOptions], value: '' });
-    }, [clientStructure?.languages])
-
-    useEffect(() => {
-        setGQLQueryParams({ ...gqlQueryParams, org: orgDropdown.value });
-    }, [orgDropdown.value, langDropdown.value])
-
-    useEffect(() => {
         if (!Array.isArray(data?.localEntries)) return;
         const transformedEntries = data.localEntries.map(localEntry => {
             let succinctState = localEntry.succinctRecord ? 'yes' : 'no';
@@ -140,7 +109,7 @@ export default function LocalEntries({ url }) {
                 hasSuccinct: succinctState,
                 hasVrs: localEntry.vrsRecord,
                 actions: {
-                    org: orgDropdown.value,
+                    org: gqlQueryParams.org,
                     id: localEntry.transId,
                     revision: localEntry.revision,
                 }
@@ -149,54 +118,32 @@ export default function LocalEntries({ url }) {
         setDataTable({ ...dataTable, entries: transformedEntries });
     }, [data])
 
-    const onOrgChange = (value) => {
-        setOrgDropdown({ ...orgDropdown, value });
-    }
-
-    const onLangChange = (value) => {
-        setLangDropdown({ ...langDropdown, value });
-    }
-
-    const onSearchBtnClick = (value) => {
-        setGQLQueryParams((prevState) => {
-            return ({ ...prevState, term: value })
-        })
+    const onFilterChange = ({ term, lang, org }) => {
+        const newQuery = { ...gqlQueryParams };
+        if (typeof term !== 'undefined') newQuery.term = term;
+        if (typeof lang !== 'undefined') newQuery.lang = lang;
+        if (typeof org !== 'undefined') newQuery.org = org;
+        setGQLQueryParams(newQuery);
     }
 
     const parentPath = url ?? window.location.pathname
+
+    const renderConditionalContent = () => {
+        if (loading) return <GqlLoading />
+        if (error) return <GqlError error={error} />
+        if (dataTable.entries.length) return <EntriesDataTable {...dataTable} />
+        return <Paper sx={{ width: '100%', overflow: 'hidden', my: 5, py: 5 }}>
+            <Typography variant="h5" textAlign={'center'}>
+                Entries Not Found For Selected Filters!
+            </Typography>
+        </Paper>
+    }
+
     return <PageLayout id="local-entries-page" parentPath={parentPath}>
         <Container>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <Box sx={{ minWidth: '175px' }}>
-                    <FlexibleSelectControl
-                        id={"local-entries-org"}
-                        parentPath={parentPath}
-                        label={'ORG'}
-                        options={orgDropdown.options}
-                        value={orgDropdown.value}
-                        onChange={onOrgChange}
-                    />
-                </Box>
-                <Box sx={{ minWidth: '175px' }}>
-                    <FlexibleSelectControl
-                        id={"local-entries-lang"}
-                        parentPath={parentPath}
-                        label={'Language'}
-                        options={langDropdown.options}
-                        value={langDropdown.value}
-                        onChange={onLangChange}
-                    />
-                </Box>
-                <Box>
-                    <FlexibleSearchBox
-                        id={"local-entries-search"}
-                        parentPath={parentPath}
-                        placeholder={i18n(appLang, "SEARCH_PLACEHOLDER")}
-                        onSearchBtnClick={onSearchBtnClick}
-                    />
-                </Box>
-            </Box>
-            <EntriesDataTable {...dataTable} />
+            <EntriesFilter onFilterChange={onFilterChange} parentPath={parentPath} />
+            <br />
+            {renderConditionalContent()}
         </Container>
     </PageLayout>
 }
