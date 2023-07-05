@@ -4,8 +4,9 @@ import { DeleteOutlineOutlined } from '@mui/icons-material';
 import i18n from '../i18n';
 import { useEffect, useState } from "react";
 import { gql, useApolloClient, useQuery } from "@apollo/client";
-import PageLayout from "../components/PageLayout";
 import { DiegesisUI } from '@eten-lab/ui-kit';
+import langTable from "../i18n/languages.json";
+import PageLayout from "../components/PageLayout";
 import { useAppContext } from "../contexts/AppContext";
 import { searchQuery } from "../lib/localSearch";
 const { FlexibleSelectControl, FlexibleSearchBox } = DiegesisUI.FlexibleDesign;
@@ -35,15 +36,13 @@ const getGQLQuery = ({ org = '', lang = '', term = '' }) => {
 //#endregion
 
 export default function LocalEntries({ url }) {
-    const { appLang } = useAppContext();
+    const { appLang, clientStructure } = useAppContext();
     const gqlClient = useApolloClient();
-    const [orgDropdown, setOrgDropdown] = useState({ options: [], curOrg: '' });
+    const [orgDropdown, setOrgDropdown] = useState({ options: [], value: '' });
+    const [langDropdown, setLangDropdown] = useState({ options: [], value: '' });
     const [dataTable, setDataTable] = useState({ cellsConfig: [], entries: [] });
     const [gqlQueryParams, setGQLQueryParams] = useState({ org: '', lang: '', term: '' });
-    const { loading, error, data: orgLocalEntries } = useQuery(
-        gql`${getGQLQuery(gqlQueryParams)}`,
-        // { pollInterval: 2000 }
-    );
+    const { loading, error, data } = useQuery(gql`${getGQLQuery(gqlQueryParams)}`);
 
     useEffect(
         () => {
@@ -58,7 +57,7 @@ export default function LocalEntries({ url }) {
                     }`
                 });
                 const dropdownOptions = result.data.orgs.map(o => ({ id: o.id, title: o.id }));
-                setOrgDropdown({ options: dropdownOptions, curOrg: dropdownOptions[0]?.id });
+                setOrgDropdown({ options: dropdownOptions, value: dropdownOptions[0]?.id });
             };
             doOrgs();
 
@@ -115,8 +114,19 @@ export default function LocalEntries({ url }) {
         }, []);
 
     useEffect(() => {
-        if (!Array.isArray(orgLocalEntries)) return;
-        const transformedEntries = orgLocalEntries.map(localEntry => {
+        const langOptions = Object.entries(langTable)
+            .filter(kv => (clientStructure?.languages?.includes(kv[0])) || kv[0] === "en")
+            .map((kv, n) => ({ title: kv[1].autonym, id: kv[1].autonym }));
+        setLangDropdown({ ...langDropdown, options: [{ id: '', title: '' }, ...langOptions], value: '' });
+    }, [clientStructure?.languages])
+
+    useEffect(() => {
+        setGQLQueryParams({ ...gqlQueryParams, org: orgDropdown.value });
+    }, [orgDropdown.value, langDropdown.value])
+
+    useEffect(() => {
+        if (!Array.isArray(data?.localEntries)) return;
+        const transformedEntries = data.localEntries.map(localEntry => {
             let succinctState = localEntry.succinctRecord ? 'yes' : 'no';
             if (localEntry.hasSuccinctError) {
                 succinctState = 'FAIL';
@@ -130,23 +140,21 @@ export default function LocalEntries({ url }) {
                 hasSuccinct: succinctState,
                 hasVrs: localEntry.vrsRecord,
                 actions: {
-                    org: orgDropdown.curOrg,
+                    org: orgDropdown.value,
                     id: localEntry.transId,
                     revision: localEntry.revision,
                 }
             };
         })
-        console.log('prev datatable', dataTable)
         setDataTable({ ...dataTable, entries: transformedEntries });
-    }, [orgLocalEntries])
+    }, [data])
 
     const onOrgChange = (value) => {
-        setOrgDropdown((prevState) => {
-            return ({ ...prevState, curOrg: value });
-        })
-        setGQLQueryParams((prevState) => {
-            return ({ ...prevState, org: value });
-        })
+        setOrgDropdown({ ...orgDropdown, value });
+    }
+
+    const onLangChange = (value) => {
+        setLangDropdown({ ...langDropdown, value });
     }
 
     const onSearchBtnClick = (value) => {
@@ -158,10 +166,10 @@ export default function LocalEntries({ url }) {
     const parentPath = url ?? window.location.pathname
     return <PageLayout id="local-entries-page" parentPath={parentPath}>
         <Container>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                <Box sx={{ minWidth: '275px' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Box sx={{ minWidth: '175px' }}>
                     <FlexibleSelectControl
-                        id={"local-entries-select-control"}
+                        id={"local-entries-org"}
                         parentPath={parentPath}
                         label={'ORG'}
                         options={orgDropdown.options}
@@ -169,9 +177,19 @@ export default function LocalEntries({ url }) {
                         onChange={onOrgChange}
                     />
                 </Box>
+                <Box sx={{ minWidth: '175px' }}>
+                    <FlexibleSelectControl
+                        id={"local-entries-lang"}
+                        parentPath={parentPath}
+                        label={'Language'}
+                        options={langDropdown.options}
+                        value={langDropdown.value}
+                        onChange={onLangChange}
+                    />
+                </Box>
                 <Box>
                     <FlexibleSearchBox
-                        id={"local-entries-select-control"}
+                        id={"local-entries-search"}
                         parentPath={parentPath}
                         placeholder={i18n(appLang, "SEARCH_PLACEHOLDER")}
                         onSearchBtnClick={onSearchBtnClick}
