@@ -1,11 +1,12 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { Container, IconButton, Paper, Typography } from "@mui/material";
-import { DeleteOutlineOutlined } from '@mui/icons-material';
+import { Delete } from '@mui/icons-material';
 import { useEffect, useState } from "react";
-import { gql, useQuery } from "@apollo/client";
+import { gql, useApolloClient, useQuery } from "@apollo/client";
 import { DiegesisUI } from '@eten-lab/ui-kit';
 import PageLayout from "../components/PageLayout";
 import { searchQuery } from "../lib/localSearch";
+import { deleteEntry } from "../lib/tableCallbacks";
 import EntriesFilter from "../components/admin/EntriesFilter";
 import GqlLoading from "../components/GqlLoading";
 import GqlError from "../components/GqlError";
@@ -35,6 +36,7 @@ const getGQLQuery = ({ org = '', lang = '', term = '' }) => {
 //#endregion
 
 export default function LocalEntries({ url }) {
+    const gqlQueryClient = useApolloClient();
     const [dataTable, setDataTable] = useState({ cellsConfig: [], entries: [] });
     const [gqlQueryParams, setGQLQueryParams] = useState({ org: '', lang: '', term: '' });
     const { loading, error, data } = useQuery(gql`${getGQLQuery(gqlQueryParams)}`);
@@ -82,10 +84,17 @@ export default function LocalEntries({ url }) {
                 numeric: false,
                 disablePadding: true,
                 label: 'Actions',
-                render() {
+                render(localEntry) {
                     return (
-                        <IconButton>
-                            <DeleteOutlineOutlined />
+                        <IconButton onClick={() => {
+                            deleteEntry(
+                                gqlQueryClient,
+                                localEntry.org,
+                                localEntry.transId,
+                                localEntry.revision,
+                            )
+                        }}>
+                            <Delete />
                         </IconButton>
                     );
                 },
@@ -109,8 +118,9 @@ export default function LocalEntries({ url }) {
                 hasSuccinct: succinctState,
                 hasVrs: localEntry.vrsRecord,
                 actions: {
-                    org: gqlQueryParams.org,
+                    ...localEntry,
                     id: localEntry.transId,
+                    orgId: gqlQueryParams.org,
                     revision: localEntry.revision,
                 }
             };

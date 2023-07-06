@@ -49,7 +49,7 @@ export default function RemoteEntries({ url }) {
 
     useEffect(
         () => {
-            const deleteEntry = (entry) => {
+            const handleEntryAction = (entry) => {
                 try {
                     fetchEntry(
                         gqlClient,
@@ -100,7 +100,7 @@ export default function RemoteEntries({ url }) {
                 render(entry) {
                     return (
                         <IconButton
-                            onClick={() => { deleteEntry(entry) }}
+                            onClick={() => { handleEntryAction(entry) }}
                             disabled={entry.isRevisionLocal}
                         >
                             {entry.isLocal ? <Update /> : <Add />}
