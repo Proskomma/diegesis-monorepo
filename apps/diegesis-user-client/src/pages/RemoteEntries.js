@@ -1,14 +1,15 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { Container, IconButton, Paper, Typography } from "@mui/material";
-import { DeleteOutlineOutlined } from '@mui/icons-material';
+import { Add, Update } from '@mui/icons-material';
 import { useEffect, useState } from "react";
-import { gql, useQuery } from "@apollo/client";
+import { gql, useApolloClient, useQuery } from "@apollo/client";
 import { DiegesisUI } from '@eten-lab/ui-kit';
 import PageLayout from "../components/PageLayout";
 import { searchQuery } from "../lib/remoteSearch";
 import EntriesFilter from "../components/admin/EntriesFilter";
 import GqlLoading from "../components/GqlLoading";
 import GqlError from "../components/GqlError";
+import { fetchEntry } from "../lib/tableCallbacks";
 const { EntriesDataTable } = DiegesisUI.FlexibleDesign.FlexibleEntriesListUI;
 
 //#region helper methods
@@ -40,12 +41,27 @@ const getGQLQuery = ({ org = '', lang = '', term = '' }) => {
 //#endregion
 
 export default function RemoteEntries({ url }) {
+    const gqlClient = useApolloClient();
     const [dataTable, setDataTable] = useState({ cellsConfig: [], entries: [] });
     const [gqlQueryParams, setGQLQueryParams] = useState({ org: '', lang: '', term: '' });
-    const { loading, error, data } = useQuery(gql`${getGQLQuery(gqlQueryParams)}`);
+    const skipGQLCall = !gqlQueryParams.org;
+    const { loading, error, data } = useQuery(gql`${getGQLQuery(gqlQueryParams)}`, { skip: skipGQLCall });
 
     useEffect(
         () => {
+            const deleteEntry = (entry) => {
+                try {
+                    fetchEntry(
+                        gqlClient,
+                        entry.orgId,
+                        entry.transId,
+                        entry.contentType,
+                        entry.source
+                    );
+                } catch (err) {
+                    console.log("FAILED TO DELETE ENTRY::", err.msg);
+                }
+            }
             const cellsConfig = [{
                 id: 'source',
                 numeric: false,
@@ -81,10 +97,13 @@ export default function RemoteEntries({ url }) {
                 numeric: false,
                 disablePadding: true,
                 label: 'Actions',
-                render() {
+                render(entry) {
                     return (
-                        <IconButton>
-                            <DeleteOutlineOutlined />
+                        <IconButton
+                            onClick={() => { deleteEntry(entry) }}
+                            disabled={entry.isRevisionLocal}
+                        >
+                            {entry.isLocal ? <Update /> : <Add />}
                         </IconButton>
                     );
                 },
@@ -101,6 +120,12 @@ export default function RemoteEntries({ url }) {
                 id: catalogEntry.transId,
                 languageCode: catalogEntry.languageCode,
                 title: catalogEntry.title,
+                contentType,
+                actions: {
+                    ...catalogEntry,
+                    contentType,
+                    orgId: gqlQueryParams.org
+                }
             })
         })
         setDataTable({ ...dataTable, entries: transformedEntries });
@@ -108,9 +133,15 @@ export default function RemoteEntries({ url }) {
 
     const onFilterChange = ({ term, lang, org }) => {
         const newQuery = { ...gqlQueryParams };
-        if (typeof term !== 'undefined') newQuery.term = term;
-        if (typeof lang !== 'undefined') newQuery.lang = lang;
-        if (typeof org !== 'undefined') newQuery.org = org;
+        if (typeof term !== 'undefined') {
+            newQuery.term = term;
+        }
+        if (typeof lang !== 'undefined') {
+            newQuery.lang = lang;
+        }
+        if (typeof org !== 'undefined') {
+            newQuery.org = org;
+        }
         setGQLQueryParams(newQuery);
     }
 
