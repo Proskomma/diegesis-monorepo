@@ -5,7 +5,7 @@ import i18n from '../i18n';
 import langTable from "../i18n/languages.json";
 const { Button, FormGroup, FormControlLabel } = MuiMaterial;
 const { MOCK_SIDE_NAV_PROPS, FlexibleDesign } = DiegesisUI;
-const { FlexiblePageLayout } = FlexibleDesign;
+const { FlexiblePage } = FlexibleDesign;
 
 const LangSelector = () => {
     const { appLang, mutateState, setStoreConfig, clientStructure } = useAppContext();
@@ -109,8 +109,8 @@ export default function PageLayout(props) {
         sideNavProps: { ...MOCK_SIDE_NAV_PROPS, options: navOptions },
     }
     return (
-        <FlexiblePageLayout {...props} sideNavProps={pageProps.sideNavProps}>
+        <FlexiblePage {...props} sideNavProps={pageProps.sideNavProps}>
             {props.children}
-        </FlexiblePageLayout>
+        </FlexiblePage>
     );
 }
