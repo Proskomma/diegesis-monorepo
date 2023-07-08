@@ -39,7 +39,9 @@ export default function LocalEntries({ url }) {
     const gqlQueryClient = useApolloClient();
     const [dataTable, setDataTable] = useState({ cellsConfig: [], entries: [] });
     const [gqlQueryParams, setGQLQueryParams] = useState({ org: '', lang: '', term: '' });
-    const { loading, error, data } = useQuery(gql`${getGQLQuery(gqlQueryParams)}`);
+    const skipGQLCall = !gqlQueryParams.org;
+    const { loading, error, data } = useQuery(gql`${getGQLQuery(gqlQueryParams)}`, { skip: skipGQLCall });
+    const [paginate, setPaginate] = useState({ page: 0, rowsPerPage: 10 });
 
     useEffect(
         () => {
@@ -136,12 +138,31 @@ export default function LocalEntries({ url }) {
         setGQLQueryParams(newQuery);
     }
 
+    const onPageChange = (page, rowsPerPage) => {
+        setPaginate({ page, rowsPerPage: rowsPerPage ?? paginate.rowsPerPage });
+    }
+
     const parentPath = url ?? window.location.pathname
 
     const renderConditionalContent = () => {
         if (loading) return <GqlLoading />
         if (error) return <GqlError error={error} />
-        if (dataTable.entries.length) return <EntriesDataTable {...dataTable} />
+        if (dataTable.entries.length) {
+            let startIdx = paginate.page * paginate.rowsPerPage;
+            let endIdx = startIdx + paginate.rowsPerPage;
+            const entries = dataTable.entries.slice(startIdx, endIdx)
+            return <EntriesDataTable
+                entries={entries}
+                cellsConfig={dataTable.cellsConfig}
+                parentPath={parentPath}
+                pagination={{
+                    page: paginate.page,
+                    totalRows: dataTable.entries.length,
+                    rowsPerPage: paginate.rowsPerPage,
+                    onPageChange
+                }}
+            />
+        }
         return <Paper sx={{ width: '100%', overflow: 'hidden', my: 5, py: 5 }}>
             <Typography variant="h5" textAlign={'center'}>
                 Entries Not Found For Selected Filters!
