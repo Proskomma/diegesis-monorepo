@@ -45,7 +45,7 @@ export default function RemoteEntries({ url }) {
     const [dataTable, setDataTable] = useState({ cellsConfig: [], entries: [] });
     const [gqlQueryParams, setGQLQueryParams] = useState({ org: '', lang: '', term: '' });
     const skipGQLCall = !gqlQueryParams.org;
-    const { loading, error, data } = useQuery(gql`${getGQLQuery(gqlQueryParams)}`, { skip: skipGQLCall });
+    const { loading, error, data } = useQuery(gql`${getGQLQuery(gqlQueryParams)}`, { skip: skipGQLCall, pollInterval: 2000 });
     const [paginate, setPaginate] = useState({ page: 0, rowsPerPage: 10 });
     const langOptions = useRef([]);
 
