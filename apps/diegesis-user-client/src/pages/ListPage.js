@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
     gql,
     useQuery
@@ -68,6 +68,7 @@ export default function ListPage() {
     const [selectControls, setSelectControls] = useState([]);
     const [tagConfig, setTagConfig] = useState({});
     const [dataTable, setDataTable] = useState({ cellsConfig: [], entries: [] })
+    const [paginate, setPaginate] = useState({ page: 0, rowsPerPage: 10 });
     const [gqlQueryParams, setGQLQueryParams] = useState({ ...GQL_DEFAULT_QUERY_PARAMS })
     const { data: entriesData } = useQuery(
         gql`${getGQLQuery(gqlQueryParams)}`,
@@ -229,6 +230,9 @@ export default function ListPage() {
     }, [entriesData]);
 
     //#region events
+    const onPageChange = (page, rowsPerPage) => {
+        setPaginate({ page, rowsPerPage: rowsPerPage ?? paginate.rowsPerPage });
+    }
     const onSelectControlValueChange = (value, controlIdx) => {
         setSelectControls((prevControls) => {
             const clonedControls = [...prevControls]
@@ -256,6 +260,12 @@ export default function ListPage() {
     }
     //#endregion
 
+    const curPageEntries = useMemo(() => {
+        let startIdx = paginate.page * paginate.rowsPerPage;
+        let endIdx = startIdx + paginate.rowsPerPage;
+        return dataTable.entries.slice(startIdx, endIdx)
+    }, [dataTable.entries, paginate])
+
     const pageProps = {
         topControlProps: {
             titleText: i18n(appLang, "LIST_PAGE_ENTRIES"),
@@ -267,7 +277,16 @@ export default function ListPage() {
                 placeholder: i18n(appLang, "SEARCH_PLACEHOLDER")
             }
         },
-        entriesDataTable: dataTable,
+        entriesDataTable: {
+            ...dataTable,
+            entries: curPageEntries,
+            pagination: {
+                page: paginate.page,
+                totalRows: dataTable.entries.length,
+                rowsPerPage: paginate.rowsPerPage,
+                onPageChange
+            }
+        },
         noPageLayout: true
     }
 
