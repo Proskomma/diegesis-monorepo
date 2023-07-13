@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { Container, IconButton, Paper, Typography } from "@mui/material";
 import { Add, Update } from '@mui/icons-material';
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { gql, useApolloClient, useQuery } from "@apollo/client";
 import { DiegesisUI } from '@eten-lab/ui-kit';
 import PageLayout from "../components/PageLayout";
@@ -47,6 +47,7 @@ export default function RemoteEntries({ url }) {
     const skipGQLCall = !gqlQueryParams.org;
     const { loading, error, data } = useQuery(gql`${getGQLQuery(gqlQueryParams)}`, { skip: skipGQLCall });
     const [paginate, setPaginate] = useState({ page: 0, rowsPerPage: 10 });
+    const langOptions = useRef([]);
 
     useEffect(
         () => {
@@ -115,7 +116,12 @@ export default function RemoteEntries({ url }) {
     useEffect(() => {
         if (!Array.isArray(data?.org?.catalogEntries)) return;
         const contentType = data.org.contentType;
+        const langObj = {}
         const transformedEntries = data.org.catalogEntries.map(catalogEntry => {
+            const langCode = catalogEntry.languageCode;
+            if (!langObj[langCode]) {
+                langObj[langCode] = ({ id: langCode, title: langCode, langCode: langCode });
+            }
             return ({
                 source: catalogEntry.source || "unknown",
                 id: catalogEntry.transId,
@@ -129,6 +135,9 @@ export default function RemoteEntries({ url }) {
                 }
             })
         })
+        if (langOptions.current.length < 1) {
+            langOptions.current = Object.values(langObj);
+        }
         setDataTable({ ...dataTable, entries: transformedEntries });
     }, [data])
 
@@ -180,7 +189,7 @@ export default function RemoteEntries({ url }) {
 
     return <PageLayout id="remote-entries-page" parentPath={parentPath}>
         <Container>
-            <EntriesFilter onFilterChange={onFilterChange} parentPath={parentPath} />
+            <EntriesFilter onFilterChange={onFilterChange} parentPath={parentPath} languages={langOptions.current} />
             <br />
             {renderConditionalContent()}
         </Container>

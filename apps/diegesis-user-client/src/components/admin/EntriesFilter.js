@@ -3,14 +3,13 @@ import { useEffect, useState } from "react";
 import { gql, useApolloClient } from "@apollo/client";
 import { Box } from "@mui/material";
 import { DiegesisUI } from '@eten-lab/ui-kit';
-import langTable from "../../i18n/languages.json";
 import { useAppContext } from "../../contexts/AppContext";
 import i18n from "../../i18n";
 const { FlexibleSelectControl, FlexibleSearchBox } = DiegesisUI.FlexibleDesign;
 
 const DROPDOWN_DEFAULT_LABEL = '--Select--'
-export default function EntriesFilter({ parentPath, onFilterChange = (payload) => { } }) {
-    const { appLang, clientStructure } = useAppContext();
+export default function EntriesFilter({ parentPath, languages = [], onFilterChange = (payload) => { } }) {
+    const { appLang } = useAppContext();
     const gqlClient = useApolloClient();
     const [orgDropdown, setOrgDropdown] = useState({ options: [], value: '' });
     const [langDropdown, setLangDropdown] = useState({ options: [], value: '' });
@@ -34,16 +33,14 @@ export default function EntriesFilter({ parentPath, onFilterChange = (payload) =
     }, [])
 
     useEffect(() => {
-        const langOptions = Object.entries(langTable)
-            .filter(kv => (clientStructure?.languages?.includes(kv[0])) || kv[0] === "en")
-            .map((kv, n) => ({ title: kv[1].autonym, id: kv[1].autonym, langCode: kv[0] }));
+        const langOptions = [...(languages ?? [])]
         langOptions.splice(0, 0, { id: DROPDOWN_DEFAULT_LABEL, title: DROPDOWN_DEFAULT_LABEL, langCode: '' });
         setLangDropdown({
             ...langDropdown,
             options: langOptions,
-            value: langOptions[0]?.title
+            value: langDropdown.value || langOptions[0]?.title
         });
-    }, [clientStructure?.languages])
+    }, [languages])
 
     const onOrgChange = (value) => {
         setOrgDropdown({ ...orgDropdown, value });

@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { Container, IconButton, Paper, Typography } from "@mui/material";
 import { Delete } from '@mui/icons-material';
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { gql, useApolloClient, useQuery } from "@apollo/client";
 import { DiegesisUI } from '@eten-lab/ui-kit';
 import PageLayout from "../components/PageLayout";
@@ -42,6 +42,7 @@ export default function LocalEntries({ url }) {
     const skipGQLCall = !gqlQueryParams.org;
     const { loading, error, data } = useQuery(gql`${getGQLQuery(gqlQueryParams)}`, { skip: skipGQLCall });
     const [paginate, setPaginate] = useState({ page: 0, rowsPerPage: 10 });
+    const langOptions = useRef([]);
 
     useEffect(
         () => {
@@ -106,7 +107,12 @@ export default function LocalEntries({ url }) {
 
     useEffect(() => {
         if (!Array.isArray(data?.localEntries)) return;
+        const langObj = {}
         const transformedEntries = data.localEntries.map(localEntry => {
+            const langCode = localEntry.language;
+            if (!langObj[langCode]) {
+                langObj[langCode] = ({ id: langCode, title: langCode, langCode: langCode });
+            }
             let succinctState = localEntry.succinctRecord ? 'yes' : 'no';
             if (localEntry.hasSuccinctError) {
                 succinctState = 'FAIL';
@@ -127,6 +133,9 @@ export default function LocalEntries({ url }) {
                 }
             };
         })
+        if (langOptions.current.length < 1) {
+            langOptions.current = Object.values(langObj);
+        }
         setDataTable({ ...dataTable, entries: transformedEntries });
     }, [data])
 
@@ -172,7 +181,7 @@ export default function LocalEntries({ url }) {
 
     return <PageLayout id="local-entries-page" parentPath={parentPath}>
         <Container>
-            <EntriesFilter onFilterChange={onFilterChange} parentPath={parentPath} />
+            <EntriesFilter onFilterChange={onFilterChange} parentPath={parentPath} languages={langOptions.current} />
             <br />
             {renderConditionalContent()}
         </Container>
