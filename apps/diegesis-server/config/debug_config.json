@@ -18,10 +18,6 @@
       "url": "/static"
     },
     {
-      "path": "../diegesis-admin-client/build",
-      "url": "/admin"
-    },
-    {
       "path": "../diegesis-upload-client/build",
       "url": "/uploads",
       "redirectTarget": "../diegesis-upload-client/build/index.html",
