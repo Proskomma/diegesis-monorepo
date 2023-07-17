@@ -34,6 +34,7 @@ export default function EntriesFilter({ parentPath, languages = [], onFilterChan
 
     useEffect(() => {
         const langOptions = [...(languages ?? [])]
+        langOptions.sort((a, b) => a.title.localeCompare(b.title))
         langOptions.splice(0, 0, { id: DROPDOWN_DEFAULT_LABEL, title: DROPDOWN_DEFAULT_LABEL, langCode: '' });
         setLangDropdown({
             ...langDropdown,
