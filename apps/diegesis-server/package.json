@@ -65,9 +65,6 @@
     }
   },
   "nx": {
-    "implicitDependencies": [
-      "diegesis-admin-client"
-    ],
     "targets": {
       "start": {
         "dependsOn": [

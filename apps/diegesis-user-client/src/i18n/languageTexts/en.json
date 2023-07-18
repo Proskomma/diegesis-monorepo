@@ -114,11 +114,13 @@
     "BCV_NOTES_MODAL_TITLE": "Notes",
     "LANGUAGES": "Languages",
     "SITE_LANGUAGE": "Site Language",
-    "LIST_PAGE_SEARCH_PLACEHOLDER": "Search",
+    "SEARCH_PLACEHOLDER": "Search",
     "LIST_PAGE_FILTER_TAB": "Advanced search with filters",
     "ADMIN": "Admin",
     "LOGOUT": "Logout",
     "LOGIN": "Login",
     "UI": "UI",
-    "STATIC_PAGES": "Static Pages"
+    "STATIC_PAGES": "Static Pages",
+    "LOCAL_ENTRIES": "Local Entries",
+    "REMOTE_ENTRIES": "Remote Entries"
 }

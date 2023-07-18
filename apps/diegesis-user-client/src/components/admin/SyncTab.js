@@ -9,10 +9,10 @@ import { Button} from '@mui/material';
 import {Add, Update} from '@mui/icons-material';
 
 import EntriesTable from "./EntriesTable";
-import { searchQuery } from '../lib/remoteSearch';
-import { fetchEntry } from '../lib/tableCallbacks';
-import GqlLoading from "./GqlLoading";
-import GqlError from "./GqlError";
+import { searchQuery } from '../../lib/remoteSearch';
+import { fetchEntry } from '../../lib/tableCallbacks';
+import GqlLoading from "../GqlLoading";
+import GqlError from "../GqlError";
 
 export default function SyncTab({selectedOrgRecord, searchLang, searchText}) {
 

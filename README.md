@@ -53,8 +53,6 @@ then compile
 ```bash
 cd apps/diegesis-user-client
 npm run build
-cd ../diegesis-admin-client
-npm run build
 cd ../diegesis-upload-client
 npm run build
 ```

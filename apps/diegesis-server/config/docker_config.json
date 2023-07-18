@@ -168,10 +168,6 @@
         "url": "/static"
       },
       {
-        "path": "../../static_admin",
-        "url": "/admin"
-      },
-      {
         "path": "../../static_user",
         "url": "/",
         "redirectTarget": "../../static_user/index.html",
