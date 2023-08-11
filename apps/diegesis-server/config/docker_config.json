@@ -14,6 +14,10 @@
     "sessionTimeoutInMins": 30,
     "localContent": true,
     "dataPath": "/app/data",
+    "uiConfigPath": "/app/ui_config",
+    "initializeUIConfig": false,
+    "resourcesPath": "/app/resources",
+    "structurePath": "/app/default_structure",
     "orgsConfig": [
       {
         "name": "eBible",
@@ -194,8 +198,5 @@
     "deleteGenerated": false,
     "superusers": {
 
-    },
-    "uiConfigPath": "ui_config",
-    "initializeUIConfig": true,
-    "resourcesPath": "resources"
+    }
   }

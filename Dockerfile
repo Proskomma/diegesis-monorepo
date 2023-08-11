@@ -1,6 +1,8 @@
 # Stage 1: Build it all
 FROM node:current-alpine
 
+ARG NODE_OPTIONS=--max_old_space_size=4096
+
 # Working inside build
 WORKDIR /build
 
@@ -62,6 +64,10 @@ COPY --from=0 /build/apps/diegesis-server/node_modules/ node_modules/
 COPY $server_loc/src/ src/
 COPY $server_loc/LICENSE .
 COPY $server_loc/package.json .
+# 'Folders that can be externally mapped'
+COPY $server_loc/default_structure/ /app/default_structure/
+COPY $server_loc/resources/ /app/resources/
+COPY $server_loc/ui_config/ /app/ui_config/
 COPY $server_loc/config/docker_config.json /app/config/config.json
 
 # Create data dir
