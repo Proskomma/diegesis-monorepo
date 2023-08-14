@@ -14,6 +14,10 @@
     "sessionTimeoutInMins": 30,
     "localContent": true,
     "dataPath": "/app/data",
+    "uiConfigPath": "/app/ui_config",
+    "initializeUIConfig": false,
+    "resourcesPath": "/app/resources",
+    "structurePath": "/app/default_structure",
     "orgsConfig": [
       {
         "name": "eBible",
@@ -168,19 +172,17 @@
         "url": "/static"
       },
       {
-        "path": "../../static_admin",
-        "url": "/admin"
-      },
-      {
         "path": "../../static_user",
         "url": "/",
         "redirectTarget": "../../static_user/index.html",
         "redirects": [
-          "/who",
-          "/how",
           "/list",
-          "/blend",
-          "/entry/*"
+          "/view",
+          "/entry/*",
+          "/ui-config",
+          "/login",
+          "/static-ui-config",
+          "/*"
         ]
       },
       {

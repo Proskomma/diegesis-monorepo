@@ -135,3 +135,5 @@ yarn-debug.log*
 yarn-error.log*
 
 /build
+
+/**/my_structure

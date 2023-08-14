@@ -1,10 +1,11 @@
-const gql= require("graphql-tag");
+const gql = require("graphql-tag");
 
 const scalarSchema = gql`
     scalar OrgName
     scalar EntryId
     scalar BookCode
     scalar ContentType
+    scalar JSON
     `;
 
 const querySchema = gql`
@@ -21,7 +22,13 @@ const querySchema = gql`
             """The name of the organization"""
             name: OrgName!
         ): Org
-
+        
+        """Existing values for local entry fields"""
+        entryEnums : EntryEnums
+        
+        """The client structure"""
+        clientStructure: ClientStructure!
+        
         """Entries available across all sources on this server"""
         localEntries(
             """Only entries from these sources"""
@@ -53,8 +60,86 @@ const querySchema = gql`
             """The entry revision"""
             revision: String!
         ): LocalEntry
+
+        """An flexible ui config for all pages, if it exists"""
+        flexibleUIConfig(
+            id: String!
+        ): FlexibleUIConfig
     }
+    
+    """Entry Enums"""
+    type EntryEnums {
+        types: [String!]!
+        languages: [String!]!
+        owners: [String!]!
+        sources: [String!]!
+    }
+    
+    """Client Structure"""
+    type ClientStructure {
+    
+        """The i18n languages in order of priority"""
+        languages: [String!]!
         
+        """The urls in display order"""
+        urls: [String!]!
+        
+        """Data for each url"""
+        urlData(
+            """The language code"""
+            language: String!
+        ) : [UrlData!]!
+        
+        """The structure metadata"""
+        metadata(
+            """The language code"""
+            language: String!
+        ): StructureMetadata!
+        
+        """The Footer"""
+        footer(
+            """The language code"""
+            language: String!
+        ): StructureResource!
+
+        """A page"""
+        page(
+            """The language code"""
+            language: String!
+            
+            """The page url"""
+            url: String!
+        ): StructureResource
+    }
+    
+    """Site-wide metadata for a language"""
+    type StructureMetadata {
+        """The title of the site"""
+        title: String!
+    }
+    
+    """A structure resource for a page or footer"""
+    type StructureResource {
+        """The body (main content) as markdown"""
+        body: String!
+        
+        """The actual language returned"""
+        language: String!
+        
+        """The menu text"""
+        menuText: String!
+    
+    }
+    
+    """Url data"""
+    type UrlData {
+        """The url"""
+        url: String!
+        
+        """The localized menu slug"""
+        menuText: String!
+    }
+    
     """An organization from which this server can serve data"""
     type Org {
 
@@ -286,6 +371,43 @@ const querySchema = gql`
 
         """Is the resource original?"""
         isOriginal: Boolean!
+    }
+
+    """Flexible ui config"""
+    type FlexibleUIConfig {
+        """Element Id"""
+        id: String!
+        """Element Class Name"""
+        className: String
+        """Flexible Component Name"""
+        componentName: String!
+        """Flexible Component Config Path"""
+        configPath: String!
+        """Flexible Component Contents"""
+        contents: JSON
+        """Flexible Component Child Flexible Components"""
+        flexibles: JSON
+        """Flexible Component Markdowns"""
+        markdowns: JSON
+        """Flexible Component Styles Config"""
+        styles: JSON
+        """Flexible Component UI Config"""
+        uiConfigs: JSON
+    }
+
+    """Static UI Config"""
+    input StaticUIConfig {
+        """Static Page Language"""
+        lang: String!
+
+        """Static Page URL"""
+        url: String!
+        
+        """Static Page Menu Text"""
+        menuText: String!
+        
+        """Static Page Body"""
+        body: String!
     }    
     
     """Resource Element"""
@@ -307,6 +429,7 @@ const querySchema = gql`
         """The Metadata Value"""
         value : String!
     }
+    
     `;
 
 const mutationSchema = gql`
@@ -358,8 +481,39 @@ const mutationSchema = gql`
             """ All Metadata"""
             metadata: [MetadataElement!]!
         ) : Boolean!
+
+        saveFlexibleUIConfig (
+            """Element Id"""
+            id: String!
+            """Element Class Name"""
+            className: String
+            """Flexible Component Name"""
+            componentName: String!
+            """Flexible Component Config Path"""
+            configPath: String!
+            """Flexible Component Contents"""
+            contents: JSON
+            """Flexible Component Child Flexible Components"""
+            flexibles: JSON
+            """Flexible Component Markdowns"""
+            markdowns: JSON
+            """Flexible Component Styles Config"""
+            styles: JSON
+            """Flexible Component UI Config"""
+            uiConfigs: JSON
+        ) : Boolean
+
+        saveStaticPage (
+            """Static page config"""
+            config: StaticUIConfig
+        ) : Boolean
+
+        removeStaticPage (
+            url: String
+        ): Boolean
     }
 `;
 
-module.exports = {scalarSchema, querySchema, mutationSchema };
+module.exports = { scalarSchema, querySchema, mutationSchema };
+
 

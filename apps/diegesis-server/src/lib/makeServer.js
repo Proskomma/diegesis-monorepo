@@ -1,13 +1,13 @@
-const { ApolloServer } = require("@apollo/server");
-const { expressMiddleware } = require('@apollo/server/express4');
-const { mergeTypeDefs } = require('@graphql-tools/merge')
+const {ApolloServer} = require("@apollo/server");
+const {expressMiddleware} = require('@apollo/server/express4');
+const {mergeTypeDefs} = require('@graphql-tools/merge')
 const makeResolvers = require("../graphql/resolvers/index.js");
 const {
     scalarSchema,
     querySchema,
     mutationSchema,
 } = require("../graphql/schema/index.js");
-const { doRenderCron } = require("./cron.js");
+const {doRenderCron} = require("./cron.js");
 const makeServerApp = require("./makeServerHelpers/makeServerApp");
 const {
     makeServerAuth,
@@ -17,12 +17,17 @@ const makeServerOrgs = require("./makeServerHelpers/makeServerOrgs");
 const makeServerStatic = require("./makeServerHelpers/makeServerStatic");
 const makeServerLogging = require("./makeServerHelpers/makeServerLogging");
 const makeServerDelete = require("./makeServerHelpers/makeServerDelete");
+const serverClientStructure = require("./makeServerHelpers/serverClientStructure");
+const makeServerUIConfig = require('./makeServerHelpers/makeServerUIConfig');
 
 async function makeServer(config) {
     config.verbose && console.log("Diegesis Server");
 
     // Express
     const app = makeServerApp(config);
+
+    // Get clientStructure info (added to graph context later)
+    const clientStructure = serverClientStructure(config);
 
     // Log incidents using Winston; Maybe log access using Morgan
     makeServerLogging(app, config);
@@ -39,13 +44,16 @@ async function makeServer(config) {
     // Delete lock files and maybe generated files and directories
     makeServerDelete(config);
 
+    // Setup default ui config
+    makeServerUIConfig(config);
+
     // Maybe start processing cron
     if (config.processFrequency !== "never") {
         doRenderCron(config);
     }
 
     // Make apollo server
-    const resolvers = await makeResolvers(orgsData, orgHandlers, config);
+    const resolvers = await makeResolvers(orgsData, orgHandlers, config, clientStructure);
     const server = new ApolloServer({
         typeDefs: mergeTypeDefs(
             config.includeMutations
@@ -54,7 +62,7 @@ async function makeServer(config) {
         ),
         resolvers,
         includeStacktraceInErrorResponses: config.debug,
-        context: ({req}) => {
+        context: ({ req }) => {
             return {
                 auth:
                     !req.cookies || !req.cookies["diegesis-auth"]
@@ -78,7 +86,8 @@ async function makeServer(config) {
                 return {
                     auth: !req.cookies || !req.cookies["diegesis-auth"] ?
                         {authenticated: false, msg: "No auth cookie"} :
-                        processSession(req.cookies["diegesis-auth"], app.superusers, app.authSalts)
+                        processSession(req.cookies["diegesis-auth"], app.superusers, app.authSalts),
+                    clientStructure
                 };
             },
         }),
