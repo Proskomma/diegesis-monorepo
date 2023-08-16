@@ -6,7 +6,7 @@
     "logAccess": false,
     "logFormat": "combined",
     "useCors": false,
-    "orgs": ["DBL", "eBible", "DCS", "DGS", "Vachan"],
+    "orgs": ["DBL", "eBible", "DCS", "Vachan"],
     "processFrequency": "1 min",
     "nWorkers": 1,
     "verbose": false,
@@ -137,26 +137,6 @@
         "whitelist": [],
         "blacklist": [],
         "syncFrequency": "never",
-        "etc": {}
-      },
-      {
-        "name": "DGS",
-        "resourceTypes": [
-          "bible"
-        ],
-        "resourceFormats": [
-          "original",
-          "succinct"
-        ],
-        "languages": [
-          "en",
-          "fr",
-          "de"
-        ],
-        "whitelist": [],
-        "blacklist": [],
-        "syncFrequency": "never",
-        "peerUrl": "https://diegesis.bible/graphql",
         "etc": {}
       },
       {
