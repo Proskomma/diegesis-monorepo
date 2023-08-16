@@ -9,7 +9,15 @@ config = makeConfig(providedConfig);
 
 // Start listening
 makeServer(config).then(app => {
-    app.listen(config.port, config.hostName,() => {
+    let appServer = app.listen(config.port, config.hostName,() => {
+        process.on('SIGTERM', () => {
+            console.info('SIGTERM signal received.');
+            console.log('Closing Diegesis Server.');
+            appServer.close((err) => {
+                console.log(`${err ? "Forced": "Normal"} close of Diegesis Server.`);
+                process.exit(err ? 1 : 0);
+            });
+        });
         config.verbose && console.log(configSummary(config));
     })
 });
