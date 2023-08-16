@@ -1,19 +1,20 @@
-import React, {useState} from "react";
-import {Container, Typography, Grid, Box, Button} from "@mui/material";
-import {useParams, Link as RouterLink} from "react-router-dom";
-import {ArrowBack, Download} from '@mui/icons-material';
-import {gql, useQuery, useApolloClient} from "@apollo/client";
+import React, { useState } from "react";
+import { Container, Typography, Grid, Button } from "@mui/material";
+import { useParams, Link as RouterLink } from "react-router-dom";
+import { ArrowBack, ArrowForward, Download } from '@mui/icons-material';
+import { gql, useQuery, useApolloClient } from "@apollo/client";
 import GqlError from "../components/GqlError";
 
-import Header from "../components/Header";
-import Footer from "../components/Footer";
 import Spinner from "../components/Spinner";
 import BookSelector from "../components/BookSelector";
+import i18n from "../i18n";
+import { directionText, fontFamily } from "../i18n/languageDirection";
+import PageLayout from "../components/PageLayout";
+import { useAppContext } from "../contexts/AppContext";
 
-export default function EntryDownloadPage() {
-
-    const {source, entryId, revision} = useParams();
-
+export default function EntryDownloadPage({ }) {
+    const { appLang } = useAppContext();
+    const { source, entryId, revision } = useParams();
     const [selectedBook, setSelectedBook] = useState("");
 
     const client = useApolloClient();
@@ -27,6 +28,10 @@ export default function EntryDownloadPage() {
             versification: {
                 mime: "text/plain",
                 suffix: "vrs.txt"
+            },
+            studyNotes: {
+                mime: "text/tab-separated-values",
+                suffix: "studyNotes.tsv"
             }
         }
         if (!downloadTypes[downloadType]) {
@@ -47,9 +52,9 @@ export default function EntryDownloadPage() {
             .replace("%revision%", revision)
             .replace("%downloadType%", downloadType);
         const query = gql`${queryString}`;
-        const result = await client.query({query});
+        const result = await client.query({ query });
         const element = document.createElement("a");
-        const file = new Blob([result.data.localEntry.canonResource.content], {type: downloadTypes[downloadType].mime});
+        const file = new Blob([result.data.localEntry.canonResource.content], { type: downloadTypes[downloadType].mime });
         element.href = URL.createObjectURL(file);
         element.download = `${source}_${entryId}_${revision}_${downloadTypes[downloadType].suffix}`;
         document.body.appendChild(element);
@@ -58,25 +63,29 @@ export default function EntryDownloadPage() {
 
     const downloadBook = async (downloadType, bookCode) => {
         const downloadTypes = {
-            usfm: {
+            usfmBooks: {
                 mime: "text/plain",
                 suffix: "usfm.txt"
             },
-            usx: {
+            usxBooks: {
                 mime: "text/xml",
                 suffix: "usx.xml"
             },
-            perf: {
+            perfBooks: {
                 mime: "application/json",
                 suffix: "perf.json"
             },
-            simplePerf: {
+            simplePerfBooks: {
                 mime: "application/json",
                 suffix: "simple_perf.json"
             },
-            sofria: {
+            sofriaBooks: {
                 mime: "application/json",
                 suffix: "sofria.json"
+            },
+            uwNotesBooks: {
+                mime: "text/tab-separated-values",
+                suffix: "uwtn.tsv"
             }
         }
         if (!downloadTypes[downloadType]) {
@@ -98,9 +107,9 @@ export default function EntryDownloadPage() {
             .replace("%downloadType%", downloadType)
             .replace("%bookCode%", bookCode);
         const query = gql`${queryString}`;
-        const result = await client.query({query});
+        const result = await client.query({ query });
         const element = document.createElement("a");
-        const file = new Blob([result.data.localEntry.download.content], {type: downloadTypes[downloadType].mime});
+        const file = new Blob([result.data.localEntry.download.content], { type: downloadTypes[downloadType].mime });
         element.href = URL.createObjectURL(file);
         element.download = `${source}_${entryId}_${revision}_${bookCode}_${downloadTypes[downloadType].suffix}`;
         document.body.appendChild(element);
@@ -120,6 +129,7 @@ export default function EntryDownloadPage() {
               perfBookCodes: bookCodes(type: "perf")
               simplePerfBookCodes: bookCodes(type: "simplePerf")
               sofriaBookCodes: bookCodes(type: "sofria")
+              uwNotesBookCodes: bookCodes(type: "uwNotes")
               succinctRecord: canonResource(type:"succinct") {type}
               vrsRecord: canonResource(type:"versification") {type}
               bookResourceTypes
@@ -130,90 +140,107 @@ export default function EntryDownloadPage() {
             .replace("%entryId%", entryId)
             .replace("%revision%", revision);
 
-    const {loading, error, data} = useQuery(
+    const { loading, error, data } = useQuery(
         gql`${queryString}`,
     );
 
     if (loading) {
-        return <Spinner/>
+        return <Spinner />
     }
     if (error) {
-        return <GqlError error={error}/>
+        return <GqlError error={error} />
     }
 
     const entryInfo = data.localEntry;
 
-    let bookCodes;
-    if (entryInfo.usfmBookCodes.length > 0) {
-        bookCodes = [...entryInfo.usfmBookCodes];
-    } else {
-        bookCodes = [...entryInfo.usxBookCodes];
+    if (!entryInfo) {
+        return (
+            <PageLayout>
+                <Container dir={directionText(appLang)} style={{ marginTop: "50px", marginBottom: "50px" }}>
+                    <Typography variant="h4" paragraph="true" sx={{ mt: "20px" }} style={{ fontFamily: fontFamily(appLang) }}>
+                        Processing on server - wait a while and hit "refresh"
+                    </Typography>
+                </Container>
+            </PageLayout>
+        );
     }
-    
-    return <Container fixed className="homepage">
-        <Header selected="list"/>
-        <Box style={{marginTop: "100px"}}>
-            <Typography variant="h4" paragraph="true" sx={{mt: "20px"}}>
+
+    let bookCodes = new Set([]);
+    for (const downloadType of ["usfm", "usx", "perf", "simplePerf", "sofria", "uwNotes"]) {
+        entryInfo[`${downloadType}BookCodes`].forEach(b => bookCodes.add(b));
+    }
+
+    const setArrow = (lang) => {
+        if (directionText(lang) === "ltr") {
+            return <ArrowBack />;
+        }
+        if (directionText(lang) === "rtl") {
+            return <ArrowForward />;
+        }
+    };
+
+    return <PageLayout>
+        <Container dir={directionText(appLang)} style={{ marginTop: "50px", marginBottom: "50px" }}>
+            <Typography variant="h4" paragraph="true" sx={{ mt: "20px" }} style={{ fontFamily: fontFamily(appLang) }}>
                 <Button>
                     <RouterLink to={`/entry/details/${source}/${entryId}/${revision}`}
-                                relative="path"><ArrowBack/></RouterLink></Button>
+                        relative="path"> {setArrow(appLang)}</RouterLink></Button>
                 {entryInfo.title}
             </Typography>
             <Grid container>
                 <Grid item xs={12}>
-                    <Typography variant="h5" paragraph="true">Canon-level Resources</Typography>
+                    <Typography variant="h5" paragraph="true" style={{ fontFamily: fontFamily(appLang) }}>{i18n(appLang, "ADMIN_DOWNLOAD_PAGE_TITLE")}</Typography>
                 </Grid>
                 {
-                    entryInfo.canonResources
+                    entryInfo.canonResources && entryInfo.canonResources
                         .map(cro => cro.type)
                         .map(
-                        cr => <>
-                            <Grid item xs={4}>
-                                <Typography variant="body1" paragraph="true">{cr}</Typography>
-                            </Grid>
-                            <Grid item xs={8}>
+                            cr => <>
+                                <Grid item xs={4}>
+                                    <Typography variant="body1" paragraph="true" style={{ fontFamily: fontFamily(appLang) }}>{cr}</Typography>
+                                </Grid>
+                                <Grid item xs={8}>
                                     <Button onClick={() => downloadTranslation(cr)}>
-                                        <Download/>
+                                        <Download />
                                     </Button>
-                            </Grid>
-                        </>
-
-                    )
+                                </Grid>
+                            </>
+                        )
                 }
                 {
-                    bookCodes.length > 0 &&
+                    bookCodes.size > 0 &&
                     <>
                         <Grid item xs={4} md={2}>
-                            <Typography variant="h5" paragraph="true">Book Resources</Typography>
+                            <Typography variant="h5"
+                                paragraph="true" style={{ fontFamily: fontFamily(appLang) }}>{i18n(appLang, "ADMIN_DOWNLOAD_PAGE_STITLE")}</Typography>
                         </Grid>
                         <Grid item xs={8} md={10}>
-                            <BookSelector bookCodes={bookCodes} selectedBook={selectedBook}
-                                          setSelectedBook={setSelectedBook}/>
+                            <BookSelector bookCodes={Array.from(bookCodes)} selectedBook={selectedBook}
+                                setSelectedBook={setSelectedBook} />
                         </Grid>
                         {
                             selectedBook !== "" &&
                             entryInfo.bookResourceTypes
+                                .map(rt => rt.replace("Books", ""))
                                 .map(
-                                rt => <>
-                                    <Grid item xs={4}>
-                                        {rt}
-                                    </Grid>
-                                    <Grid item xs={8}>
-                                        <Button
-                                            onClick={() => downloadBook(rt, selectedBook)}
-                                            disabled={!entryInfo[`${rt}BookCodes`].includes(selectedBook)}
-                                        >
-                                            <Download/>
-                                        </Button>
-                                    </Grid>
-                                </>
-                            )
+                                    rt => <>
+                                        <Grid item xs={4}>
+                                            {rt}
+                                        </Grid>
+                                        <Grid item xs={8}>
+                                            <Button
+                                                onClick={() => downloadBook(`${rt}Books`, selectedBook)}
+                                                disabled={!entryInfo || !entryInfo[`${rt}BookCodes`] || !entryInfo[`${rt}BookCodes`].includes(selectedBook)}
+                                            >
+                                                <Download />
+                                            </Button>
+                                        </Grid>
+                                    </>
+                                )
                         }
                     </>
                 }
             </Grid>
-            <Footer/>
-        </Box>
-    </Container>;
-
+        </Container>
+    </PageLayout>;
 }

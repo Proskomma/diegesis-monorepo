@@ -1,11 +1,19 @@
 const path = require("path");
-const fse = require("fs-extra");
 const jszip = require("jszip");
 const {ptBookArray} = require("proskomma-utils");
-const DOMParser = require('xmldom').DOMParser;
-const {transPath, vrsPath} = require('../../lib/dataPaths.js');
+const { DOMParser } = require('@xmldom/xmldom');
 const languageCodes = require('../../lib/languageCodes.json');
 const appRoot = path.resolve(".");
+const {
+    initializeEmptyEntry,
+    deleteEntry,
+    initializeEntryBookResourceCategory,
+    lockEntry,
+    unlockEntry,
+    writeEntryResource,
+    writeEntryBookResource,
+    writeEntryMetadata,
+} = require('../../lib/dataLayers/fs/');
 
 async function getTranslationsCatalog() {
 
@@ -15,6 +23,7 @@ async function getTranslationsCatalog() {
     const jsonData = JSON.parse(catalogResponse.data);
     const catalogData = Object.values(jsonData.aaData);
     const catalog = catalogData.map(t => ({
+        source: "DBL",
         resourceTypes: ["bible"],
         id: t[0],
         languageCode: languageCodes[t[2]] || t[2],
@@ -32,7 +41,10 @@ const fetchUsx = async (org, trans, config) => {
 
     const http = require(`${appRoot}/src/lib/http.js`);
     const entryInfoResponse = await http.getText(trans.downloadURL);
-    const licenceId = entryInfoResponse.data.replace(/[\S\s]+license=(\d+)[\S\s]+/, "$1");
+    const licenceId = entryInfoResponse.data.replace(
+        /[\S\s]+license=(\d+)[\S\s]+/,
+        "$1"
+    );
     const downloadResponse = await http.getBuffer(`https://app.thedigitalbiblelibrary.org/entry/download_archive?id=${trans.id}&license=${licenceId}&type=release`);
     const metadataRecord = {...trans};
     const zip = new jszip();
@@ -76,44 +88,57 @@ const fetchUsx = async (org, trans, config) => {
             .trim();
     trans.owner = metadataRecord.owner;
     trans.revision = metadataRecord.revision;
-    const tp = transPath(
-        config.dataPath,
-        org.translationDir.replace(/\s/g, "__"),
-        trans.id, metadataRecord.revision.replace(/\s/g, "__")
-    );
     try {
-        const tp = transPath(
-            config.dataPath,
-            org.translationDir.replace(/\s/g, "__"),
-            trans.id, metadataRecord.revision.replace(/\s/g, "__")
+        initializeEmptyEntry(config, org.name, trans.id, metadataRecord.revision);
+        lockEntry(config, org.name, trans.id, metadataRecord.revision, "dbl/translations");
+        initializeEntryBookResourceCategory(
+            config,
+            org.name,
+            trans.id,
+            metadataRecord.revision,
+            "original",
+            "usxBooks"
         );
-        if (!fse.pathExistsSync(tp)) {
-            fse.mkdirsSync(tp);
-        }
-        fse.writeJsonSync(path.join(tp, "lock.json"), {actor: "dbl/translations", orgDir: org.translationDir, transId: trans.id, revision: metadataRecord.revision});
-        const usxBooksPath = path.join(tp, 'original', 'usxBooks');
-        if (!fse.pathExistsSync(usxBooksPath)) {
-            fse.mkdirsSync(usxBooksPath);
-        }
-        fse.writeJsonSync(path.join(tp, 'metadata.json'), metadataRecord);
+        writeEntryMetadata(
+            config,
+            org.name,
+            trans.id,
+            metadataRecord.revision,
+            metadataRecord
+        );
         for (const bookName of ptBookArray) {
             for (const usxN of [1, 2, 3, 4, 5, 6, 7, 8, 9]) {
                 const foundFiles = zip.file(new RegExp(`release/USX_${usxN}/${bookName.code}[^/]*.usx$`, 'g'));
                 if (foundFiles.length === 1) {
                     const fileContent = await foundFiles[0].async('text');
-                    fse.writeFileSync(path.join(usxBooksPath, `${bookName.code}.usx`), fileContent);
+                    writeEntryBookResource(
+                        config,
+                        org.name,
+                        trans.id,
+                        metadataRecord.revision,
+                        "usxBooks",
+                        `${bookName.code}.usx`,
+                        fileContent
+                    );
                     break;
                 }
             }
         }
         const vrs = zip.file(new RegExp('versification.vrs'));
         const vrsContent = await vrs[0].async('text');
-        const vrsP = vrsPath(config.dataPath, org.translationDir, trans.id, trans.revision);
-        fse.writeFileSync(vrsP, vrsContent);
-        fse.remove(path.join(tp, "lock.json"));
+        writeEntryResource(
+            config,
+            org.name,
+            trans.id,
+            metadataRecord.revision,
+            "original",
+            `versification.vrs`,
+            vrsContent
+        );
+        unlockEntry(config, org.name, trans.id, metadataRecord.revision);
     } catch (err) {
         console.log(err);
-        fse.remove(tp);
+        deleteEntry(config, org.name, trans.id, metadataRecord.revision);
     }
 };
 

@@ -6,9 +6,15 @@
   "author": "Mark Howe",
   "license": "MIT",
   "private": true,
-  "workspaces":["./apps/*","./libs/*"],
+  "workspaces": [
+    "./apps/*",
+    "./libs/*"
+  ],
   "devDependencies": {
-    "nx": "14.8.6",
-    "@nrwl/nx-cloud": "latest"
+    "@nrwl/nx-cloud": "latest",
+    "nx": "14.8.6"
+  },
+  "dependencies": {
+    "react-ace": "^10.1.0"
   }
 }

@@ -13,7 +13,7 @@ const processSession = function (session, superusers, authSalts) {
     } else {
         // Get username and server-side hash for that user
         const username = session.split('-')[0];
-        const superRecord = superusers[username];
+        const superRecord = superusers ? superusers[username] : null;
         if (!superRecord) {
             return failJson;
         }
@@ -43,7 +43,7 @@ const processSession = function (session, superusers, authSalts) {
 }
 
 function makeServerAuth(app, config) {
-    app.superusers = config.superusers;
+    app.superusers = config.superusers ;
     if (Object.keys(app.superusers).length > 0) {
         app.sessionTimeoutInMins = config.sessionTimeoutInMins;
         app.authSalts = [shajs('sha256')
@@ -53,14 +53,6 @@ function makeServerAuth(app, config) {
 
         doSessionCron(app, `${config.sessionTimeoutInMins} min`);
 
-        app.get('/login', (req, res) => {
-            const payload = fse.readFileSync(
-                path.resolve(appRoot, 'src', 'html', 'login.html')
-            ).toString()
-                .replace('%redirect%', req.query.redirect || '/');
-            res.send(payload);
-        });
-
         app.post('/new-login-auth', function (request, response) {
                 const failMsg = "Could not authenticate (bad username/password?)";
                 let username = request.body.username;
@@ -68,7 +60,7 @@ function makeServerAuth(app, config) {
                 if (!username || !password) {
                     response.send('Please include username and password!');
                 } else {
-                    const superRecord = app.superusers[username];
+                    const superRecord = app.superusers? app.superusers[username] : null;
                     if (!superRecord) {
                         response.send(failMsg);
                     } else {
@@ -103,6 +95,14 @@ function makeServerAuth(app, config) {
         app.post('/session-auth', function (req, res) {
             res.send(processSession(req.body.session, app.superusers, app.authSalts));
         });
+    } else {
+        app.get('/login', (req, res) => {
+            const payload = fse.readFileSync(
+                path.resolve(appRoot, 'src', 'html', 'no_login.html')
+            ).toString();
+            res.send(payload);
+        });
+
     }
 }
 

@@ -1,14 +1,18 @@
-const {gql} = require("apollo-server-express");
+const gql = require("graphql-tag");
 
 const scalarSchema = gql`
     scalar OrgName
     scalar EntryId
     scalar BookCode
     scalar ContentType
+    scalar JSON
     `;
 
 const querySchema = gql`
     type Query {
+
+        """The server name"""
+        name: String!
 
         """A list of organizations from which this server can serve data"""
         orgs: [Org!]!
@@ -18,7 +22,13 @@ const querySchema = gql`
             """The name of the organization"""
             name: OrgName!
         ): Org
-
+        
+        """Existing values for local entry fields"""
+        entryEnums : EntryEnums
+        
+        """The client structure"""
+        clientStructure: ClientStructure!
+        
         """Entries available across all sources on this server"""
         localEntries(
             """Only entries from these sources"""
@@ -50,8 +60,86 @@ const querySchema = gql`
             """The entry revision"""
             revision: String!
         ): LocalEntry
+
+        """An flexible ui config for all pages, if it exists"""
+        flexibleUIConfig(
+            id: String!
+        ): FlexibleUIConfig
     }
+    
+    """Entry Enums"""
+    type EntryEnums {
+        types: [String!]!
+        languages: [String!]!
+        owners: [String!]!
+        sources: [String!]!
+    }
+    
+    """Client Structure"""
+    type ClientStructure {
+    
+        """The i18n languages in order of priority"""
+        languages: [String!]!
         
+        """The urls in display order"""
+        urls: [String!]!
+        
+        """Data for each url"""
+        urlData(
+            """The language code"""
+            language: String!
+        ) : [UrlData!]!
+        
+        """The structure metadata"""
+        metadata(
+            """The language code"""
+            language: String!
+        ): StructureMetadata!
+        
+        """The Footer"""
+        footer(
+            """The language code"""
+            language: String!
+        ): StructureResource!
+
+        """A page"""
+        page(
+            """The language code"""
+            language: String!
+            
+            """The page url"""
+            url: String!
+        ): StructureResource
+    }
+    
+    """Site-wide metadata for a language"""
+    type StructureMetadata {
+        """The title of the site"""
+        title: String!
+    }
+    
+    """A structure resource for a page or footer"""
+    type StructureResource {
+        """The body (main content) as markdown"""
+        body: String!
+        
+        """The actual language returned"""
+        language: String!
+        
+        """The menu text"""
+        menuText: String!
+    
+    }
+    
+    """Url data"""
+    type UrlData {
+        """The url"""
+        url: String!
+        
+        """The localized menu slug"""
+        menuText: String!
+    }
+    
     """An organization from which this server can serve data"""
     type Org {
 
@@ -99,6 +187,9 @@ const querySchema = gql`
 
     """A Catalog Entry"""
     type CatalogEntry {
+    
+        """The source of the entry"""
+        source: String
 
         """An id for the entry which is unique within the organization"""
         transId: EntryId!
@@ -196,13 +287,13 @@ const querySchema = gql`
             type: String!
         ): CanonResource
 
-        """Book-level resources"""
+        """Book-level resources for one book"""
         bookResources(
           """The bookCode"""
           bookCode: String!
         ): [BookResource!]!
 
-        """Book-level resource of a given type for the entry, if it exists"""
+        """Book-level resource of a given type for one book, if it exists"""
         bookResource(
           """The bookCode"""
           bookCode: String!
@@ -210,11 +301,11 @@ const querySchema = gql`
           type: String!
         ): BookResource
 
-        """Book codes for book-level resources, optionally filtered by type"""
+        """Book codes for book-level resources"""
         bookCodes(
-            """The resource type"""
-            type: String
-        ) : [String!]!
+           """The type of resource that must exist for this book code"""
+           type: String
+        ): [String!]!
 
         """Resource types that exist for this book"""
         bookResourceTypes: [String!]!
@@ -280,7 +371,65 @@ const querySchema = gql`
 
         """Is the resource original?"""
         isOriginal: Boolean!
-    }        
+    }
+
+    """Flexible ui config"""
+    type FlexibleUIConfig {
+        """Element Id"""
+        id: String!
+        """Element Class Name"""
+        className: String
+        """Flexible Component Name"""
+        componentName: String!
+        """Flexible Component Config Path"""
+        configPath: String!
+        """Flexible Component Contents"""
+        contents: JSON
+        """Flexible Component Child Flexible Components"""
+        flexibles: JSON
+        """Flexible Component Markdowns"""
+        markdowns: JSON
+        """Flexible Component Styles Config"""
+        styles: JSON
+        """Flexible Component UI Config"""
+        uiConfigs: JSON
+    }
+
+    """Static UI Config"""
+    input StaticUIConfig {
+        """Static Page Language"""
+        lang: String!
+
+        """Static Page URL"""
+        url: String!
+        
+        """Static Page Menu Text"""
+        menuText: String!
+        
+        """Static Page Body"""
+        body: String!
+    }    
+    
+    """Resource Element"""
+    input ResourceElement {
+
+        """The Resource Book Code"""
+        bookCode : BookCode
+
+        """The Resource Content"""
+        content : String!
+    }
+
+    """Metadata Element"""
+    input MetadataElement {
+
+        """The Metadata Key"""
+        key : String!
+
+        """The Metadata Value"""
+        value : String!
+    }
+    
     `;
 
 const mutationSchema = gql`
@@ -306,6 +455,15 @@ const mutationSchema = gql`
             """The id of the entry"""
             entryId: EntryId!
         ) : Boolean!
+        """Fetches and processes the specified Succinct content from a remote server"""
+        fetchSuccinct(
+            """The name of the peer organization"""
+            org: OrgName!
+            """The name of the organization of the entry"""
+            entryOrg: OrgName!
+            """The id of the entry"""
+            entryId: EntryId!
+        ) : Boolean!
         """Deletes a succinct error, if present, which will allow succinct generation by the cron"""
         deleteSuccinctError(
             """The name of the organization"""
@@ -315,7 +473,47 @@ const mutationSchema = gql`
             """The revision of the entry"""
             revision: String!
         ) : Boolean!
+        createLocalEntry (
+            """Entry Content Type"""
+            contentType: String!
+            """All Resources"""
+            resources: [ResourceElement!]!
+            """ All Metadata"""
+            metadata: [MetadataElement!]!
+        ) : Boolean!
+
+        saveFlexibleUIConfig (
+            """Element Id"""
+            id: String!
+            """Element Class Name"""
+            className: String
+            """Flexible Component Name"""
+            componentName: String!
+            """Flexible Component Config Path"""
+            configPath: String!
+            """Flexible Component Contents"""
+            contents: JSON
+            """Flexible Component Child Flexible Components"""
+            flexibles: JSON
+            """Flexible Component Markdowns"""
+            markdowns: JSON
+            """Flexible Component Styles Config"""
+            styles: JSON
+            """Flexible Component UI Config"""
+            uiConfigs: JSON
+        ) : Boolean
+
+        saveStaticPage (
+            """Static page config"""
+            config: StaticUIConfig
+        ) : Boolean
+
+        removeStaticPage (
+            url: String
+        ): Boolean
     }
 `;
 
-module.exports = {scalarSchema, querySchema, mutationSchema };
+module.exports = { scalarSchema, querySchema, mutationSchema };
+
+

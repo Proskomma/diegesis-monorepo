@@ -1,37 +1,37 @@
-import {
-  Container,
-  Typography,
-  Box,
-  Button,
-  Paper,
-  Grid,
-} from "@mui/material";
-import { useParams, Link as RouterLink } from "react-router-dom";
-import { ArrowBack, AutoStories, Download } from "@mui/icons-material";
+import { useParams } from "react-router-dom";
+import { useState } from "react";
+import { DiegesisUI, MuiMaterial } from '@eten-lab/ui-kit';
 import { gql, useQuery } from "@apollo/client";
-import GqlError from "../components/GqlError";
-
-import Header from "../components/Header";
-import Footer from "../components/Footer";
 import Spinner from "../components/Spinner";
-import BookSelector from "../components/BookSelector";
-
-import AppLangContext from "../contexts/AppLangContext";
-import { directionText, alignmentText } from "../i18n/languageDirection";
-import { useContext, useState } from "react";
+import GqlError from "../components/GqlError";
+import {
+    directionText,
+} from "../i18n/languageDirection";
 import i18n from "../i18n";
+import PageLayout from "../components/PageLayout";
+import { useAppContext } from "../contexts/AppContext";
+const { EntryDetailUI, FlexibleDesign } = DiegesisUI;
+const { BottomBackBtn, InfoGrid } = EntryDetailUI;
+const { FlexibleTopControls, FlexibleSectionDivider, FlexibleBookResourceBox, FlexibleBottomActionButtons } = FlexibleDesign.FlexibleEntryDetailUI;
+const { Typography, Box, Container, styled } = MuiMaterial;
 
-export default function EntryDetailsPage({ setAppLanguage }) {
-  const appLang = useContext(AppLangContext);
-  const { source, entryId, revision } = useParams();
-  const [selectedBook, setSelectedBook] = useState("");
+const cellsConfig = [
+    { id: 'key', disablePadding: true, label: '', numeric: false },
+    { id: 'value', disablePadding: false, label: '', numeric: false },
+    { id: 'emptyColumn1', disablePadding: false, label: '', numeric: false },
+]
 
-  const queryString = `query {
+export default function EntryDetailPage({ }) {
+    const { appLang } = useAppContext();
+    const { source, entryId, revision } = useParams();
+    const [selectedBook, setSelectedBook] = useState('');
+    const queryString = `query {
             localEntry(
               source:"""%source%"""
               id: """%entryId%"""
               revision: """%revision%"""
             ) {
+              types
               language
               title
               textDirection
@@ -51,238 +51,142 @@ export default function EntryDetailsPage({ setAppLanguage }) {
               bookCodes
             }
           }`
-    .replace("%source%", source)
-    .replace("%entryId%", entryId)
-    .replace("%revision%", revision)
-    .replace("%bookCode%", selectedBook);
+        .replace("%source%", source)
+        .replace("%entryId%", entryId)
+        .replace("%revision%", revision)
+        .replace("%bookCode%", selectedBook);
 
-  const { loading, error, data } = useQuery(
-    gql`
+    const { loading, error, data } = useQuery(
+        gql`
       ${queryString}
-    `
-  );
+    `);
 
-  if (loading) {
-    return <Spinner />;
-  }
-  if (error) {
-    return <GqlError error={error} />;
-  }
-
-  const entryInfo = data.localEntry;
-  const finalScript = i18n(appLang, "ADMIN_LANGUAGE_SCRIPT", [
-    entryInfo.script,
-  ]);
-  let bookCodes;
-  if (entryInfo.bookCodes.length > 0) {
-    bookCodes = [...entryInfo.bookCodes];
-  }
-
-  const filteredStatsTab = entryInfo.bookStats.filter((bo) => bo.stat > 0);
-
-  let contentTab = [];
-  for (const stat of ['OT','NT','DC']){
-    if (entryInfo[`n${stat}`]>0){
-      contentTab.push(`${entryInfo[`n${stat}`]} ${stat}`)
-    }
-  }
-  const contentString = contentTab.join(', ')
-
-  return (
-    <Container fixed className="homepage">
-      <Header setAppLanguage={setAppLanguage} selected="list" />
-      <Box dir={directionText(appLang)} style={{ marginTop: "100px" }}>
-        <Typography variant="h4" paragraph="true" sx={{ mt: "20px" }}>
-          <Button>
-            <RouterLink to="/list" relative="path">
-              <ArrowBack />
-            </RouterLink>
-          </Button>
-          {entryInfo.title}
-          <Button>
-            <RouterLink to={`/entry/browse/${source}/${entryId}/${revision}`}>
-              <AutoStories />
-            </RouterLink>
-          </Button>
-          <Button>
-            <RouterLink to={`/entry/download/${source}/${entryId}/${revision}`}>
-              <Download />
-            </RouterLink>
-          </Button>
-        </Typography>
-        <Paper className="container">
-          <Typography variant="h4" paragraph="true">
-            {i18n(appLang, "ADMIN_DETAILS")}
-          </Typography>
-          
-          <Grid container spacing={2}>
-            <Grid
-              item
-              xs={4}
-              style={{ fontWeight: "bold", textAlign: alignmentText(appLang) }}
-            >
-              <Grid item>
-                <span dir={directionText(appLang)}>{i18n(appLang, "ADMIN_DETAILS_ABBREVIATION")}</span>
-              </Grid >
-            </Grid>
-            <Grid item xs={8} style={{ textAlign: alignmentText(appLang) }}>
-              <Grid item>{entryInfo.abbreviation}</Grid >
-            </Grid>
-            <Grid
-              item
-              xs={4}
-              style={{ fontWeight: "bold", textAlign: alignmentText(appLang) }}
-            >
-              <Grid item>
-                <span dir={directionText(appLang)}>{i18n(appLang, "ADMIN_DETAILS_COPYRIGHT")}</span>
-              </Grid >
-            </Grid>
-            <Grid item xs={8} style={{ textAlign: alignmentText(appLang) }}>
-              <Grid item>{entryInfo.copyright}</Grid >
-            </Grid>
-            <Grid
-              item
-              xs={4}
-              style={{ fontWeight: "bold", textAlign: alignmentText(appLang) }}
-            >
-              <Grid item>
-                <span dir={directionText(appLang)}>{i18n(appLang, "ADMIN_DETAILS_LANGUAGE")}</span>
-              </Grid >
-            </Grid>
-            <Grid item xs={8} style={{ textAlign: alignmentText(appLang) }}>
-              <Grid item>
-                {entryInfo.language}
-                {`, ${i18n(appLang, "ADMIN_TEXT_DIRECTION")}`}
-                {entryInfo.script ? `, ${finalScript}` : ""}
-              </Grid >
-            </Grid>
-            <Grid
-              item
-              xs={4}
-              style={{ fontWeight: "bold", textAlign: alignmentText(appLang) }}
-            >
-              <Grid item>
-                <span dir={directionText(appLang)}>{i18n(appLang, "ADMIN_DETAILS_DATA_SOURCE")}</span>
-              </Grid >
-            </Grid>
-            <Grid item xs={8} style={{ textAlign: alignmentText(appLang) }}>
-              <Grid item>{source}</Grid >
-            </Grid>
-            <Grid
-              item
-              xs={4}
-              style={{ fontWeight: "bold", textAlign: alignmentText(appLang) }}
-            >
-              <Grid item>
-                <span dir={directionText(appLang)}>{i18n(appLang, "ADMIN_DETAILS_OWNER")}</span>
-              </Grid >
-            </Grid>
-            <Grid item xs={8} style={{ textAlign: alignmentText(appLang) }}>
-              <Grid item>{entryInfo.owner}</Grid >
-            </Grid>
-            <Grid
-              item
-              xs={4}
-              style={{ fontWeight: "bold", textAlign: alignmentText(appLang) }}
-            >
-              <Grid item>
-                <span dir={directionText(appLang)}>{i18n(appLang, "ADMIN_DETAILS_ENTRY_ID")}</span>
-              </Grid >
-            </Grid>
-            <Grid item xs={8} style={{ textAlign: alignmentText(appLang) }}>
-              <Grid item>{entryId}</Grid >
-            </Grid>
-            <Grid
-              item
-              xs={4}
-              style={{ fontWeight: "bold", textAlign: alignmentText(appLang) }}
-            >
-              <Grid item>
-                {" "}
-                <span dir={directionText(appLang)}>{i18n(appLang, "ADMIN_DETAILS_REVISION")}</span>
-              </Grid >
-            </Grid>
-            <Grid item xs={8} style={{ textAlign: alignmentText(appLang) }}>
-              <Grid item>{revision}</Grid >
-            </Grid>
-            <Grid
-              item
-              xs={4}
-              style={{ fontWeight: "bold", textAlign: alignmentText(appLang) }}
-            >
-              <Grid item>
-                <span dir={directionText(appLang)}>{i18n(appLang, "ADMIN_DETAILS_CONTENT")}</span>
-              </Grid>
-            </Grid>
-            <Grid item xs={8} style={{ textAlign: alignmentText(appLang) }}>
-              <Grid item>{contentString}</Grid>
-            </Grid>
-            <Grid
-              item
-              xs={4}
-              style={{ fontWeight: "bold", textAlign: alignmentText(appLang) }}
-            >
-              <Grid item>
-                {" "}
-                <span dir={directionText(appLang)}>{i18n(appLang, "ADMIN_DETAILS_CHAPTERS")}</span>
-              </Grid >
-            </Grid>
-            <Grid item xs={8} style={{ textAlign: alignmentText(appLang) }}>
-              <Grid item>{`${entryInfo.nChapters}`}</Grid >
-            </Grid>
-            <Grid
-              item
-              xs={4}
-              style={{ fontWeight: "bold", textAlign: alignmentText(appLang) }}
-            >
-              <Grid item>
-                <span dir={directionText(appLang)}>{i18n(appLang, "ADMIN_DETAILS_VERSES")}</span>
-              </Grid >
-            </Grid>
-            <Grid item xs={8} style={{ textAlign: alignmentText(appLang) }}>
-              <Grid item>{`${entryInfo.nVerses}`}</Grid >
-            </Grid>
-          </Grid>
-          <Grid container>
-            {bookCodes.length > 0 && (
-              <>
-                <Grid item xs={12}>
-                  <Typography variant="h4" paragraph="true" sx={{ mt: "20px" }}>
-                    {i18n(appLang, "ADMIN_DETAILS_TITLE")}
-                  </Typography>
-                </Grid>
-                <Grid item xs={12}>
-                  <BookSelector
-                    bookCodes={bookCodes}
-                    selectedBook={selectedBook}
-                    setSelectedBook={setSelectedBook}
-                  />
-                </Grid>
-              </>
-            )}
-            <>
-              {selectedBook !== "" && (
-                filteredStatsTab.map((bo) => (
-                  <>
-                    <Grid item xs={4} md={2}>
-                      {i18n(appLang,`STATS_${bo.field}`)}
-                    </Grid>
-                    <Grid item xs={8} md={10}>
-                      {bo.stat}
-                    </Grid>
-                  </>
-                ))
-              )}
-              {selectedBook === "" && (
-                <Typography style={{ textAlign: alignmentText(appLang) }}>
-                  {i18n(appLang, "ADMIN_DETAILS_ALERT")}
+    if (loading) return <Spinner />;
+    if (error) return <GqlError error={error} />;
+    const entryInfo = data.localEntry;
+    if (!entryInfo) {
+        return (<PageLayout>
+            <Container dir={directionText(appLang)} style={{ marginTop: "50px", marginBottom: "50px" }}>
+                <Typography variant="h4" paragraph="true" sx={{ mt: "20px" }}>
+                    Processing on server - wait a while and hit "refresh"
                 </Typography>
-              )}
-            </>
-          </Grid>
-        </Paper>
-        <Footer />
-      </Box>
-    </Container>
-  );
+            </Container>
+        </PageLayout>)
+    }
+
+    const finalScript = i18n(appLang, "ADMIN_LANGUAGE_SCRIPT", [
+        entryInfo.script,
+    ]);
+    let bookCodes = [];
+    if (entryInfo.bookCodes.length > 0) {
+        bookCodes = [...entryInfo.bookCodes];
+    }
+    let contentTab = [];
+    for (const stat of ["OT", "NT", "DC"]) {
+        if (entryInfo[`n${stat}`] > 0) {
+            contentTab.push(`${entryInfo[`n${stat}`]} ${stat}`);
+        }
+    }
+    const contentString = contentTab.join(", ");
+
+    const onBookResourceSelect = (value) => {
+        setSelectedBook(value)
+    }
+    const mapEntryToTblData = (entry) => {
+        const result = [{ key: i18n(appLang, "ADMIN_DETAILS"), value: '' }]
+        result.push({ key: i18n(appLang, "ADMIN_DETAILS_ABBREVIATION"), value: entryInfo.abbreviation })
+        result.push({ key: i18n(appLang, "ADMIN_DETAILS_COPYRIGHT"), value: entryInfo.copyright })
+        result.push({ key: i18n(appLang, "ADMIN_DETAILS_LANGUAGE"), value: entryInfo.language })
+        result.push({ key: i18n(appLang, "ADMIN_DETAILS_DATA_SOURCE"), value: source })
+        result.push({ key: i18n(appLang, "ADMIN_DETAILS_OWNER"), value: entryInfo.owner })
+        result.push({ key: i18n(appLang, "ADMIN_DETAILS_ENTRY_ID"), value: entryId })
+        result.push({ key: i18n(appLang, "ADMIN_DETAILS_REVISION"), value: revision })
+        if (entryInfo.types.includes('bible')) {
+            result.push({ key: i18n(appLang, "ADMIN_DETAILS_CONTENT"), value: contentString || "?" })
+            result.push({ key: i18n(appLang, "ADMIN_DETAILS_CHAPTERS"), value: entryInfo.nChapters })
+            result.push({ key: i18n(appLang, "ADMIN_DETAILS_VERSES"), value: entryInfo.nVerses })
+        }
+        return result
+    }
+    const getBookResourceControl = () => {
+        if (entryInfo?.types?.includes('bible') && bookCodes.length > 0) {
+            return ({
+                label: selectedBook,
+                value: selectedBook,
+                options: bookCodes?.map(bc => ({ id: bc, title: bc })),
+                onChange: onBookResourceSelect
+            })
+        }
+        return undefined
+    }
+    const pageProps = {
+        tblData: mapEntryToTblData(entryInfo),
+        tblCells: cellsConfig,
+        topControlProps: {
+            title: entryInfo.title,
+            actionButtonProps: {
+                downloadBtnHref: `/entry/download/${source}/${entryId}/${revision}`,
+                viewBtnHref: `/entry/browse/${source}/${entryId}/${revision}`,
+            },
+            backBtnProps: {
+                href: '/list'
+            }
+        },
+        bookResource: {
+            label: i18n(appLang, "ADMIN_DETAILS_TITLE"),
+            selectControl: getBookResourceControl()
+        },
+        noPageLayout: true
+    }
+
+    const filteredStatsTab = entryInfo.bookStats.filter((bo) => bo.stat > 0);
+    return (
+        <PageLayout>
+            <Box component={'div'} width={'100%'} height={'100%'}>
+                <br />
+                <Container component={'div'}>
+                    <FlexibleTopControls {...pageProps.topControlProps} />
+                </Container>
+                <StyledDetailSection>
+                    <FlexibleSectionDivider />
+                    <InfoGrid tblCells={pageProps.tblCells} tblData={pageProps.tblData} />
+                    {pageProps.bookResource?.selectControl ? (
+                        <FlexibleBookResourceBox {...pageProps.bookResource} />
+                    ) : (
+                        <></>
+                    )}
+                    {
+                        entryInfo.types.includes('bible') && selectedBook !== "" &&
+                        <BookResourceStats appLang={appLang} stats={filteredStatsTab} />
+                    }
+                    {entryInfo.types.includes('bible') && selectedBook === "" && bookCodes.length > 0 && (
+                        <Typography marginTop={'20px'}>
+                            {i18n(appLang, "ADMIN_DETAILS_ALERT")}
+                        </Typography>
+                    )}
+                    <FlexibleSectionDivider marginTop={3} marginBottom={3} />
+                    <FlexibleBottomActionButtons {...pageProps.topControlProps} />
+                    <BottomBackBtn {...pageProps.topControlProps.backBtnProps} />
+                </StyledDetailSection>
+            </Box>
+        </PageLayout>
+    )
 }
+
+const BookResourceStats = ({ stats = [], appLang }) => {
+    const data = [{ key: '', value: '' }];
+    data.push(...stats.map((bo) => ({
+        key: i18n(appLang, `STATS_${bo.field}`),
+        value: bo.stat
+    })));
+    return (
+        <InfoGrid tblCells={cellsConfig} tblData={data} />
+    )
+}
+
+const StyledDetailSection = styled(Container)(({ theme }) => ({
+    marginTop: '3rem',
+    [theme.breakpoints.down('sm')]: {
+        marginTop: '1.5rem',
+    },
+}));

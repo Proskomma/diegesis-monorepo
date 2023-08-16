@@ -1,15 +1,13 @@
 import { Select, MenuItem } from "@mui/material";
-import { useContext } from "react";
-import AppLangContext from "../contexts/AppLangContext";
 import i18n from "../i18n";
-import { directionText } from "../i18n/languageDirection";
+import { directionText, fontFamily } from "../i18n/languageDirection";
+import { useAppContext } from "../contexts/AppContext";
 
 export default function OrgSelector({orgs, searchOrg, setSearchOrg}) {
 
-    const appLang = useContext(AppLangContext);
+    const {appLang} = useAppContext();
     return (
         <Select
-            
             id="org_selector"
             value={searchOrg}
             label="Organization"
@@ -22,6 +20,7 @@ export default function OrgSelector({orgs, searchOrg, setSearchOrg}) {
                 key="all"
                 value="all"
                 dir={directionText(appLang)} 
+                style={{ fontFamily : fontFamily(appLang)}}
             >
                 {i18n(appLang, "CONTROLS_ALL")}
             </MenuItem>
@@ -30,11 +29,11 @@ export default function OrgSelector({orgs, searchOrg, setSearchOrg}) {
                     dir={directionText(appLang)} 
                     key={index}
                     value={option}
+                    style={{ fontFamily : fontFamily(appLang)}}
                 >
                     {option}
                 </MenuItem>
             ))}
-
         </Select>
     )
 }

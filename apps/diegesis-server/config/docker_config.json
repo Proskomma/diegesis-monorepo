@@ -1,13 +1,182 @@
 {
-  "name": "DOCKERSERVER",
-  "hostName": "0.0.0.0",
-  "port": 2468,
-  "debug": false,
-  "logAccess": false,
-  "logFormat": "combined",
-  "useCors": false,
-  "orgs": [],
-  "processFrequency": "never",
-  "verbose": false,
-  "includeMutations": false
-}
+    "hostName": "0.0.0.0",
+    "name": "DOCKERSERVER",
+    "port": 2468,
+    "debug": false,
+    "logAccess": false,
+    "logFormat": "combined",
+    "useCors": false,
+    "orgs": ["DBL", "eBible", "DCS", "Vachan"],
+    "processFrequency": "1 min",
+    "nWorkers": 1,
+    "verbose": false,
+    "includeMutations": true,
+    "sessionTimeoutInMins": 30,
+    "localContent": true,
+    "dataPath": "/app/data",
+    "uiConfigPath": "/app/ui_config",
+    "initializeUIConfig": false,
+    "resourcesPath": "/app/resources",
+    "structurePath": "/app/default_structure",
+    "orgsConfig": [
+      {
+        "name": "eBible",
+        "resourceTypes": [
+          "bible"
+        ],
+        "resourceFormats": [
+          "original",
+          "succinct"
+        ],
+        "languages": [
+          "en",
+          "fr",
+          "ar",
+          "hi",
+          "id",
+          "zh",
+          "pt",
+          "ru",
+          "es",
+          "sw",
+          "el",
+          "hbo"
+        ],
+        "whitelist": [],
+        "blacklist": [
+          {"id": "engamp"},
+          {"id": "engnasb"},
+          {"id": "spaLBLA"},
+          {"id": "spanblh"}
+        ],
+        "syncFrequency": "never",
+        "etc": {}
+      },
+      {
+        "name": "DBL",
+        "resourceTypes": [
+          "bible"
+        ],
+        "resourceFormats": [
+          "original",
+          "succinct"
+        ],
+        "languages": [
+          "en",
+          "fr",
+          "ar",
+          "hi",
+          "id",
+          "zh",
+          "pt",
+          "ru",
+          "es",
+          "sw",
+          "el",
+          "hbo"
+        ],
+        "whitelist": [],
+        "blacklist": [],
+        "syncFrequency": "never",
+        "etc": {}
+      },
+      {
+        "name": "Vachan",
+        "resourceTypes": [
+          "bible"
+        ],
+        "resourceFormats": [
+          "original",
+          "succinct"
+        ],
+        "languages": [
+          "en",
+          "fr",
+          "ar",
+          "hi",
+          "id",
+          "zh",
+          "pt",
+          "ru",
+          "es",
+          "sw"
+        ],
+        "whitelist": [],
+        "blacklist": [],
+        "syncFrequency": "never",
+        "etc": {}
+      },
+      {
+        "name": "DCS",
+        "resourceTypes": [
+          "bible"
+        ],
+        "resourceFormats": [
+          "original",
+          "succinct"
+        ],
+        "languages": [
+          "en",
+          "fr",
+          "ar",
+          "hi",
+          "id",
+          "zh",
+          "pt",
+          "ru",
+          "es",
+          "sw",
+          "el",
+          "hbo"
+        ],
+        "owners": [
+          "unfoldingWord",
+          "MVHS",
+          "es-419_gl"
+        ],
+        "whitelist": [],
+        "blacklist": [],
+        "syncFrequency": "never",
+        "etc": {}
+      },
+      {
+        "name": "DOCKERSERVER",
+        "resourceTypes": [
+          "bible"
+        ]
+      }
+    ],
+    "staticPaths": [
+      {
+        "path": "./src/static",
+        "url": "/static"
+      },
+      {
+        "path": "../../static_user",
+        "url": "/",
+        "redirectTarget": "../../static_user/index.html",
+        "redirects": [
+          "/list",
+          "/view",
+          "/entry/*",
+          "/ui-config",
+          "/login",
+          "/static-ui-config",
+          "/*"
+        ]
+      },
+      {
+        "path": "../../static_upload",
+        "url": "/uploads",
+        "redirectTarget": "../../static_upload/index.html",
+        "redirects": [
+          "/uploads/add-scripture-usfm",
+          "/uploads/add-uw-notes"
+        ]
+      }
+    ],
+    "deleteGenerated": false,
+    "superusers": {
+
+    }
+  }

@@ -1,108 +1,28 @@
 const {Proskomma} = require('proskomma-core');
-const {PerfRenderFromProskomma, render, mergeActions} = require('proskomma-json-tools');
-const {ptBooks} = require('proskomma-utils');
-const path = require("path");
-const fse = require('fs-extra');
 const {parentPort} = require("node:worker_threads");
 const {
-    transPath,
-    usfmDir,
-    usxDir,
-    vrsPath,
-    succinctErrorPath,
-    perfDir,
-    simplePerfDir,
-    sofriaDir,
-    succinctPath,
-    lockPath,
-    generatedResourcePath
-} = require("./dataPaths.js");
-const documentStatsActions = require("./documentStatsActions");
+    lockEntry,
+    unlockEntry,
+    readEntryMetadata,
+    writeEntryMetadata,
+    writeSuccinctError,
+} = require('./dataLayers/fs');
+const getSuccinct = require("./makeDownloadsHelpers/makeSuccinct");
+const doScripturePerf = require("./makeDownloadsHelpers/doScripturePerf")
+const doScriptureSimplePerf = require("./makeDownloadsHelpers/doScriptureSimplePerf")
+const doScriptureStats = require("./makeDownloadsHelpers/doScriptureStats");
+const doScriptureSofria = require("./makeDownloadsHelpers/doScriptureSofria");
+const makeAggregateStats = require("./makeDownloadsHelpers/makeAggregateStats");
 
-const appRoot = path.resolve(".");
+const verbose = false;
 
-function doDownloads({dataPath, orgDir, transId, revision, contentType}) {
+function doScriptureDownloads({config, org, transId, revision, contentType}) {
+    let pk;
+    let docSetId;
     try {
-        const orgJson = require(path.join(appRoot, 'src', 'orgHandlers', orgDir, 'org.json'));
-        const org = orgJson.name;
-        const t = Date.now();
-        const metadataPath = path.join(
-            transPath(dataPath, orgDir, transId, revision),
-            'metadata.json'
-        );
-        fse.writeJsonSync(lockPath(dataPath, orgDir, transId, revision), {actor: "makeDownloads", orgDir, transId, revision});
-        const metadata = fse.readJsonSync(metadataPath);
-        let contentDir = (contentType === 'usfm') ?
-            usfmDir(dataPath, orgDir, transId, revision) :
-            usxDir(dataPath, orgDir, transId, revision);
-        if (!fse.pathExistsSync(contentDir)) {
-            throw new Error(`${contentType} content directory for ${org}/${transId}/${revision} does not exist`);
-        }
-        let vrsContent = null;
-        const vrsP = vrsPath(dataPath, orgDir, transId, revision);
-        if (fse.pathExistsSync(vrsP)) {
-            vrsContent = fse.readFileSync(vrsP).toString();
-        }
-        const downloads = makeDownloads(
-            dataPath,
-            org,
-            orgDir,
-            metadata,
-            contentType,
-            fse.readdirSync(contentDir).map(f => fse.readFileSync(path.join(contentDir, f)).toString()),
-            vrsContent,
-        );
-        if (downloads.succinctError) {
-            fse.writeJsonSync(succinctErrorPath(dataPath, orgDir, transId, revision), downloads.succinctError);
-            fse.remove(lockPath(dataPath, orgDir, transId, revision));
-            return;
-        }
-        const genP = generatedResourcePath(dataPath, orgDir, transId, revision);
-        if (!fse.pathExistsSync(genP)) {
-            fse.mkdirsSync(genP);
-        }
-        fse.writeJsonSync(succinctPath(dataPath, orgDir, transId, revision), downloads.succinct);
-    } catch (err) {
-        const succinctError = {
-            generatedBy: 'cron',
-            context: {
-                taskSpec,
-            },
-            message: err.message
-        };
-        parentPort.postMessage(succinctError);
-        fse.writeJsonSync(succinctErrorPath(dataPath, orgDir, transId, revision), succinctError);
-        fse.remove(lockPath(dataPath, orgDir, transId, revision));
-        return;
-    }
-    fse.remove(lockPath(dataPath, orgDir, transId, revision));
-    parentPort.postMessage({orgDir, transId, revision, status: "done"});
-}
-
-function makeDownloads(dataPath, org, orgDir, metadata, docType, docs, vrsContent) {
-    const pk = new Proskomma([
-        {
-            name: "source",
-            type: "string",
-            regex: "^[^\\s]+$"
-        },
-        {
-            name: "project",
-            type: "string",
-            regex: "^[^\\s]+$"
-        },
-        {
-            name: "revision",
-            type: "string",
-            regex: "^[^\\s]+$"
-        },
-    ]);
-    const ret = {
-        succinct: null,
-        perf: [],
-        simplePerf: [],
-        sofria: [],
-        stats: {
+        lockEntry(config, org, transId, revision, "makeDownloads");
+        const metadata = readEntryMetadata(config, org, transId, revision);
+        let stats = {
             nOT: 0,
             nNT: 0,
             nDC: 0,
@@ -119,243 +39,143 @@ function makeDownloads(dataPath, org, orgDir, metadata, docType, docs, vrsConten
             nMorph: 0,
             nOccurrences: 0,
             documents: {}
-        }
-    };
-    let docSetId;
-    try {
-        pk.importDocuments(
-            {
-                source: org,
-                project: metadata.id,
-                revision: metadata.revision,
-            },
-            docType,
-            docs,
-        );
-        const docSet = pk.gqlQuerySync('{docSets { id documents { bookCode: header(id: "bookCode") sequences {type} } } }').data.docSets[0];
-        docSetId = docSet.id;
-        const docSetBookCodes = docSet.documents.map(d => d.bookCode);
-        for (const bookCode of docSetBookCodes) {
-            for (const section of ['ot', 'nt', 'dc']) {
-                if (ptBooks[bookCode].categories.includes(section)) {
-                    ret.stats[`n${section.toUpperCase()}`]++;
-                }
-            }
-        }
-        const sequenceTypes = new Set([]);
-        for (const sequences of docSet.documents.map(d => d.sequences)) {
-            for (const sequenceType of sequences.map(s => s.type)) {
-                sequenceTypes.add(sequenceType);
-            }
-        }
-
-        let metadataTags = `"title:${metadata.title}" "copyright:${metadata.copyright}" "language:${metadata.languageCode}" """owner:${metadata.owner}"""`;
-        metadataTags += ` "nOT:${ret.stats.nOT}" "nNT:${ret.stats.nNT}" "nDC:${ret.stats.nDC}"`;
-        if (metadata.textDirection) {
-            metadataTags += ` "direction:${metadata.textDirection}"`;
-        }
-        if (metadata.script) {
-            metadataTags += ` "script:${metadata.script}"`;
-        }
-        pk.gqlQuerySync(`mutation { addDocSetTags(docSetId: "${docSetId}", tags: [${metadataTags}]) }`);
-        if (vrsContent) {
-            pk.gqlQuerySync(`mutation { setVerseMapping(docSetId: "${docSetId}" vrsSource: """${vrsContent}""")}`);
-        }
-    } catch (err) {
-        ret.succinctError = {
-            generatedBy: 'cron',
-            context: {
-                docSetId: docSetId || "???",
-                making: "populatePk",
-            },
-            message: err.message
         };
-        parentPort.postMessage(ret.succinctError);
-        fse.remove(lockPath(dataPath, orgDir, metadata.id, metadata.revision));
-        return;
-    }
-    const documents = pk.gqlQuerySync(`{docSet(id: """${docSetId}""") {documents { id bookCode: header(id:"bookCode")} } }`).data.docSet.documents.map(d => ({
-        id: d.id,
-        book: d.bookCode
-    }));
-    for (const doc of documents) {
-        let docResult = null;
         try {
-            docResult = pk.gqlQuerySync(`{ document(id: """${doc.id}""") { bookCode: header(id:"bookCode") perf } }`).data.document;
-            const perfD = perfDir(dataPath, orgDir, metadata.id, metadata.revision);
-            if (!fse.pathExistsSync(perfD)) {
-                fse.mkdirsSync(perfD);
-            }
-            fse.writeFileSync(path.join(perfD, `${doc.book}.json`), JSON.stringify(JSON.parse(docResult.perf), null, 2));
-        } catch (err) {
-            docResult = null;
-            parentPort.postMessage({
-                generatedBy: 'cron',
-                context: {
-                    docSetId,
-                    doc: doc.id,
-                    book: doc.book,
-                    making: "perf"
+            pk = new Proskomma([
+                {
+                    name: "source",
+                    type: "string",
+                    regex: "^[^\\s]+$"
                 },
-                message: err.message,
-            });
-        }
-        if (docResult) {
-            try {
-                const cl = new PerfRenderFromProskomma(
-                    {
-                        proskomma: pk,
-                        actions: mergeActions(
-                            [
-                                render.perfToPerf.renderActions.justTheBibleActions,
-                                render.perfToPerf.renderActions.identityActions
-                            ]
-                        ),
-                    },
-                );
-                const output = {};
-
-                cl.renderDocument(
-                    {
-                        docId: doc.id,
-                        config: {},
-                        output,
-                    },
-                );
-                const simplePerf = render.perfToPerf.transforms.mergePerfTextCode({perf: output.perf}).perf;
-                const simplePerfD = simplePerfDir(dataPath, orgDir, metadata.id, metadata.revision);
-                if (!fse.pathExistsSync(simplePerfD)) {
-                    fse.mkdirsSync(simplePerfD);
-                }
-                fse.writeFileSync(path.join(simplePerfD, `${doc.book}.json`), JSON.stringify(simplePerf, null, 2));
-            } catch (err) {
-                docResult = null;
-                parentPort.postMessage({
-                    generatedBy: 'cron',
-                    context: {
-                        docSetId,
-                        doc: doc.id,
-                        book: doc.book,
-                        making: "simplePerf"
-                    },
-                    message: err.message,
-                });
-            }
-        }
-        if (docResult) {
-            try {
-                const cl = new PerfRenderFromProskomma(
-                    {
-                        proskomma: pk,
-                        actions: documentStatsActions,
-                    },
-                );
-                const output = {};
-
-                cl.renderDocument(
-                    {
-                        docId: doc.id,
-                        config: {},
-                        output,
-                    },
-                );
-                ret.stats.documents[doc.book] = output;
-            } catch (err) {
-                docResult = null;
-                parentPort.postMessage({
-                    generatedBy: 'cron',
-                    context: {
-                        docSetId,
-                        doc: doc.id,
-                        book: doc.book,
-                        making: "stats"
-                    },
-                    message: err.message,
-                });
-            }
-        }
-        try {
-            const docResult = pk.gqlQuerySync(`{document(id: """${doc.id}""") { bookCode: header(id:"bookCode") sofria } }`).data.document;
-            const sofriaD = sofriaDir(dataPath, orgDir, metadata.id, metadata.revision);
-            if (!fse.pathExistsSync(sofriaD)) {
-                fse.mkdirsSync(sofriaD);
-            }
-            fse.writeFileSync(path.join(sofriaD, `${doc.book}.json`), JSON.stringify(JSON.parse(docResult.sofria), null, 2));
-        } catch (err) {
-            parentPort.postMessage({
-                generatedBy: 'cron',
-                context: {
-                    docSetId,
-                    doc: doc.id,
-                    book: doc.book,
-                    making: "sofria"
+                {
+                    name: "project",
+                    type: "string",
+                    regex: "^[^\\s]+$"
                 },
-                message: err.message,
-            });
-        }
-    }
-    try {
-        for (const bookStats of Object.values(ret.stats.documents)) {
-            for (const stat of [
-                "nChapters",
-                "nVerses",
-                "nIntroductions",
-                "nHeadings",
-                "nFootnotes",
-                "nXrefs",
-                "nStrong",
-                "nLemma",
-                "nGloss",
-                "nContent",
-                "nMorph",
-                "nOccurrences",
-            ]) {
-                ret.stats[stat] += bookStats[stat];
-            }
-            const metadataPath = path.join(
-                transPath(
-                    dataPath,
-                    orgDir,
-                    metadata.id,
-                    metadata.revision
-                ),
-                'metadata.json'
-            );
-            const newMetadata = {...metadata, stats: ret.stats};
-            for (const toDelete of ["ot", "nt", "dc", "nOT", "nNT", "nDC", "hasIntroductions", "hasHeadings", "hasFootnotes", "hasXrefs"]) {
-                delete newMetadata[toDelete];
-            }
-            fse.writeFileSync(metadataPath, JSON.stringify(newMetadata, null, 2));
-        }
-        try {
-            ret.succinct = pk.serializeSuccinct(docSetId);
+                {
+                    name: "revision",
+                    type: "string",
+                    regex: "^[^\\s]+$"
+                },
+            ]);
+            getSuccinct({config, org, pk, metadata, contentType, stats, verbose});
+            const docSet = pk.gqlQuerySync('{docSets { id documents { bookCode: header(id: "bookCode") sequences {type} } } }').data.docSets[0];
+            docSetId = docSet.id;
         } catch (err) {
-            ret.succinctError = {
+            const succinctError = {
                 generatedBy: 'cron',
                 context: {
-                    docSetId: docSetId || "???",
-                    making: "succinct",
+                    making: "populatePk",
                 },
                 message: err.message
             };
-            parentPort.postMessage(ret.succinctError);
-            fse.remove(lockPath(dataPath, orgDir, metadata.id, metadata.revision));
-            return;
+            parentPort.postMessage(succinctError);
+            writeSuccinctError(config, org, metadata.id, metadata.revision, succinctError);
+            unlockEntry(config, org, metadata.id, metadata.revision);
+            throw new Error(`Succinct could not be generated: ${err.message}`);
         }
-    } catch
-        (err) {
-        parentPort.postMessage({
+        // Iterate over documents
+        const documents = pk.gqlQuerySync(`{docSet(id: """${docSetId}""") {documents { id bookCode: header(id:"bookCode")} } }`).data.docSet.documents.map(d => ({
+            id: d.id,
+            book: d.bookCode
+        }));
+        for (const doc of documents) {
+            const success = doScripturePerf({config, org, pk, metadata, doc, docSetId, verbose});
+            if (success) {
+                doScriptureSimplePerf({config, org, pk, metadata, doc, docSetId, verbose});
+                doScriptureStats({org, pk, metadata, doc, docSetId, stats, verbose});
+            }
+            doScriptureSofria({config, org, pk, metadata, doc, docSetId, verbose});
+        }
+        try {
+            makeAggregateStats(stats);
+            const newMetadata = {...metadata, stats};
+            writeEntryMetadata(config, org, metadata.id, metadata.revision, newMetadata);
+        } catch
+            (err) {
+            parentPort.postMessage({
+                generatedBy: 'cron',
+                context: {
+                    docSetId,
+                    making: "augmented metadata.json"
+                },
+                message: err.message,
+            });
+        }
+        // The end!
+        unlockEntry(config, org, transId, revision);
+        parentPort.postMessage({org, transId, revision, status: "done"});
+    } catch (err) {
+        const succinctError = {
             generatedBy: 'cron',
             context: {
-                docSetId,
-                making: "augmented metadata.json"
+                org,
+                transId,
+                revision,
+                contentType
             },
-            message: err.message,
-        });
+            message: err.message
+        };
+        parentPort.postMessage(succinctError);
+        unlockEntry(config, org, transId, revision);
     }
-    return ret;
+}
+
+function doBcvNotesDownloads({config, org, transId, revision, contentType}) {
+    let pk;
+    try {
+        lockEntry(config, org, transId, revision, "makeDownloads");
+        const metadata = readEntryMetadata(config, org, transId, revision);
+        pk = new Proskomma([
+            {
+                name: "source",
+                type: "string",
+                regex: "^[^\\s]+$"
+            },
+            {
+                name: "project",
+                type: "string",
+                regex: "^[^\\s]+$"
+            },
+            {
+                name: "revision",
+                type: "string",
+                regex: "^[^\\s]+$"
+            },
+        ]);
+        getSuccinct({config, org, pk, metadata, contentType, stats: null, verbose});
+        unlockEntry(config, org, transId, revision);
+        parentPort.postMessage({org, transId, revision, status: "done"});
+    } catch (err) {
+        const succinctError = {
+            generatedBy: 'cron bcvNotes',
+            context: {
+                org,
+                transId,
+                revision,
+                contentType
+            },
+            message: err.message
+        };
+        parentPort.postMessage(succinctError);
+        unlockEntry(config, org, transId, revision);
+    }
 }
 
 parentPort.on("message", data => {
-    doDownloads(data);
+    const data2 = {...data, config: JSON.parse(data.configString)};
+    if (["usfm", "usx", "succinct"].includes(data2.contentType)) {
+        doScriptureDownloads(data2);
+    } else if (["uwNotes", "tyndaleStudyNotes"].includes(data2.contentType)) {
+        doBcvNotesDownloads(data2);
+    } else {
+        const contentTypeError = {
+            generatedBy: 'cron',
+            context: {
+                making: "doScriptureDownloads",
+            },
+            message: `Unknown contentType '${data2.contentType}' in makeDownloads`
+        };
+        parentPort.postMessage(contentTypeError);
+    }
 });
