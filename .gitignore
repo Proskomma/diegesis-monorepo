@@ -2,6 +2,8 @@
 
 apps/diegesis-server/data
 apps/diegesis-server/local
+apps/diegesis-server/config/uiConfigs
+apps/diegesis-server/uiStuff
 
 # Logs
 logs
