@@ -125,18 +125,30 @@ async function makeServerOrgs(config) {
         if (nonPeerOrgs[org]) {
             const orgRecord = nonPeerOrgs[org];
             orgName = orgRecord.name;
-            [orgHandlers[orgName], orgsData[orgName]] = await setupNonPeerOrg(config, orgRecord);
+            try {
+                [orgHandlers[orgName], orgsData[orgName]] = await setupNonPeerOrg(config, orgRecord);
+            } catch (err) {
+                throw new Error(`Unable to set up Non-Peer Org '${orgName}': ${err}`);
+            }
             const nLocal = orgEntries(config, orgRecord.name).length;
             config.verbose && console.log(`      ${nLocal} locally cached entr${nLocal === 1 ? "y" : "ies"}`);
         } else if (peerOrgs[org]) {
             const orgRecord = peerOrgs[org];
             orgName = orgRecord.name;
-            [orgHandlers[orgName], orgsData[orgName]] = await setupPeerOrg(config, orgRecord);
+            try {
+                [orgHandlers[orgName], orgsData[orgName]] = await setupPeerOrg(config, orgRecord);
+            } catch (err) {
+                throw new Error(`Unable to set Peer Org ${orgName}: ${err}`);
+            }
             const nLocal = orgEntries(config, orgRecord.name).length;
             config.verbose && console.log(`      ${nLocal} locally cached entr${nLocal === 1 ? "y" : "ies"}`);
         } else if (org === config.name) {
             orgName = config.name;
-            [orgHandlers[orgName], orgsData[orgName]] = await setupLocalOrg(config);
+            try {
+                [orgHandlers[orgName], orgsData[orgName]] = await setupLocalOrg(config);
+            } catch (err) {
+                throw new Error(`Unable to set Local Org ${orgName}: ${err}`);
+            }
             const nLocal = orgEntries(config, config.name).length;
             config.verbose && console.log(`      ${nLocal} local entr${nLocal === 1 ? "y" : "ies"}`);
         } else {
