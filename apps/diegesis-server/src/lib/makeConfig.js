@@ -13,13 +13,14 @@ const croak = msg => {
 // Default config - override by passing config JSON file
 const defaultConfig = {
     name: null,
+    appRoot: null,
     hostName: 'localhost',
     port: 2468,
-    dataPath: path.resolve(appRoot, 'data'),
-    uiConfigPath: path.resolve(appRoot, 'ui_config'),
+    dataPath: null,
+    uiConfigPath: null,
+    structurePath: null, //path.resolve(appRoot, 'default_structure'),
+    resourcesPath: null,
     initializeUIConfig: false,
-    structurePath: path.resolve(appRoot, 'default_structure'),
-    resourcesPath: path.resolve(appRoot, 'resources'),
     logAccess: false,
     logFormat: "combined",
     useCors: false,
@@ -116,6 +117,15 @@ function makeConfig(providedConfig) {
         croak(`CONFIG ERROR: name '${providedConfig.name}' contains illegal characters'`);
     }
     config.name = providedConfig.name;
+    if (providedConfig.appRoot) {
+        if (typeof providedConfig.appRoot !== 'string') {
+            croak(`CONFIG ERROR: appRoot should be a string, not '${providedConfig.appRoot}'`);
+        }
+        config.appRoot = providedConfig.appRoot;
+    } else {
+        config.appRoot = path.resolve(".");
+    }
+
     if (providedConfig.hostName) {
         if (typeof providedConfig.hostName !== 'string') {
             croak(`CONFIG ERROR: hostName should be a string, not '${providedConfig.port}'`);
@@ -142,39 +152,48 @@ function makeConfig(providedConfig) {
             croak(`CONFIG ERROR: dataPath '${fqPath}' does not exist or is not a directory`);
         }
         config.dataPath = fqPath;
+    } else {
+        config.dataPath = path.resolve(config.appRoot, 'data');
     }
-    if (typeof providedConfig.initializeUIConfig !== 'undefined') {
+    if (providedConfig.initializeUIConfig) {
         if (typeof providedConfig.initializeUIConfig === 'boolean')
             config.initializeUIConfig = providedConfig.initializeUIConfig;
         else
             croak(`CONFIG ERROR: initializeUIConfig should be true/false, not '${providedConfig.initializeUIConfig}'`);
     }
-    if (typeof providedConfig.uiConfigPath !== 'undefined') {
+    if (providedConfig.uiConfigPath) {
         if (typeof providedConfig.uiConfigPath === 'string')
             config.uiConfigPath = path.resolve(providedConfig.uiConfigPath);
         else
             croak(`CONFIG ERROR: uiConfigPath should be a string, not '${providedConfig.uiConfigPath}'`);
+    } else {
+        config.uiConfigPath = path.resolve(config.appRoot, 'ui_config');
     }
-    if (!config.initializeUIConfig) {
+    if (typeof config.initializeUIConfig !== 'undefined') {
         if (!fse.existsSync(config.uiConfigPath) || !fse.lstatSync(config.uiConfigPath).isDirectory()) {
             croak(`CONFIG ERROR: uiConfigPath '${config.uiConfigPath}' does not exist or is not a directory`);
         }
     }
-    if (typeof providedConfig.resourcesPath !== 'undefined') {
+    if (providedConfig.resourcesPath) {
         if (typeof providedConfig.resourcesPath === 'string')
             config.resourcesPath = path.resolve(providedConfig.resourcesPath);
         else
             croak(`CONFIG ERROR: resourcesPath should be a string, not '${providedConfig.resourcesPath}'`);
+    } else {
+        config.resourcesPath = path.resolve(config.appRoot, 'resources');
     }
     if (!fse.existsSync(config.resourcesPath) || !fse.lstatSync(config.resourcesPath).isDirectory()) {
         croak(`CONFIG ERROR: resourcesPath '${config.resourcesPath}' does not exist or is not a directory`);
     }
-    const structurePath = providedConfig.structurePath || config.structurePath; // Always check structurePath
-    if (
-        typeof structurePath !== 'string') {
-        croak(`CONFIG ERROR: structurePath should be a string, not '${structurePath}'`);
+    if (providedConfig.structurePath) {
+        if (typeof providedConfig.structurePath !== 'string') {
+            croak(`CONFIG ERROR: structurePath should be a string, not '${providedConfig.structurePath}'`);
+        }
+        config.structurePath = providedConfig.structurePath;
+    } else {
+        config.structurePath = path.resolve(config.appRoot, 'default_structure');
     }
-    const fqPath = path.resolve(structurePath);
+    const fqPath = path.resolve(config.structurePath);
     if (!fse.existsSync(fqPath) || !fse.lstatSync(fqPath).isDirectory()) {
         croak(`CONFIG ERROR: structurePath '${fqPath}' does not exist or is not a directory`);
     }
@@ -634,4 +653,4 @@ const configSummary = config => `  Server ${config.name} is listening on ${confi
     ${config.deleteGenerated ? "Delete all generated content" : "Delete lock files only"} on startup
 `}`
 
-module.exports = { makeConfig, cronOptions, configSummary };
+module.exports = {makeConfig, cronOptions, configSummary};

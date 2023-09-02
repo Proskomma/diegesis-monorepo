@@ -48,7 +48,5 @@
     }
   ],
   "deleteGenerated": false,
-  "uiConfigPath": "ui_config",
-  "initializeUIConfig": true,
-  "resourcesPath": "resources"
+  "initializeUIConfig": true
 }
