@@ -9,10 +9,11 @@ echo "removing 'node_modules' directories and 'package-lock' files..."
 rm -rf ../node_modules ../apps/diegesis-server/node_modules ../apps/diegesis-user-client/node_modules/ ../apps/diegesis-upload-client/node_modules/
 rm ../package-lock.json ../apps/diegesis-user-client/package-lock.json ../apps/diegesis-upload-client/package-lock.json ../apps/diegesis-server/package-lock.json
 cd ..
+set -e -u
 echo "########################"
 echo "installing modules..."
-npm i
 echo "########################"
+npm i
 echo "building the clients..."
 
 cd apps/diegesis-user-client/

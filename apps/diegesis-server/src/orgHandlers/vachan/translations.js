@@ -16,9 +16,9 @@ async function getTranslationsCatalog() {
 
     let catalogResponse = null;
     try {
-        catalogResponse = await http.getText('https://api.vachanengine.org/v2/sources?content_type=bible');
+        catalogResponse = await http.getText('https://api.vachanengine.org/v2/resources?content_type=bible');
     } catch (err) {
-        console.log(`    *** Error from Vachan sources endpoint: ${err.message} ***`);
+        console.log(`    *** Error from Vachan resources endpoint: ${err.message} ***`);
     }
     if (!catalogResponse) {
         return;
