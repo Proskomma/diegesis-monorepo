@@ -65,7 +65,7 @@ WORKDIR /app/apps/diegesis-server
 ARG server_loc=./apps/diegesis-server
 ARG user_id=2590
 
-COPY $server_loc/node_modules/ node_modules/
+COPY --from=0 /build/apps/diegesis-server/node_modules/ node_modules/
 COPY $server_loc/src/ src/
 COPY $server_loc/LICENSE .
 COPY $server_loc/package.json .
