@@ -65,10 +65,11 @@ WORKDIR /app/apps/diegesis-server
 ARG server_loc=./apps/diegesis-server
 ARG user_id=2590
 
-COPY /build/apps/diegesis-server/node_modules/ node_modules/
+# COPY /build/apps/diegesis-server/node_modules/ node_modules/
 COPY $server_loc/src/ src/
 COPY $server_loc/LICENSE .
 COPY $server_loc/package.json .
+RUN npm install
 # 'Folders that can be externally mapped'
 COPY $server_loc/default_structure/ /app/default_structure/
 RUN chown -R ${user_id}:${user_id} /app/default_structure
