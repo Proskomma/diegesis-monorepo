@@ -175,6 +175,11 @@ const generatedResourcePath =
         );
     }
 
+const uiConfigDir = (dataPath) => {
+    const pathParts = [dataPath, 'ui-config.json'];
+    return path.join(...pathParts);
+}
+
 module.exports = {
     orgPath,
     transPath,
@@ -191,4 +196,5 @@ module.exports = {
     originalResourcePath,
     generatedResourcePath,
     translationDir,
+    uiConfigDir
 };

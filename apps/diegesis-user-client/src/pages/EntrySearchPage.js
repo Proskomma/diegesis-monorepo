@@ -1,22 +1,21 @@
-import React, {useContext} from 'react';
-import { Container, Typography, Box, Button } from "@mui/material";
+import React from 'react';
+import { Container, Typography, Button } from "@mui/material";
 import { ArrowBack, ArrowForward } from "@mui/icons-material";
 import { useParams, Link as RouterLink } from "react-router-dom";
 import { gql, useQuery } from "@apollo/client";
 import { Proskomma } from 'proskomma-core';
 import GqlError from "../components/GqlError";
 
-import Header from "../components/Header";
-import Footer from "../components/Footer";
 import Spinner from "../components/Spinner";
 import SearchScripture from "../components/SearchScripture";
-import {directionText} from "../i18n/languageDirection";
-import AppLangContext from "../contexts/AppLangContext";
+import { directionText } from "../i18n/languageDirection";
+import PageLayout from '../components/PageLayout';
+import { useAppContext } from '../contexts/AppContext';
 // const ProskommaRequire = require('proskomma-core');
 
-export default function EntrySearchPage({setAppLanguage}) {
-    const appLang = useContext(AppLangContext);
-    const {source, entryId, revision} = useParams();
+export default function EntrySearchPage({ }) {
+    const { appLang } = useAppContext();
+    const { source, entryId, revision } = useParams();
 
     const queryString =
         `query {
@@ -34,36 +33,35 @@ export default function EntrySearchPage({setAppLanguage}) {
             .replace("%entryId%", entryId)
             .replace("%revision%", revision);
 
-    const {loading, error, data} = useQuery(
+    const { loading, error, data } = useQuery(
         gql`${queryString}`,
     );
 
     if (loading) {
-        return <Spinner/>;
+        return <Spinner />;
     }
 
     if (error) {
-        return <GqlError error={error}/>;
+        return <GqlError error={error} />;
     }
 
     const entryInfo = data.localEntry;
-    
+
     if (!entryInfo) {
         return (
-            <Container fixed className="homepage">
-                <Header setAppLanguage={setAppLanguage} selected="list"/>
-                <Box dir={directionText(appLang)} style={{marginTop: "100px"}}>
-                    <Typography variant="h4" paragraph="true" sx={{mt: "20px"}}>
+            <PageLayout>
+                <Container dir={directionText(appLang)} style={{ marginTop: "50px", marginBottom: "50px" }}>
+                    <Typography variant="h4" paragraph="true" sx={{ mt: "20px" }}>
                         <Button>
-                            <RouterLink to={`/entry/details/${source}/${entryId}/${revision}`}><ArrowBack/></RouterLink>
+                            <RouterLink to={`/entry/details/${source}/${entryId}/${revision}`}><ArrowBack /></RouterLink>
                         </Button>
                         Processing
                     </Typography>
                     <Typography paragraph="true">
                         Unable to render this new translation at present as server is currently processing the new data: please try again in a few minutes.
                     </Typography>
-                </Box>
-            </Container>
+                </Container>
+            </PageLayout>
         );
     }
 
@@ -88,20 +86,19 @@ export default function EntrySearchPage({setAppLanguage}) {
     if (entryInfo?.canonResource?.content) {
         pk.loadSuccinctDocSet(JSON.parse(entryInfo.canonResource.content));
     }
-    
+
     const setArrow = (lang) => {
         if (directionText(lang) === "ltr") {
-          return <ArrowBack color="primary"/>;
+            return <ArrowBack color="primary" />;
         }
         if (directionText(lang) === "rtl") {
-          return <ArrowForward color="primary"/>;
+            return <ArrowForward color="primary" />;
         }
     };
 
-    return <Container fixed className="homepage">
-        <Header selected="list"/>
-        <Box style={{marginTop: "100px"}}>
-            <Typography variant="h4" paragraph="true" sx={{mt: "20px"}}>
+    return <PageLayout>
+        <Container style={{ marginTop: "50px", marginBottom: "50px" }}>
+            <Typography variant="h4" paragraph="true" sx={{ mt: "20px" }}>
                 <Button>
                     <RouterLink to={`/entry/browse/${source}/${entryId}/${revision}`}>{setArrow(appLang)}</RouterLink>
                 </Button>
@@ -111,7 +108,7 @@ export default function EntrySearchPage({setAppLanguage}) {
             {
                 entryInfo &&
                 entryInfo.canonResource &&
-                entryInfo.canonResource.content && <SearchScripture pk={pk}/>
+                entryInfo.canonResource.content && <SearchScripture pk={pk} />
             }
             {
                 (!entryInfo || !entryInfo.canonResource || !entryInfo.canonResource.content) &&
@@ -119,8 +116,6 @@ export default function EntrySearchPage({setAppLanguage}) {
                     Unable to render this new translation at present as server has not yet processed the new data: please try again in a few minutes.
                 </Typography>
             }
-            <Footer/>
-        </Box>
-    </Container>;
-
+        </Container>
+    </PageLayout>;
 }

@@ -16,9 +16,9 @@ async function getTranslationsCatalog() {
 
     let catalogResponse = null;
     try {
-        catalogResponse = await http.getText('https://api.vachanengine.org/v2/sources?content_type=bible');
+        catalogResponse = await http.getText('https://api.vachanengine.org/v2/resources?resource_type=bible');
     } catch (err) {
-        console.log(`    *** Error from Vachan sources endpoint: ${err.message} ***`);
+        console.log(`    *** Error from Vachan resources endpoint: ${err.message} ***`);
     }
     if (!catalogResponse) {
         return;
@@ -27,10 +27,10 @@ async function getTranslationsCatalog() {
     const catalog = jsonData.map(t => ({
         source: "Vachan",
         resourceTypes: ["bible"],
-        id: t.sourceName,
+        id: t.resourceName,
         languageCode: t.language.code,
         title: t.version.versionName,
-        downloadURL: `https://api.vachanengine.org/v2/bibles/${t.sourceName}/books?content_type=usfm`,
+        downloadURL: `https://api.vachanengine.org/v2/bibles/${t.resourceName}/books?content_type=usfm`,
         textDirection: t.language.scriptDirection.startsWith('right') ? 'rtl' : 'ltr',
         script: null,
         copyright: `${t.metaData['Copyright Holder'] || ''} ${t.license.code}`.trim(),

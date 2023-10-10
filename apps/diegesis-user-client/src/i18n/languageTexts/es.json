@@ -77,5 +77,16 @@
     "sw_LANG":"Swahili",
     "METADATA":"Metadatos",
     "RESOURCES":"Recursos",
-    "BLEND_PAGE":"Mezclar sus datos"
+    "BLEND_PAGE":"Mezclar sus datos",
+    "LANGUAGES": "Idiomas",
+    "SITE_LANGUAGE": "Idioma del sitio",
+    "SEARCH_PLACEHOLDER": "Buscar",
+    "LIST_PAGE_FILTER_TAB": "Búsqueda avanzada con filtros",
+    "ADMIN": "administración",
+    "LOGOUT": "cerrar sesión",
+    "LOGIN": "acceso",
+    "UI": "interfaz de usuario",
+    "STATIC_PAGES": "páginas estáticas",
+    "LOCAL_ENTRIES": "Entradas locales",
+    "REMOTE_ENTRIES": "Entradas remotas"
 }

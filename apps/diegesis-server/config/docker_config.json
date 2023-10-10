@@ -5,8 +5,8 @@
     "debug": false,
     "logAccess": false,
     "logFormat": "combined",
-    "useCors": false,
-    "orgs": ["DBL", "eBible", "DCS", "DGS", "Vachan"],
+    "useCors": true,
+    "orgs": ["DBL", "eBible", "DCS", "Vachan"],
     "processFrequency": "1 min",
     "nWorkers": 1,
     "verbose": false,
@@ -14,6 +14,10 @@
     "sessionTimeoutInMins": 30,
     "localContent": true,
     "dataPath": "/app/data",
+    "uiConfigPath": "/app/ui_config",
+    "initializeUIConfig": false,
+    "resourcesPath": "/app/resources",
+    "structurePath": "/app/default_structure",
     "orgsConfig": [
       {
         "name": "eBible",
@@ -136,26 +140,6 @@
         "etc": {}
       },
       {
-        "name": "DGS",
-        "resourceTypes": [
-          "bible"
-        ],
-        "resourceFormats": [
-          "original",
-          "succinct"
-        ],
-        "languages": [
-          "en",
-          "fr",
-          "de"
-        ],
-        "whitelist": [],
-        "blacklist": [],
-        "syncFrequency": "never",
-        "peerUrl": "https://diegesis.bible/graphql",
-        "etc": {}
-      },
-      {
         "name": "DOCKERSERVER",
         "resourceTypes": [
           "bible"
@@ -168,19 +152,17 @@
         "url": "/static"
       },
       {
-        "path": "../../static_admin",
-        "url": "/admin"
-      },
-      {
         "path": "../../static_user",
         "url": "/",
         "redirectTarget": "../../static_user/index.html",
         "redirects": [
-          "/who",
-          "/how",
           "/list",
-          "/blend",
-          "/entry/*"
+          "/view",
+          "/entry/*",
+          "/ui-config",
+          "/login",
+          "/static-ui-config",
+          "/*"
         ]
       },
       {
