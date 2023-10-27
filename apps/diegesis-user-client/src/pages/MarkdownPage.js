@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
+import rehypeRaw from 'rehype-raw';
 import { MuiMaterial } from '@eten-lab/ui-kit';
 
 import { directionText } from "../i18n/languageDirection";
@@ -13,7 +14,7 @@ export default function MarkdownPage({ url }) {
     return (
         <PageLayout>
             <Container dir={directionText(appLang)} style={{ marginTop: "50px", marginBottom: "50px" }}>
-                <ReactMarkdown>{(clientStructure?.page?.body) || "???"}</ReactMarkdown>
+                <ReactMarkdown rehypePlugins={[rehypeRaw]}>{(clientStructure?.page?.body) || "???"}</ReactMarkdown>
             </Container>
         </PageLayout>
     );
