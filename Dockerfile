@@ -31,7 +31,6 @@ COPY $app/config-overrides.js $app/config-overrides.js
 COPY libs/ libs/
 COPY nx.json .
 COPY package.json .
-COPY package-lock.json .
 
 # Install
 RUN npm install
