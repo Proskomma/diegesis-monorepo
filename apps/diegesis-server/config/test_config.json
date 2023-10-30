@@ -1,0 +1,38 @@
+{
+  "hostName": "0.0.0.0",
+  "port": 1234,
+  "debug": true,
+  "logAccess": true,
+  "logFormat": "dev",
+  "useCors": true,
+  "orgs": [],
+  "processFrequency": "1 min",
+  "nWorkers": 8,
+  "verbose": true,
+  "includeMutations": true,
+  "sessionTimeoutInMins": 10,
+  "staticPaths": [
+    {
+      "path": "../diegesis-admin-client/build",
+      "url": "/admin"
+    },
+    {
+      "path": "../diegesis-user-client/build",
+      "url": "/",
+      "redirectTarget": "../diegesis-user-client/build/index.html",
+      "redirects": [
+        "/who",
+        "/how",
+        "/list",
+        "/blend",
+        "/entry/*"
+      ]
+    }
+  ],
+  "deleteGenerated": false,
+  "superusers": {
+    "mark": "b159650eac003b4afc6b7745809b9d242588c33b16cfb154dc3bdd1c0b0dd206",
+    "jaap-jan": "9b1061b40447d3b45e76cb2626dc9fa9e7d26a79e9438459a4808db106f41956",
+    "jaapjan": "cc23f936a1ad6366a3d84f6673be5173b9cfabfca75d9c0e579b31d9afd54276"
+  }
+}
