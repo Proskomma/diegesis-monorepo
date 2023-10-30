@@ -48,19 +48,19 @@ const setStoreConfig = (config) => {
     localStorage.setItem(StorageKeys.CONFIG, JSON.stringify(newConfig));
 }
 
-const AppContextProvider = ({ children }) => {
+const AppContextProvider = ({ children, language }) => {
 
-    const [appState, setAppState] = useState({ ...initialState, appLang: getStoredConfig()?.langCode });
+    const [appState, setAppState] = useState({ ...initialState, appLang: language });
     const { setRootUIConfig } = useUIConfigContext();
     const gqlClient = useApolloClient();
 
     useEffect(() => {
         let config = getStoredConfig();
         if (!config) {
-            setStoreConfig({ langCode: 'en' })
+            setStoreConfig({ langCode: language })
             config = getStoredConfig();
         };
-        mutateState({ appLang: config.langCode });
+        mutateState({ appLang: language });
         const sessionCode = Cookies.get(StorageKeys.AUTH);
         if (!sessionCode) {
             mutateState({ authLoaded: true });

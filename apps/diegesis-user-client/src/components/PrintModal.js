@@ -122,11 +122,7 @@ export default function PrintModal({
     newPage.document.body.innerHTML = `<div id="paras">${paras}</div>`;
     newPage.document.head.innerHTML = "<title>Diegesis PDF Preview</title>";
     const script = document.createElement("script");
-<<<<<<< HEAD
-    script.src = `${window.location.protocol}//${window.location.host}/static/pagedjs_0_4_0.js`;
-=======
     script.src = `${window.location.protocol}//${window.location.host}/static/paged.polyfill.js`;
->>>>>>> temp_dev
     newPage.document.head.appendChild(script);
     const style = document.createElement("style");
     style.innerHTML = pageCss;

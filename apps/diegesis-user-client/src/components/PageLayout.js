@@ -45,10 +45,18 @@ const LangSelector = () => {
                                         name='lang'
                                         checked={appLang === kv[0]}
                                         onChange={() => {
-                                            if (mutateState) {
-                                                mutateState({ appLang: kv[0] });
-                                                setStoreConfig({ langCode: kv[0] });
+                                            // if (mutateState) {
+                                            //     mutateState({ appLang: kv[0] });
+                                            //     setStoreConfig({ langCode: kv[0] });
+                                            // }
+                                            let ref = window.location.href;
+                                            let isat = ref.indexOf("lang=");
+                                            if(isat) {
+                                                ref = ref.replace(/lang=[a-z]+/g,"lang="+kv[0]);
+                                            } else {
+                                                ref = ref + "?lang=" + kv[0];
                                             }
+                                            window.location.href = ref;
                                         }}
                                     />
                                 }
