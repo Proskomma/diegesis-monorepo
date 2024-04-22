@@ -19,6 +19,7 @@ const makeServerLogging = require("./makeServerHelpers/makeServerLogging");
 const makeServerDelete = require("./makeServerHelpers/makeServerDelete");
 const serverClientStructure = require("./makeServerHelpers/serverClientStructure");
 const makeServerUIConfig = require('./makeServerHelpers/makeServerUIConfig');
+const cors = require('cors');
 
 async function makeServer(config) {
     config.verbose && console.log("Diegesis Server");
@@ -91,6 +92,7 @@ async function makeServer(config) {
                 };
             },
         }),
+        cors(),
     );
     return app;
 }
