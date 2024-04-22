@@ -1,12 +1,12 @@
-import React, {useContext, useState, useEffect} from 'react';
+import React, {useState, useEffect} from 'react';
 import {Button, TextField, Grid, Checkbox} from "@mui/material";
-import AppLangContext from "../contexts/AppLangContext";
 import i18n from "../i18n";
 import DocSelector from "./DocSelector";
+import { useAppContext } from '../contexts/AppContext';
 
 export default function SearchScripture({pk}) {
 
-    const appLang = useContext(AppLangContext);
+    const {appLang} = useAppContext();
     const searchQueryTitle = i18n(appLang, "CONTROLS_SEARCHQUERY");
     const runSearchTitle = i18n(appLang, "CONTROLS_RUNSEARCH");
     const allBooksTitle = i18n(appLang, "CONTROLS_ALLBOOKS");
@@ -216,8 +216,8 @@ export default function SearchScripture({pk}) {
               <div>
                 <p>{matches.length} occurrences found:</p>
                 <ul>
-                  {matches.map(match => {
-                    return <li>{match.b + " " + match.c + ":" + match.v}<br />
+                  {matches.map((match, idx) => {
+                    return <li key={idx}>{match.b + " " + match.c + ":" + match.v}<br />
                       {match.t.map(token => {
                         return token.scopes.length === 1 ? isTokenStrongsInQuery(token.scopes[0]) ?
                           <b>{token.payload}</b> : token.payload : token.payload

@@ -18,10 +18,6 @@
       "url": "/static"
     },
     {
-      "path": "../diegesis-admin-client/build",
-      "url": "/admin"
-    },
-    {
       "path": "../diegesis-upload-client/build",
       "url": "/uploads",
       "redirectTarget": "../diegesis-upload-client/build/index.html",
@@ -37,12 +33,22 @@
       "redirects": [
         "/who",
         "/how",
-        "/list",
         "/blend",
-        "/entry/*"
+        "/home",
+        "/list",
+        "/about",
+        "/view",
+        "/entry/*",
+        "/v1/*",
+        "/ui-config",
+        "/static-ui-config",
+        "/login",
+        "/*"
       ]
     }
   ],
-  "deleteGenerated": false
-
+  "deleteGenerated": false,
+  "uiConfigPath": "ui_config",
+  "initializeUIConfig": true,
+  "resourcesPath": "resources"
 }

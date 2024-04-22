@@ -1,11 +1,11 @@
-import React, {useContext, useEffect, useState} from "react";
+import React, { useEffect, useState} from "react";
 import {Grid, TextField, Typography} from "@mui/material";
 import ReactMarkdown from 'react-markdown';
-import AppLangContext from "../contexts/AppLangContext";
+import {useAppContext} from "../contexts/AppContext";
 import {directionText, fontFamily} from "../i18n/languageDirection";
 
 export default function BrowseBcvNotes({pk}) {
-    const appLang = useContext(AppLangContext);
+    const {appLang} = useAppContext();
 
     const [notesData, setNotesData] = useState({
         ref: "JHN 3:16",

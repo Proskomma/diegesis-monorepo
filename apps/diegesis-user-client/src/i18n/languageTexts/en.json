@@ -111,5 +111,16 @@
     "TEXT":"Text",
     "NO_VALID_TERMS":"No valid terms to search yet",
     "BLEND_MODAL_TITLE": "Blend in Resources",
-    "BCV_NOTES_MODAL_TITLE": "Notes"
+    "BCV_NOTES_MODAL_TITLE": "Notes",
+    "LANGUAGES": "Languages",
+    "SITE_LANGUAGE": "Site Language",
+    "SEARCH_PLACEHOLDER": "Search",
+    "LIST_PAGE_FILTER_TAB": "Advanced search with filters",
+    "ADMIN": "Admin",
+    "LOGOUT": "Logout",
+    "LOGIN": "Login",
+    "UI": "UI",
+    "STATIC_PAGES": "Static Pages",
+    "LOCAL_ENTRIES": "Local Entries",
+    "REMOTE_ENTRIES": "Remote Entries"
 }
