@@ -10,8 +10,8 @@ function makeServerApp(config) {
     app.use(express.json({limit: "500mb"}));
     app.use(express.urlencoded({limit: "500mb", extended: true}));
     app.use(helmet({
-        crossOriginEmbedderPolicy: !config.debug,
-        contentSecurityPolicy: !config.debug,
+        crossOriginEmbedderPolicy: config.debug,
+        contentSecurityPolicy: config.debug,
     }));
     app.use(cookieParser());
     if (config.useCors) {
@@ -20,8 +20,6 @@ function makeServerApp(config) {
             res.header('Access-Control-Allow-Methods', 'PUT, GET, POST, DELETE, PATCH, OPTIONS');
             res.header('Access-Control-Allow-Headers', '*');
             res.header('Access-Control-Allow-Credentials', true);
-            res.header('Cross-Origin-Opener-Policy', 'unsafe-none');
-            res.header('Cross-Origin-Resource-Policy', 'unsafe-none');
 
             next();
         });
