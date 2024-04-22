@@ -94,6 +94,7 @@ async function makeServer(config) {
         }),
         cors(),
     );
+    app.options('/graphql', cors())
     return app;
 }
 
