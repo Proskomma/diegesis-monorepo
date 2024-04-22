@@ -12,6 +12,8 @@ function makeServerApp(config) {
     app.use(helmet({
         crossOriginEmbedderPolicy: config.debug,
         contentSecurityPolicy: config.debug,
+        crossOriginOpenerPolicy: { policy: "unsafe-none" },
+        crossOriginResourcePolicy: { policy: "cross-origin" },
     }));
     app.use(cookieParser());
     if (config.useCors) {
@@ -20,7 +22,6 @@ function makeServerApp(config) {
             res.header('Access-Control-Allow-Methods', 'PUT, GET, POST, DELETE, PATCH, OPTIONS');
             res.header('Access-Control-Allow-Headers', '*');
             res.header('Access-Control-Allow-Credentials', true);
-
             next();
         });
     }
