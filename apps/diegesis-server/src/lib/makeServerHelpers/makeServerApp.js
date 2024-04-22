@@ -20,6 +20,9 @@ function makeServerApp(config) {
             res.header('Access-Control-Allow-Methods', 'PUT, GET, POST, DELETE, PATCH, OPTIONS');
             res.header('Access-Control-Allow-Headers', '*');
             res.header('Access-Control-Allow-Credentials', true);
+            res.header('Cross-Origin-Opener-Policy', 'unsafe-none');
+            res.header('Cross-Origin-Resource-Policy', 'unsafe-none');
+
             next();
         });
     }
